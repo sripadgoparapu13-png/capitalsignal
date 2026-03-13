@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CapitalSignal — Investor Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3a;
+    --accent: #2F80ED;
+    --accent2: #56CCF2;
+    --text: #f0f0f5;
+    --muted: #6b6b85;
+    --red: #ff4d6a;
+    --green: #2F80ED;
+
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG grid */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none; z-index:0;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top:0; z-index:100;
+    display: flex; align-items:center; justify-content:space-between;
+    padding: 16px 40px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family:'Syne',sans-serif;
+    font-size:22px; font-weight:800;
+    letter-spacing:-0.5px;
+  }
+  .logo span { color: var(--accent); }
+  .nav-links { display:flex; gap:32px; }
+  .nav-links a {
+    color:var(--muted); text-decoration:none;
+    font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-badge {
+    background: var(--accent); color: #000;
+    font-size:11px; font-weight:500;
+    padding: 6px 14px; border-radius:20px;
+    font-family:'Syne',sans-serif;
+  }
+
+  /* HERO */
+  .hero {
+    position:relative; z-index:1;
+    padding: 100px 40px 60px;
+    max-width: 1200px; margin: 0 auto;
+  }
+  .hero-tag {
+    display:inline-flex; align-items:center; gap:8px;
+    background: rgba(0,229,160,0.08);
+    border: 1px solid rgba(0,229,160,0.2);
+    color: var(--accent);
+    font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    padding: 6px 14px; border-radius:20px; margin-bottom:28px;
+  }
+  .hero-tag::before {
+    content:''; width:6px; height:6px; border-radius:50%;
+    background:var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100%{opacity:1;transform:scale(1)}
+    50%{opacity:0.4;transform:scale(0.8)}
+  }
+  h1 {
+    font-family:'Syne',sans-serif;
+    font-size:clamp(42px,6vw,78px);
+    font-weight:800; line-height:1.0;
+    letter-spacing:-2px; margin-bottom:20px;
+  }
+  h1 .dim { color: var(--muted); }
+  h1 .accent { color: var(--accent); }
+  .hero-sub {
+    color:var(--muted); font-size:15px; line-height:1.7;
+    max-width:520px; margin-bottom:48px;
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    display:flex; gap:12px; max-width:600px;
+    margin-bottom:20px;
+  }
+  .search-input {
+    flex:1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family:'DM Mono',monospace;
+    font-size:15px; padding:16px 20px;
+    border-radius:10px; outline:none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,0.08);
+  }
+  .search-input::placeholder { color:var(--muted); }
+  .search-btn {
+    background: var(--accent); color:#000;
+    border:none; padding:16px 28px;
+    border-radius:10px; cursor:pointer;
+    font-family:'Syne',sans-serif;
+    font-size:14px; font-weight:700; letter-spacing:0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .search-btn:hover { opacity:0.88; transform:translateY(-1px); }
+  .search-btn:active { transform:translateY(0); }
+  .quick-picks {
+    display:flex; gap:8px; flex-wrap:wrap;
+  }
+  .quick-pick {
+    background:var(--surface); border:1px solid var(--border);
+    color:var(--muted); font-family:'DM Mono',monospace;
+    font-size:12px; padding:6px 14px; border-radius:6px;
+    cursor:pointer; transition: all 0.2s;
+  }
+  .quick-pick:hover {
+    border-color:var(--accent); color:var(--accent);
+    background: rgba(0,229,160,0.05);
+  }
+
+  /* TICKER TAPE */
+  .ticker-wrap {
+    overflow:hidden; border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+    background:var(--surface); padding:10px 0; margin-bottom:0;
+    position:relative; z-index:1;
+  }
+  .ticker-track {
+    display:flex; gap:0;
+    animation: ticker 30s linear infinite;
+    width: max-content;
+  }
+  @keyframes ticker {
+    from { transform:translateX(0); }
+    to { transform:translateX(-50%); }
+  }
+  .ticker-item {
+    display:flex; align-items:center; gap:8px;
+    padding:0 28px; white-space:nowrap;
+    font-size:12px; border-right:1px solid var(--border);
+  }
+  .ticker-sym { font-weight:500; color:var(--text); }
+  .ticker-price { color:var(--muted); }
+  .ticker-chg { font-weight:500; }
+  .up { color:var(--green); }
+  .down { color:var(--red); }
+
+  /* MAIN CONTENT */
+  .main {
+    max-width:1200px; margin:0 auto;
+    padding:48px 40px;
+    position:relative; z-index:1;
+  }
+
+  /* RESULT CARD */
+  #result-area { margin-bottom:48px; }
+  .result-card {
+    background: var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px; overflow:hidden;
+    display:none;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .result-card.visible { display:block; }
+  .card-header {
+    padding:24px 28px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:flex-start; justify-content:space-between;
+    flex-wrap:wrap; gap:16px;
+  }
+  .stock-title {
+    font-family:'Syne',sans-serif;
+    font-size:28px; font-weight:800; letter-spacing:-0.5px;
+  }
+  .stock-name { color:var(--muted); font-size:13px; margin-top:4px; }
+  .price-block { text-align:right; }
+  .price-big {
+    font-family:'Syne',sans-serif;
+    font-size:34px; font-weight:700;
+  }
+  .price-change {
+    font-size:13px; margin-top:4px;
+    display:flex; gap:8px; justify-content:flex-end; align-items:center;
+  }
+  .badge-sector {
+    background:rgba(123,97,255,0.12); color:var(--accent2);
+    border:1px solid rgba(123,97,255,0.25);
+    font-size:11px; padding:4px 10px; border-radius:20px;
+    letter-spacing:1px; text-transform:uppercase;
+  }
+
+  /* METRICS GRID */
+  .metrics-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr));
+    gap:1px; background:var(--border);
+  }
+  .metric {
+    background:var(--surface); padding:20px 24px;
+  }
+  .metric-label {
+    font-size:10px; text-transform:uppercase;
+    letter-spacing:1.5px; color:var(--muted); margin-bottom:8px;
+  }
+  .metric-value {
+    font-family:'Syne',sans-serif;
+    font-size:20px; font-weight:700;
+  }
+
+  /* AI SUMMARY */
+  .ai-section {
+    padding:24px 28px;
+    border-top:1px solid var(--border);
+  }
+  .ai-label {
+    display:flex; align-items:center; gap:8px;
+    font-size:11px; text-transform:uppercase; letter-spacing:2px;
+    color:var(--accent); margin-bottom:14px;
+  }
+  .ai-label::before {
+    content:'✦'; font-size:14px;
+  }
+  .ai-text {
+    color:#c0c0d0; font-size:14px; line-height:1.8;
+    max-width:760px;
+  }
+
+  /* MINI CHART */
+  .chart-section {
+    padding:24px 28px;
+    border-top:1px solid var(--border);
+  }
+  .chart-label {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:2px; color:var(--muted); margin-bottom:16px;
+  }
+  canvas#sparkline { width:100%; height:120px; }
+
+  /* SCORE BAR */
+  .score-section {
+    padding:24px 28px;
+    border-top:1px solid var(--border);
+    display:grid; grid-template-columns:1fr 1fr 1fr;
+    gap:20px;
+  }
+  .score-item {}
+  .score-name {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:1.5px; color:var(--muted); margin-bottom:10px;
+  }
+  .score-bar-bg {
+    height:6px; background:var(--surface2);
+    border-radius:3px; overflow:hidden; margin-bottom:6px;
+  }
+  .score-bar-fill {
+    height:100%; border-radius:3px;
+    transition: width 1s ease;
+  }
+  .score-val {
+    font-family:'Syne',sans-serif;
+    font-size:15px; font-weight:700;
+  }
+
+  /* FEATURES SECTION */
+  .section-label {
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:3px; color:var(--muted);
+    margin-bottom:28px;
+  }
+  .features-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+    gap:16px; margin-bottom:64px;
+  }
+  .feat-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding:24px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor:default;
+  }
+  .feat-card:hover {
+    border-color:rgba(0,229,160,0.3);
+    transform:translateY(-3px);
+  }
+  .feat-icon {
+    font-size:24px; margin-bottom:14px;
+    display:block;
+  }
+  .feat-title {
+    font-family:'Syne',sans-serif;
+    font-size:16px; font-weight:700; margin-bottom:8px;
+  }
+  .feat-desc { color:var(--muted); font-size:13px; line-height:1.6; }
+  .feat-tag {
+    display:inline-block; margin-top:12px;
+    background:rgba(0,229,160,0.08); color:var(--accent);
+    font-size:10px; padding:3px 10px; border-radius:10px;
+    letter-spacing:1px; text-transform:uppercase;
+  }
+  .feat-tag.soon {
+    background:rgba(123,97,255,0.08); color:var(--accent2);
+  }
+
+  /* LOADING */
+  .loading {
+    display:none; align-items:center; gap:12px;
+    color:var(--muted); font-size:13px; padding:20px 0;
+  }
+  .loading.active { display:flex; }
+  .spinner {
+    width:18px; height:18px;
+    border:2px solid var(--border);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* FOOTER */
+  footer {
+    border-top:1px solid var(--border);
+    padding:32px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+    color:var(--muted); font-size:12px;
+    position:relative; z-index:1;
+  }
+
+  @media(max-width:640px){
+    nav { padding:14px 20px; }
+    .nav-links { display:none; }
+    .hero, .main { padding-left:20px; padding-right:20px; }
+    .score-section { grid-template-columns:1fr; }
+    h1 { letter-spacing:-1px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Capital<span>Signal</span></div>
+  <div class="nav-links">
+    <a href="#">Screener</a>
+    <a href="#">Markets</a>
+    <a href="#">News</a>
+    <a href="#">Portfolio</a>
+  </div>
+  <div class="nav-badge">Beta</div>
+</nav>
+
+<!-- TICKER TAPE -->
+<div class="ticker-wrap">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">AI-Powered Investing</div>
+  <h1>The signal<br><span class="accent">through.</span><br><span class="dim">the noise.</span></h1>
+  <p class="hero-sub">Cut through the noise. CapitalSignal gives you instant AI-powered analysis on any stock — built for the next generation of investors.</p>
+
+  <div class="search-wrap">
+    <input class="search-input" id="searchInput" type="text"
+      placeholder="Search ticker or company (e.g. AAPL, Tesla...)"
+      autocomplete="off"/>
+    <button class="search-btn" onclick="analyzeStock()">Analyze →</button>
+  </div>
+  <div class="quick-picks">
+    <span class="quick-pick" onclick="quickSearch('AAPL')">AAPL</span>
+    <span class="quick-pick" onclick="quickSearch('TSLA')">TSLA</span>
+    <span class="quick-pick" onclick="quickSearch('NVDA')">NVDA</span>
+    <span class="quick-pick" onclick="quickSearch('MSFT')">MSFT</span>
+    <span class="quick-pick" onclick="quickSearch('AMZN')">AMZN</span>
+    <span class="quick-pick" onclick="quickSearch('GOOGL')">GOOGL</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span>Analyzing stock data...</span>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-area">
+    <div class="result-card" id="resultCard">
+
+      <div class="card-header">
+        <div>
+          <div class="stock-title" id="r-ticker">—</div>
+          <div class="stock-name" id="r-name">—</div>
+          <span class="badge-sector" id="r-sector">—</span>
+        </div>
+        <div class="price-block">
+          <div class="price-big" id="r-price">—</div>
+          <div class="price-change">
+            <span id="r-change">—</span>
+            <span id="r-changepct">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="metrics-grid" id="metricsGrid"></div>
+
+      <div class="chart-section">
+        <div class="chart-label">30-Day Price Trend (Simulated)</div>
+        <canvas id="sparkline"></canvas>
+      </div>
+
+      <div class="score-section" id="scoreSection"></div>
+
+      <div class="ai-section">
+        <div class="ai-label">AI Analysis Summary</div>
+        <div class="ai-text" id="r-ai">—</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="section-label">What CapitalSignal Offers</div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <span class="feat-icon">🔍</span>
+      <div class="feat-title">Stock Search</div>
+      <div class="feat-desc">Instantly pull key data on any publicly traded company — price, valuation, and growth metrics.</div>
+      <span class="feat-tag">Live</span>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🤖</span>
+      <div class="feat-title">AI Summaries</div>
+      <div class="feat-desc">Plain-English breakdowns of what the numbers actually mean for your investment decision.</div>
+      <span class="feat-tag">Live</span>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">📈</span>
+      <div class="feat-title">Charts & Trends</div>
+      <div class="feat-desc">Visual price history and performance trends so you can spot opportunities at a glance.</div>
+      <span class="feat-tag">Live</span>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">📰</span>
+      <div class="feat-title">News Aggregator</div>
+      <div class="feat-desc">Curated news from top financial sources, filtered by stock so you never miss a catalyst.</div>
+      <span class="feat-tag soon">Coming Soon</span>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🔎</span>
+      <div class="feat-title">Stock Screener</div>
+      <div class="feat-desc">Filter thousands of stocks by P/E, revenue growth, margins, and more to find hidden gems.</div>
+      <span class="feat-tag soon">Coming Soon</span>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">💼</span>
+      <div class="feat-title">Portfolio Tracker</div>
+      <div class="feat-desc">Track your holdings, monitor performance, and see your overall risk exposure in one place.</div>
+      <span class="feat-tag soon">Coming Soon</span>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>© 2025 CapitalSignal — Built for the next generation of investors.</span>
+  <span>Currently in beta — live data coming soon.</span>
+</footer>
+
+<script>
+// ── STOCK DATA (demo) ──────────────────────────────────────────
+const stocks = {
+  AAPL: {
+    name:"Apple Inc.", sector:"Technology", price:189.42, change:+2.14, changePct:+1.14,
+    metrics:{ "Market Cap":"$2.94T","P/E Ratio":"29.4x","Revenue":"$394B","EPS":"$6.45","Div Yield":"0.54%","52W High":"$199","52W Low":"$164","Volume":"58M" },
+    scores:{ value:62, growth:78, momentum:85 },
+    ai:`Apple continues to demonstrate exceptional ecosystem strength with its services segment growing at double-digit rates. The recent Vision Pro launch signals a new hardware frontier. While the P/E of 29x sits above historical averages, Apple's consistent buybacks and cash generation justify a premium. Key risk: China exposure (~18% of revenue) amid ongoing geopolitical tensions. Overall — a quality compounder suited for long-term investors.`
+  },
+  TSLA: {
+    name:"Tesla, Inc.", sector:"Automotive / EV", price:248.07, change:-5.32, changePct:-2.10,
+    metrics:{ "Market Cap":"$792B","P/E Ratio":"72.1x","Revenue":"$97B","EPS":"$3.44","Div Yield":"—","52W High":"$299","52W Low":"$138","Volume":"112M" },
+    scores:{ value:28, growth:71, momentum:54 },
+    ai:`Tesla trades at a significant premium to traditional automakers, pricing in Elon Musk's optionality across robotaxis and energy storage. Automotive gross margins have compressed under aggressive price cuts, squeezing near-term profitability. However, the Megapack energy business is accelerating. High volatility stock — suited for investors with a 5+ year horizon who believe in the autonomous vehicle thesis. Short-term: choppy. Long-term: high conviction bet on energy transition.`
+  },
+  NVDA: {
+    name:"NVIDIA Corporation", sector:"Semiconductors", price:875.40, change:+22.10, changePct:+2.59,
+    metrics:{ "Market Cap":"$2.16T","P/E Ratio":"68.5x","Revenue":"$60B","EPS":"$12.79","Div Yield":"0.03%","52W High":"$974","52W Low":"$410","Volume":"42M" },
+    scores:{ value:40, growth:97, momentum:93 },
+    ai:`NVIDIA is the dominant picks-and-shovels play of the AI revolution, commanding over 80% of the AI accelerator market. Data center revenue grew 200%+ YoY — a historic growth trajectory. The risk is valuation: at 68x earnings, any slowdown in hyperscaler AI capex could compress multiples sharply. That said, the CUDA moat and software ecosystem are 10+ year advantages. High conviction for investors who believe AI infrastructure spend is structural, not cyclical.`
+  },
+  MSFT: {
+    name:"Microsoft Corporation", sector:"Technology", price:415.28, change:+1.87, changePct:+0.45,
+    metrics:{ "Market Cap":"$3.09T","P/E Ratio":"35.8x","Revenue":"$236B","EPS":"$11.59","Div Yield":"0.71%","52W High":"$430","52W Low":"$310","Volume":"19M" },
+    scores:{ value:58, growth:81, momentum:79 },
+    ai:`Microsoft stands out as one of the most balanced large-cap tech investments available. Azure's cloud growth (~28% YoY) is accelerating with AI Copilot integration, while the LinkedIn and gaming segments diversify revenue streams. The 35x P/E is fair for a business with 40%+ operating margins and near-certain recurring revenue. Copilot monetization is the next major catalyst — early enterprise uptake looks strong. A core holding for growth-at-reasonable-price investors.`
+  },
+  AMZN: {
+    name:"Amazon.com, Inc.", sector:"E-Commerce / Cloud", price:182.91, change:+3.05, changePct:+1.69,
+    metrics:{ "Market Cap":"$1.90T","P/E Ratio":"57.2x","Revenue":"$590B","EPS":"$3.20","Div Yield":"—","52W High":"$201","52W Low":"$118","Volume":"33M" },
+    scores:{ value:45, growth:86, momentum:81 },
+    ai:`Amazon's re-acceleration story is compelling: AWS is re-accelerating to 17% growth after a period of customer cost optimization, and the advertising business (~$46B) is becoming a significant profit contributor. Retail margins are expanding as the fulfillment network matures. The key question is whether the 57x P/E reflects fair value for a business transitioning from growth to profitability. Given AWS and ads are high-margin compounders, the answer leans yes for patient investors.`
+  },
+  GOOGL: {
+    name:"Alphabet Inc.", sector:"Technology / Ads", price:155.72, change:-0.88, changePct:-0.56,
+    metrics:{ "Market Cap":"$1.94T","P/E Ratio":"24.1x","Revenue":"$307B","EPS":"$6.47","Div Yield":"0.47%","52W High":"$193","52W Low":"$120","Volume":"25M" },
+    scores:{ value:74, growth:72, momentum:66 },
+    ai:`Alphabet trades at the cheapest multiple among mega-cap tech at ~24x earnings — a compelling entry for value-conscious investors. Search advertising remains remarkably resilient despite AI threats, and YouTube continues to take share from linear TV. Google Cloud at $33B run rate is approaching profitability. The key overhang: AI search disruption risk to core ad revenue. However, Gemini's integration into Search and the $80B buyback authorization signal management confidence. One of the better risk-adjusted large-cap tech plays.`
+  }
+};
+
+// ── TICKER TAPE ────────────────────────────────────────────────
+const tickers = [
+  {sym:"AAPL",price:"189.42",chg:"+1.14%",up:true},
+  {sym:"NVDA",price:"875.40",chg:"+2.59%",up:true},
+  {sym:"MSFT",price:"415.28",chg:"+0.45%",up:true},
+  {sym:"TSLA",price:"248.07",chg:"-2.10%",up:false},
+  {sym:"AMZN",price:"182.91",chg:"+1.69%",up:true},
+  {sym:"GOOGL",price:"155.72",chg:"-0.56%",up:false},
+  {sym:"META",price:"508.30",chg:"+0.92%",up:true},
+  {sym:"NFLX",price:"628.14",chg:"+1.38%",up:true},
+  {sym:"SPY",price:"512.40",chg:"+0.21%",up:true},
+  {sym:"BRK.B",price:"398.20",chg:"+0.10%",up:true},
+];
+const track = document.getElementById('tickerTrack');
+const buildTape = (items) => items.map(t =>
+  `<div class="ticker-item">
+    <span class="ticker-sym">${t.sym}</span>
+    <span class="ticker-price">$${t.price}</span>
+    <span class="ticker-chg ${t.up?'up':'down'}">${t.chg}</span>
+  </div>`).join('');
+track.innerHTML = buildTape(tickers) + buildTape(tickers); // double for loop
+
+// ── SEARCH ─────────────────────────────────────────────────────
+function quickSearch(sym){
+  document.getElementById('searchInput').value = sym;
+  analyzeStock();
+}
+
+function analyzeStock(){
+  const raw = document.getElementById('searchInput').value.trim().toUpperCase();
+  const sym = raw.replace(/[^A-Z.]/g,'');
+  if(!sym) return;
+
+  const loading = document.getElementById('loading');
+  const card = document.getElementById('resultCard');
+  card.classList.remove('visible');
+  loading.classList.add('active');
+
+  setTimeout(()=>{
+    loading.classList.remove('active');
+    const data = stocks[sym] || generateFallback(sym);
+    renderCard(sym, data);
+  }, 900);
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') analyzeStock();
+});
+
+// ── FALLBACK for unknown tickers ───────────────────────────────
+function generateFallback(sym){
+  const price = (Math.random()*400+50).toFixed(2);
+  const chg = ((Math.random()-0.4)*8).toFixed(2);
+  return {
+    name: sym + " Corporation", sector:"Public Equity",
+    price: parseFloat(price), change: parseFloat(chg),
+    changePct: (chg/price*100).toFixed(2),
+    metrics:{
+      "Market Cap":"N/A","P/E Ratio":"N/A","Revenue":"N/A",
+      "EPS":"N/A","Div Yield":"N/A","52W High":"N/A",
+      "52W Low":"N/A","Volume":"N/A"
+    },
+    scores:{ value:50, growth:50, momentum:50 },
+    ai:`Detailed AI analysis for ${sym} is not yet in our database. In the full version of CapitalSignal, this section would pull live financial data and generate a real-time analysis of the company's valuation, growth trajectory, competitive moat, and key risk factors. Try one of the quick-pick tickers above for a full demo!`
+  };
+}
+
+// ── RENDER CARD ────────────────────────────────────────────────
+function renderCard(sym, d){
+  document.getElementById('r-ticker').textContent = sym;
+  document.getElementById('r-name').textContent = d.name;
+  document.getElementById('r-sector').textContent = d.sector;
+
+  const priceEl = document.getElementById('r-price');
+  priceEl.textContent = `$${parseFloat(d.price).toFixed(2)}`;
+  priceEl.style.color = d.change >= 0 ? 'var(--green)' : 'var(--red)';
+
+  const chgEl = document.getElementById('r-change');
+  const chgPctEl = document.getElementById('r-changepct');
+  const up = d.change >= 0;
+  chgEl.textContent = (up?'+':'')+d.change.toFixed(2);
+  chgEl.className = 'ticker-chg ' + (up?'up':'down');
+  chgPctEl.textContent = `(${up?'+':''}${parseFloat(d.changePct).toFixed(2)}%)`;
+  chgPctEl.className = 'ticker-chg ' + (up?'up':'down');
+
+  // Metrics
+  const grid = document.getElementById('metricsGrid');
+  grid.innerHTML = Object.entries(d.metrics).map(([k,v])=>
+    `<div class="metric">
+      <div class="metric-label">${k}</div>
+      <div class="metric-value">${v}</div>
+    </div>`
+  ).join('');
+
+  // Scores
+  const scoreSection = document.getElementById('scoreSection');
+  const scoreColors = {
+    value: s => s>70?'var(--green)':s>40?'#f5c84a':'var(--red)',
+    growth: s => s>70?'var(--green)':s>40?'#f5c84a':'var(--red)',
+    momentum: s => s>70?'var(--green)':s>40?'#f5c84a':'var(--red)',
+  };
+  scoreSection.innerHTML = Object.entries(d.scores).map(([k,v])=>
+    `<div class="score-item">
+      <div class="score-name">${k} Score</div>
+      <div class="score-bar-bg">
+        <div class="score-bar-fill" style="width:${v}%;background:${scoreColors[k](v)}"></div>
+      </div>
+      <div class="score-val" style="color:${scoreColors[k](v)}">${v}/100</div>
+    </div>`
+  ).join('');
+
+  // AI text
+  document.getElementById('r-ai').textContent = d.ai;
+
+  // Sparkline
+  drawSparkline(d.price, d.change >= 0);
+
+  const card = document.getElementById('resultCard');
+  card.classList.add('visible');
+  card.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ── SPARKLINE ──────────────────────────────────────────────────
+function drawSparkline(currentPrice, isUp){
+  const canvas = document.getElementById('sparkline');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth * 2;
+  canvas.height = 240;
+  ctx.scale(2,2);
+  const W = canvas.offsetWidth/2, H = 120;
+
+  // Generate believable price series
+  const pts = 30;
+  const prices = [];
+  let p = currentPrice * (0.92 + Math.random()*0.04);
+  for(let i=0;i<pts;i++){
+    p += (Math.random()-0.48)*p*0.015;
+    prices.push(p);
+  }
+  prices.push(currentPrice);
+
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = max-min||1;
+  const xs = prices.map((_,i)=> i/(prices.length-1)*W);
+  const ys = prices.map(v=> H - ((v-min)/range)*(H-20) - 10);
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, isUp?'rgba(0,229,160,0.25)':'rgba(255,77,106,0.25)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+
+  ctx.beginPath();
+  ctx.moveTo(xs[0],ys[0]);
+  for(let i=1;i<xs.length;i++){
+    const cpx = (xs[i-1]+xs[i])/2;
+    ctx.bezierCurveTo(cpx,ys[i-1],cpx,ys[i],xs[i],ys[i]);
+  }
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  ctx.moveTo(xs[0],ys[0]);
+  for(let i=1;i<xs.length;i++){
+    const cpx=(xs[i-1]+xs[i])/2;
+    ctx.bezierCurveTo(cpx,ys[i-1],cpx,ys[i],xs[i],ys[i]);
+  }
+  ctx.strokeStyle = isUp?'#00e5a0':'#ff4d6a';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Dot at end
+  ctx.beginPath();
+  ctx.arc(xs[xs.length-1], ys[ys.length-1], 4, 0, Math.PI*2);
+  ctx.fillStyle = isUp?'#00e5a0':'#ff4d6a';
+  ctx.fill();
+}
+</script>
+</body>
+</html>
