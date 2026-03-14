@@ -605,7 +605,7 @@ async function analyzeStock(){
     loading.classList.remove('active');
     renderCard(sym, data);
   }
-}}
+}
 
 document.getElementById('searchInput').addEventListener('keydown', e=>{
   if(e.key==='Enter') analyzeStock();
