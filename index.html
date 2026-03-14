@@ -583,23 +583,39 @@ async function analyzeStock(){
   loading.classList.add('active');
 
   try {
-    const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${API_KEY}`);
-    const data = await response.json();
-    const quote = data['Global Quote'];
+    const [quoteRes, overviewRes] = await Promise.all([
+      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${API_KEY}`),
+      fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${sym}&apikey=${API_KEY}`)
+    ]);
 
-    if(quote && quote['05. price']) {
-      const livePrice = parseFloat(quote['05. price']);
-      const liveChange = parseFloat(quote['09. change']);
-      const liveChangePct = parseFloat(quote['10. change percent']);
-      const staticData = stocks[sym] || generateFallback(sym);
-      staticData.price = livePrice;
-      staticData.change = liveChange;
-      staticData.changePct = liveChangePct;
-      loading.classList.remove('active');
-      renderCard(sym, staticData);
-    } else {
-      throw new Error('No data');
-    }
+    const quoteData = await quoteRes.json();
+    const overviewData = await overviewRes.json();
+    const quote = quoteData['Global Quote'];
+
+    const livePrice = parseFloat(quote['05. price']);
+    const liveChange = parseFloat(quote['09. change']);
+    const liveChangePct = parseFloat(quote['10. change percent']);
+
+    const staticData = stocks[sym] || generateFallback(sym);
+    staticData.price = livePrice;
+    staticData.change = liveChange;
+    staticData.changePct = liveChangePct;
+    staticData.name = overviewData.Name || staticData.name;
+    staticData.sector = overviewData.Sector || staticData.sector;
+    staticData.metrics = {
+      "Market Cap": overviewData.MarketCapitalization ? '$'+parseInt(overviewData.MarketCapitalization).toLocaleString() : 'N/A',
+      "P/E Ratio": overviewData.PERatio ? overviewData.PERatio+'x' : 'N/A',
+      "Revenue": overviewData.RevenueTTM ? '$'+parseInt(overviewData.RevenueTTM).toLocaleString() : 'N/A',
+      "EPS": overviewData.EPS ? '$'+overviewData.EPS : 'N/A',
+      "Div Yield": overviewData.DividendYield ? (parseFloat(overviewData.DividendYield)*100).toFixed(2)+'%' : 'N/A',
+      "52W High": overviewData['52WeekHigh'] ? '$'+overviewData['52WeekHigh'] : 'N/A',
+      "52W Low": overviewData['52WeekLow'] ? '$'+overviewData['52WeekLow'] : 'N/A',
+      "Volume": quote['06. volume'] ? parseInt(quote['06. volume']).toLocaleString() : 'N/A'
+    };
+
+    loading.classList.remove('active');
+    renderCard(sym, staticData);
+
   } catch(e) {
     const data = stocks[sym] || generateFallback(sym);
     loading.classList.remove('active');
