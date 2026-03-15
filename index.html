@@ -505,6 +505,14 @@
 <script>
 // ── STOCK DATA (demo) ──────────────────────────────────────────
 const API_KEY ="BZFOMSKZCMQSS6UK";
+function formatNum(n){
+  if(!n) return 'N/A';
+  const num = parseFloat(n);
+  if(num >= 1e12) return '$'+(num/1e12).toFixed(2)+'T';
+  if(num >= 1e9) return '$'+(num/1e9).toFixed(2)+'B';
+  if(num >= 1e6) return '$'+(num/1e6).toFixed(2)+'M';
+  return '$'+num.toLocaleString();
+}
 const stocks = {
   AAPL: {
     name:"Apple Inc.", sector:"Technology", price:189.42, change:+2.14, changePct:+1.14,
@@ -603,9 +611,9 @@ async function analyzeStock(){
     staticData.name = overviewData.Name || staticData.name;
     staticData.sector = overviewData.Sector || staticData.sector;
     staticData.metrics = {
-      "Market Cap": overviewData.MarketCapitalization ? '$'+parseInt(overviewData.MarketCapitalization).toLocaleString() : 'N/A',
+  "Market Cap": formatNum(overviewData.MarketCapitalization),
       "P/E Ratio": overviewData.PERatio ? overviewData.PERatio+'x' : 'N/A',
-      "Revenue": overviewData.RevenueTTM ? '$'+parseInt(overviewData.RevenueTTM).toLocaleString() : 'N/A',
+      "Revenue": formatNum(overviewData.RevenueTTM),
       "EPS": overviewData.EPS ? '$'+overviewData.EPS : 'N/A',
       "Div Yield": overviewData.DividendYield ? (parseFloat(overviewData.DividendYield)*100).toFixed(2)+'%' : 'N/A',
       "52W High": overviewData['52WeekHigh'] ? '$'+overviewData['52WeekHigh'] : 'N/A',
