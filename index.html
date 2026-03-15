@@ -11,13 +11,12 @@
     --surface: #12121a;
     --surface2: #1a1a26;
     --border: #2a2a3a;
-    --accent: #2F80ED;
-    --accent2: #56CCF2;
+    --accent: #00e5a0;
+    --accent2: #7b61ff;
     --text: #f0f0f5;
     --muted: #6b6b85;
     --red: #ff4d6a;
-    --green: #2F80ED;
-
+    --green: #00e5a0;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior: smooth; }
@@ -389,9 +388,9 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-tag">AI-Powered Investing</div>
-  <h1>The signal<br><span class="accent">through.</span><br><span class="dim">the noise.</span></h1>
-  <p class="hero-sub">Cut through the noise. CapitalSignal gives you instant AI-powered analysis on any stock — built for the next generation of investors.</p>
+  <div class="hero-tag">AI-Powered Analysis</div>
+  <h1>Invest with<br><span class="accent">clarity.</span><br><span class="dim">Not noise.</span></h1>
+  <p class="hero-sub">Search any stock for instant AI analysis, key metrics, and clear insights — without the Wall Street jargon.</p>
 
   <div class="search-wrap">
     <input class="search-input" id="searchInput" type="text"
@@ -498,13 +497,14 @@
 </div>
 
 <footer>
-  <span>© 2025 CapitalSignal — Built for the next generation of investors.</span>
-  <span>Currently in beta — live data coming soon.</span>
+  <span>© 2025 CapitalSignal — Built for investors, by investors.</span>
+  <span>Data is simulated for demo purposes.</span>
 </footer>
 
 <script>
 // ── STOCK DATA (demo) ──────────────────────────────────────────
-const API_KEY ="BZFOMSKZCMQSS6UK";
+const API_KEY = 'BZFOMSKZCMQSS6UK';
+
 function formatNum(n){
   if(!n) return 'N/A';
   const num = parseFloat(n);
@@ -513,6 +513,7 @@ function formatNum(n){
   if(num >= 1e6) return '$'+(num/1e6).toFixed(2)+'M';
   return '$'+num.toLocaleString();
 }
+
 const stocks = {
   AAPL: {
     name:"Apple Inc.", sector:"Technology", price:189.42, change:+2.14, changePct:+1.14,
@@ -595,15 +596,12 @@ async function analyzeStock(){
       fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${API_KEY}`),
       fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${sym}&apikey=${API_KEY}`)
     ]);
-
     const quoteData = await quoteRes.json();
     const overviewData = await overviewRes.json();
     const quote = quoteData['Global Quote'];
-
     const livePrice = parseFloat(quote['05. price']);
     const liveChange = parseFloat(quote['09. change']);
     const liveChangePct = parseFloat(quote['10. change percent']);
-
     const staticData = stocks[sym] || generateFallback(sym);
     staticData.price = livePrice;
     staticData.change = liveChange;
@@ -611,7 +609,7 @@ async function analyzeStock(){
     staticData.name = overviewData.Name || staticData.name;
     staticData.sector = overviewData.Sector || staticData.sector;
     staticData.metrics = {
-  "Market Cap": formatNum(overviewData.MarketCapitalization),
+      "Market Cap": formatNum(overviewData.MarketCapitalization),
       "P/E Ratio": overviewData.PERatio ? overviewData.PERatio+'x' : 'N/A',
       "Revenue": formatNum(overviewData.RevenueTTM),
       "EPS": overviewData.EPS ? '$'+overviewData.EPS : 'N/A',
@@ -620,10 +618,8 @@ async function analyzeStock(){
       "52W Low": overviewData['52WeekLow'] ? '$'+overviewData['52WeekLow'] : 'N/A',
       "Volume": quote['06. volume'] ? parseInt(quote['06. volume']).toLocaleString() : 'N/A'
     };
-
     loading.classList.remove('active');
     renderCard(sym, staticData);
-
   } catch(e) {
     const data = stocks[sym] || generateFallback(sym);
     loading.classList.remove('active');
@@ -701,7 +697,7 @@ function renderCard(sym, d){
   document.getElementById('r-ai').textContent = d.ai;
 
   // Sparkline
-drawSparkline(sym, d.change >= 0);
+  drawSparkline(sym, d.change >= 0);
 
   const card = document.getElementById('resultCard');
   card.classList.add('visible');
@@ -718,7 +714,6 @@ async function drawSparkline(sym, isUp){
   const W = canvas.offsetWidth/2, H = 120;
 
   let prices = [];
-
   try {
     const res = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${sym}&outputsize=compact&apikey=${API_KEY}`);
     const data = await res.json();
@@ -726,7 +721,7 @@ async function drawSparkline(sym, isUp){
     const days = Object.keys(series).slice(0, 30).reverse();
     prices = days.map(d => parseFloat(series[d]['4. close']));
   } catch(e) {
-    const p = parseFloat(document.getElementById('r-price').textContent.replace('$',''));
+    let p = 100;
     for(let i=0;i<30;i++){
       p += (Math.random()-0.48)*p*0.015;
       prices.push(p);
@@ -768,3 +763,6 @@ async function drawSparkline(sym, isUp){
   ctx.fillStyle = isUp?'#2F80ED':'#ff4d6a';
   ctx.fill();
 }
+</script>
+</body>
+</html>
