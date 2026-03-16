@@ -592,7 +592,7 @@ async function analyzeStock(){
   loading.classList.add('active');
 
   try {
-    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
+    const res = await fetch(`https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
     const data = await res.json();
     const meta = data.chart.result[0].meta;
     const quotes = data.chart.result[0].indicators.quote[0];
@@ -704,7 +704,7 @@ async function drawSparkline(sym, isUp){
 
   let prices = [];
   try {
-    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
+    const res = await fetch(https://corsproxy.io/?`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
     const data = await res.json();
     const closes = data.chart.result[0].indicators.quote[0].close;
     prices = closes.filter(p => p !== null);
