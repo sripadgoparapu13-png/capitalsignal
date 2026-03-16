@@ -592,34 +592,23 @@ async function analyzeStock(){
   loading.classList.add('active');
 
   try {
-    const [quoteRes, overviewRes] = await Promise.all([
-      fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${sym}&apikey=${API_KEY}`),
-      fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${sym}&apikey=${API_KEY}`)
-    ]);
-    const quoteData = await quoteRes.json();
-    const overviewData = await overviewRes.json();
-    const quote = quoteData['Global Quote'];
-    const livePrice = parseFloat(quote['05. price']);
-    const liveChange = parseFloat(quote['09. change']);
-    const liveChangePct = parseFloat(quote['10. change percent']);
+    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
+    const data = await res.json();
+    const meta = data.chart.result[0].meta;
+    const quotes = data.chart.result[0].indicators.quote[0];
+
+    const livePrice = meta.regularMarketPrice;
+    const prevClose = meta.chartPreviousClose;
+    const liveChange = livePrice - prevClose;
+    const liveChangePct = ((liveChange / prevClose) * 100).toFixed(2);
     const staticData = stocks[sym] || generateFallback(sym);
     staticData.price = livePrice;
-    staticData.change = liveChange;
-    staticData.changePct = liveChangePct;
-    staticData.name = overviewData.Name || staticData.name;
-    staticData.sector = overviewData.Sector || staticData.sector;
-    staticData.metrics = {
-      "Market Cap": formatNum(overviewData.MarketCapitalization),
-      "P/E Ratio": overviewData.PERatio ? overviewData.PERatio+'x' : 'N/A',
-      "Revenue": formatNum(overviewData.RevenueTTM),
-      "EPS": overviewData.EPS ? '$'+overviewData.EPS : 'N/A',
-      "Div Yield": overviewData.DividendYield ? (parseFloat(overviewData.DividendYield)*100).toFixed(2)+'%' : 'N/A',
-      "52W High": overviewData['52WeekHigh'] ? '$'+overviewData['52WeekHigh'] : 'N/A',
-      "52W Low": overviewData['52WeekLow'] ? '$'+overviewData['52WeekLow'] : 'N/A',
-      "Volume": quote['06. volume'] ? parseInt(quote['06. volume']).toLocaleString() : 'N/A'
-    };
+    staticData.change = parseFloat(liveChange.toFixed(2));
+    staticData.changePct = parseFloat(liveChangePct);
+
     loading.classList.remove('active');
     renderCard(sym, staticData);
+
   } catch(e) {
     const data = stocks[sym] || generateFallback(sym);
     loading.classList.remove('active');
@@ -715,11 +704,10 @@ async function drawSparkline(sym, isUp){
 
   let prices = [];
   try {
-    const res = await fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${sym}&outputsize=compact&apikey=${API_KEY}`);
+    const res = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
     const data = await res.json();
-    const series = data['Time Series (Daily)'];
-    const days = Object.keys(series).slice(0, 30).reverse();
-    prices = days.map(d => parseFloat(series[d]['4. close']));
+    const closes = data.chart.result[0].indicators.quote[0].close;
+    prices = closes.filter(p => p !== null);
   } catch(e) {
     let p = 100;
     for(let i=0;i<30;i++){
