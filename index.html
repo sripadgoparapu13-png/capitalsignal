@@ -11,12 +11,12 @@
     --surface: #12121a;
     --surface2: #1a1a26;
     --border: #2a2a3a;
-    --accent: #00e5a0;
-    --accent2: #7b61ff;
+    --accent: #2F80ED;
+    --accent2: #56CCF2;
     --text: #f0f0f5;
     --muted: #6b6b85;
     --red: #ff4d6a;
-    --green: #00e5a0;
+    --green: #2F80ED;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior: smooth; }
@@ -388,9 +388,9 @@
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-tag">AI-Powered Analysis</div>
-  <h1>Invest with<br><span class="accent">clarity.</span><br><span class="dim">Not noise.</span></h1>
-  <p class="hero-sub">Search any stock for instant AI analysis, key metrics, and clear insights — without the Wall Street jargon.</p>
+  <div class="hero-tag">AI-Powered Investing</div>
+  <h1>The signal<br><span class="accent">through.</span><br><span class="dim">the noise.</span></h1>
+  <p class="hero-sub">Cut through the noise. CapitalSignal gives you instant AI-powered analysis on any stock — built for the next generation of investors.</p>
 
   <div class="search-wrap">
     <input class="search-input" id="searchInput" type="text"
@@ -497,13 +497,14 @@
 </div>
 
 <footer>
-  <span>© 2025 CapitalSignal — Built for investors, by investors.</span>
-  <span>Data is simulated for demo purposes.</span>
+  <span>© 2025 CapitalSignal — Built for the next generation of investors.</span>
+  <span>Currently in beta — live data coming soon.</span>
 </footer>
 
 <script>
 // ── STOCK DATA (demo) ──────────────────────────────────────────
-const API_KEY = 'BZFOMSKZCMQSS6UK';
+const PROXY = 'https://corsproxy.io/?';
+const YAHOO = 'https://query1.finance.yahoo.com/v8/finance/chart/';
 
 function formatNum(n){
   if(!n) return 'N/A';
@@ -592,23 +593,23 @@ async function analyzeStock(){
   loading.classList.add('active');
 
   try {
-    const res = await fetch(`https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
+    const url = PROXY + encodeURIComponent(YAHOO + sym + '?interval=1d&range=1mo');
+    const res = await fetch(url);
     const data = await res.json();
     const meta = data.chart.result[0].meta;
-    const quotes = data.chart.result[0].indicators.quote[0];
 
     const livePrice = meta.regularMarketPrice;
     const prevClose = meta.chartPreviousClose;
-    const liveChange = livePrice - prevClose;
-    const liveChangePct = ((liveChange / prevClose) * 100).toFixed(2);
+    const liveChange = parseFloat((livePrice - prevClose).toFixed(2));
+    const liveChangePct = parseFloat(((liveChange / prevClose) * 100).toFixed(2));
+
     const staticData = stocks[sym] || generateFallback(sym);
     staticData.price = livePrice;
-    staticData.change = parseFloat(liveChange.toFixed(2));
-    staticData.changePct = parseFloat(liveChangePct);
+    staticData.change = liveChange;
+    staticData.changePct = liveChangePct;
 
     loading.classList.remove('active');
     renderCard(sym, staticData);
-
   } catch(e) {
     const data = stocks[sym] || generateFallback(sym);
     loading.classList.remove('active');
@@ -704,7 +705,8 @@ async function drawSparkline(sym, isUp){
 
   let prices = [];
   try {
-    const res = await fetch(https://corsproxy.io/?`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1mo`);
+    const url = PROXY + encodeURIComponent(YAHOO + sym + '?interval=1d&range=1mo');
+    const res = await fetch(url);
     const data = await res.json();
     const closes = data.chart.result[0].indicators.quote[0].close;
     prices = closes.filter(p => p !== null);
