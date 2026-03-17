@@ -242,7 +242,18 @@
     border-color:var(--accent); color:var(--accent);
     background:rgba(47,128,237,0.08);
   }
+  .chart-loading {
+    display:none; align-items:center; justify-content:center;
+    height:120px; gap:10px; color:var(--muted); font-size:12px;
+  }
+  .chart-loading.active { display:flex; }
+  .chart-spinner {
+    width:16px; height:16px;
+    border:2px solid var(--border); border-top-color:var(--accent);
+    border-radius:50%; animation: spin 0.7s linear infinite;
+  }
   canvas#sparkline { width:100%; height:120px; }
+
   .score-section {
     padding:24px 28px;
     border-top:1px solid var(--border);
@@ -397,6 +408,10 @@
             <button class="range-btn" onclick="setRange('5y', this)">5Y</button>
           </div>
         </div>
+        <div class="chart-loading" id="chartLoading">
+          <div class="chart-spinner"></div>
+          <span>Loading chart...</span>
+        </div>
         <canvas id="sparkline"></canvas>
       </div>
 
@@ -548,11 +563,16 @@ async function analyzeStock(){
   loading.classList.add('active');
 
   try {
-    const url = PROXY + encodeURIComponent(YAHOO + sym + '?interval=1d&range=1mo');
-    const res = await fetch(url);
-    const data = await res.json();
-    const meta = data.chart.result[0].meta;
+    // Fetch both chart data and quote summary in parallel
+    const [chartRes, summaryRes] = await Promise.all([
+      fetch(PROXY + encodeURIComponent(YAHOO + sym + '?interval=1d&range=1mo')),
+      fetch(PROXY + encodeURIComponent('https://query1.finance.yahoo.com/v10/finance/quoteSummary/' + sym + '?modules=summaryDetail,defaultKeyStatistics,financialData,assetProfile'))
+    ]);
 
+    const chartData = await chartRes.json();
+    const summaryData = await summaryRes.json();
+
+    const meta = chartData.chart.result[0].meta;
     const livePrice = meta.regularMarketPrice;
     const prevClose = meta.chartPreviousClose;
     const liveChange = parseFloat((livePrice - prevClose).toFixed(2));
@@ -562,6 +582,38 @@ async function analyzeStock(){
     staticData.price = livePrice;
     staticData.change = liveChange;
     staticData.changePct = liveChangePct;
+
+    // Extract real metrics from Yahoo Finance
+    try {
+      const sd = summaryData.quoteSummary.result[0].summaryDetail;
+      const ks = summaryData.quoteSummary.result[0].defaultKeyStatistics;
+      const fd = summaryData.quoteSummary.result[0].financialData;
+      const ap = summaryData.quoteSummary.result[0].assetProfile;
+
+      const mktCap = sd.marketCap?.raw;
+      const peRatio = sd.trailingPE?.raw || sd.forwardPE?.raw;
+      const revenue = fd.totalRevenue?.raw;
+      const eps = ks.trailingEps?.raw;
+      const divYield = sd.dividendYield?.raw;
+      const high52 = sd.fiftyTwoWeekHigh?.raw;
+      const low52 = sd.fiftyTwoWeekLow?.raw;
+      const volume = sd.volume?.raw || sd.averageVolume?.raw;
+
+      staticData.name = meta.longName || meta.shortName || staticData.name;
+      staticData.sector = ap?.sector || staticData.sector;
+      staticData.metrics = {
+        "Market Cap": mktCap ? formatNum(mktCap) : 'N/A',
+        "P/E Ratio": peRatio ? peRatio.toFixed(1)+'x' : 'N/A',
+        "Revenue": revenue ? formatNum(revenue) : 'N/A',
+        "EPS": eps ? '$'+eps.toFixed(2) : 'N/A',
+        "Div Yield": divYield ? (divYield*100).toFixed(2)+'%' : '—',
+        "52W High": high52 ? '$'+high52.toFixed(2) : 'N/A',
+        "52W Low": low52 ? '$'+low52.toFixed(2) : 'N/A',
+        "Volume": volume ? parseInt(volume).toLocaleString() : 'N/A'
+      };
+    } catch(metricErr) {
+      // Keep static metrics if summary fails
+    }
 
     loading.classList.remove('active');
     currentSym = sym;
@@ -666,7 +718,13 @@ function setRange(range, btn){
 async function drawSparkline(sym, isUp, range){
   if(!range) range = '1mo';
   const canvas = document.getElementById('sparkline');
+  const chartLoading = document.getElementById('chartLoading');
   const ctx = canvas.getContext('2d');
+
+  // Show loading, hide canvas
+  canvas.style.display = 'none';
+  chartLoading.classList.add('active');
+
   canvas.width = canvas.offsetWidth * 2;
   canvas.height = 240;
   ctx.scale(2,2);
@@ -686,6 +744,10 @@ async function drawSparkline(sym, isUp, range){
       prices.push(p);
     }
   }
+
+  // Hide loading, show canvas
+  chartLoading.classList.remove('active');
+  canvas.style.display = 'block';
 
   if(prices.length < 2) return;
 
