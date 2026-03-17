@@ -310,10 +310,40 @@
     font-family:'Syne',sans-serif;
     font-size:18px; font-weight:700;
   }
-  .ai-section {
+  .news-section {
     padding:24px 28px;
     border-top:1px solid var(--border);
   }
+  .news-label {
+    display:flex; align-items:center; gap:8px;
+    font-size:11px; text-transform:uppercase; letter-spacing:2px;
+    color:var(--accent); margin-bottom:16px;
+  }
+  .news-label::before { content:'📰'; font-size:14px; }
+  .news-list { display:flex; flex-direction:column; gap:12px; }
+  .news-item {
+    display:flex; flex-direction:column; gap:6px;
+    padding:16px; border-radius:10px;
+    background:var(--surface2); border:1px solid var(--border);
+    text-decoration:none; transition: all 0.2s;
+  }
+  .news-item:hover {
+    border-color:rgba(47,128,237,0.3);
+    background:rgba(47,128,237,0.05);
+    transform:translateY(-1px);
+  }
+  .news-item-title {
+    color:var(--text); font-size:14px; line-height:1.5; font-weight:500;
+  }
+  .news-item-meta {
+    display:flex; gap:12px; align-items:center;
+  }
+  .news-source {
+    color:var(--accent); font-size:11px; text-transform:uppercase; letter-spacing:1px;
+  }
+  .news-date { color:var(--muted); font-size:11px; }
+  .news-loading { color:var(--muted); font-size:13px; padding:8px 0; }
+  .news-error { color:var(--muted); font-size:13px; padding:8px 0; }
   .ai-label {
     display:flex; align-items:center; gap:8px;
     font-size:11px; text-transform:uppercase; letter-spacing:2px;
@@ -489,6 +519,13 @@
         <div class="ai-text" id="r-ai">—</div>
       </div>
 
+      <div class="news-section" id="newsSection">
+        <div class="news-label">Latest News</div>
+        <div class="news-list" id="newsList">
+          <div class="news-loading">Loading news...</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -516,7 +553,7 @@
       <span class="feat-icon">📰</span>
       <div class="feat-title">News Aggregator</div>
       <div class="feat-desc">Curated news from top financial sources, filtered by stock so you never miss a catalyst.</div>
-      <span class="feat-tag soon">Coming Soon</span>
+      <span class="feat-tag">Live</span>
     </div>
     <div class="feat-card">
       <span class="feat-icon">🔎</span>
@@ -541,11 +578,37 @@
 
 <script>
 const YAHOO = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+const NEWS_KEY = '3ef3782fa0764360be0f0021a1076d40';
 
 async function fetchWithProxy(url){
   const res = await fetch('/api/yahoo?url=' + encodeURIComponent(url));
   if(!res.ok) throw new Error('Fetch failed');
   return res;
+}
+
+async function fetchNews(sym){
+  const newsList = document.getElementById('newsList');
+  newsList.innerHTML = '<div class="news-loading">Loading news...</div>';
+  try {
+    const url = `https://newsapi.org/v2/everything?q=${sym}+stock&sortBy=publishedAt&pageSize=5&language=en&apiKey=${NEWS_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if(data.articles && data.articles.length > 0){
+      newsList.innerHTML = data.articles.map(a => `
+        <a class="news-item" href="${a.url}" target="_blank" rel="noopener">
+          <div class="news-item-title">${a.title}</div>
+          <div class="news-item-meta">
+            <span class="news-source">${a.source.name}</span>
+            <span class="news-date">${new Date(a.publishedAt).toLocaleDateString()}</span>
+          </div>
+        </a>
+      `).join('');
+    } else {
+      newsList.innerHTML = '<div class="news-error">No recent news found for this stock.</div>';
+    }
+  } catch(e) {
+    newsList.innerHTML = '<div class="news-error">Unable to load news right now.</div>';
+  }
 }
 
 function formatNum(n){
@@ -812,6 +875,9 @@ function renderCard(sym, d){
   const card = document.getElementById('resultCard');
   card.classList.add('visible');
   card.scrollIntoView({behavior:'smooth', block:'nearest'});
+
+  // Fetch news
+  fetchNews(sym);
 }
 
 // CHART RANGE
