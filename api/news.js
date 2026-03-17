@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `https://newsapi.org/v2/everything?q=${q}+stock&sortBy=publishedAt&pageSize=5&language=en&apiKey=PASTE_YOUR_NEWS_KEY_HERE`,
+      `https://newsapi.org/v2/everything?q=${q}+stock&sortBy=publishedAt&pageSize=5&language=en&apiKey=3ef3782fa0764360be0f0021a1076d40`,
       { headers: { 'User-Agent': 'CapitalSignal/1.0' } }
     );
     const data = await response.json();
