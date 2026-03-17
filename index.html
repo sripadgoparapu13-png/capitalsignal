@@ -473,8 +473,22 @@
 </footer>
 
 <script>
-const PROXY = 'https://api.allorigins.win/raw?url=';
 const YAHOO = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+const PROXIES = [
+  'https://corsproxy.io/?url=',
+  'https://api.allorigins.win/raw?url=',
+  'https://proxy.cors.sh/',
+];
+
+async function fetchWithProxy(url){
+  for(const proxy of PROXIES){
+    try {
+      const res = await fetch(proxy + encodeURIComponent(url));
+      if(res.ok) return res;
+    } catch(e){ continue; }
+  }
+  throw new Error('All proxies failed');
+}
 
 function formatNum(n){
   if(!n) return 'N/A';
@@ -565,8 +579,8 @@ async function analyzeStock(){
   try {
     // Fetch both chart data and quote summary in parallel
     const [chartRes, summaryRes] = await Promise.all([
-      fetch(PROXY + encodeURIComponent(YAHOO + sym + '?interval=1d&range=1mo')),
-      fetch(PROXY + encodeURIComponent('https://query1.finance.yahoo.com/v10/finance/quoteSummary/' + sym + '?modules=summaryDetail,defaultKeyStatistics,financialData,assetProfile'))
+      fetchWithProxy(YAHOO + sym + '?interval=1d&range=1mo'),
+      fetchWithProxy('https://query1.finance.yahoo.com/v10/finance/quoteSummary/' + sym + '?modules=summaryDetail,defaultKeyStatistics,financialData,assetProfile')
     ]);
 
     const chartData = await chartRes.json();
@@ -732,8 +746,7 @@ async function drawSparkline(sym, isUp, range){
 
   let prices = [];
   try {
-    const url = PROXY + encodeURIComponent(YAHOO + sym + '?interval=1d&range=' + range);
-    const res = await fetch(url);
+    const res = await fetchWithProxy(YAHOO + sym + '?interval=1d&range=' + range);
     const data = await res.json();
     const closes = data.chart.result[0].indicators.quote[0].close;
     prices = closes.filter(p => p !== null);
