@@ -367,6 +367,12 @@
     <span class="quick-pick" onclick="quickSearch('MSFT')">MSFT</span>
     <span class="quick-pick" onclick="quickSearch('AMZN')">AMZN</span>
     <span class="quick-pick" onclick="quickSearch('GOOGL')">GOOGL</span>
+    <span class="quick-pick" onclick="quickSearch('META')">META</span>
+    <span class="quick-pick" onclick="quickSearch('NFLX')">NFLX</span>
+    <span class="quick-pick" onclick="quickSearch('AMD')">AMD</span>
+    <span class="quick-pick" onclick="quickSearch('UBER')">UBER</span>
+    <span class="quick-pick" onclick="quickSearch('JPM')">JPM</span>
+    <span class="quick-pick" onclick="quickSearch('SPY')">SPY</span>
   </div>
 </div>
 
@@ -526,6 +532,42 @@ const stocks = {
     metrics:{ "Market Cap":"$1.94T","P/E Ratio":"24.1x","Revenue":"$307B","EPS":"$6.47","Div Yield":"0.47%","52W High":"$193","52W Low":"$120","Volume":"25M" },
     scores:{ value:74, growth:72, momentum:66 },
     ai:`Alphabet trades at the cheapest multiple among mega-cap tech at ~24x earnings. Search advertising remains remarkably resilient despite AI threats, and YouTube continues to take share from linear TV. Google Cloud at $33B run rate is approaching profitability. One of the better risk-adjusted large-cap tech plays available today.`
+  },
+  META: {
+    name:"Meta Platforms, Inc.", sector:"Technology / Social",
+    metrics:{ "Market Cap":"$1.45T","P/E Ratio":"28.2x","Revenue":"$134B","EPS":"$19.24","Div Yield":"0.32%","52W High":"$638","52W Low":"$414","Volume":"14M" },
+    scores:{ value:68, growth:82, momentum:77 },
+    ai:`Meta's ad business has demonstrated remarkable resilience, with revenue growing 25%+ YoY after a brutal 2022. The Reality Labs losses (~$16B/year) remain a drag but Zuckerberg's AI-first pivot is showing results — Llama models and AI features across Facebook, Instagram and WhatsApp are driving engagement. At 28x earnings for a business growing 20%+ with massive buybacks, Meta offers compelling value among mega-cap tech.`
+  },
+  NFLX: {
+    name:"Netflix, Inc.", sector:"Streaming / Entertainment",
+    metrics:{ "Market Cap":"$278B","P/E Ratio":"42.5x","Revenue":"$36B","EPS":"$19.29","Div Yield":"—","52W High":"$1,064","52W Low":"$542","Volume":"3M" },
+    scores:{ value:48, growth:74, momentum:71 },
+    ai:`Netflix has successfully navigated the password sharing crackdown, adding tens of millions of subscribers. The ad-supported tier is scaling well and represents a new high-margin revenue stream. Content spending remains elevated but manageable. At 42x earnings, the stock prices in continued strong execution — any miss on subscriber growth or margins could compress multiples sharply. Long-term, Netflix's global content moat is hard to replicate.`
+  },
+  AMD: {
+    name:"Advanced Micro Devices", sector:"Semiconductors",
+    metrics:{ "Market Cap":"$213B","P/E Ratio":"104x","Revenue":"$25B","EPS":"$1.29","Div Yield":"—","52W High":"$227","52W Low":"$117","Volume":"42M" },
+    scores:{ value:35, growth:85, momentum:62 },
+    ai:`AMD is the only credible competitor to NVIDIA in AI accelerators with its MI300X GPU series. Data center revenue is growing rapidly from a small base. However, the valuation at 104x earnings prices in near-perfect execution. Intel's struggles have helped AMD gain server CPU market share — a highly profitable business. The key question is whether AMD can close the software gap with NVIDIA's CUDA ecosystem. High risk, high reward.`
+  },
+  UBER: {
+    name:"Uber Technologies, Inc.", sector:"Technology / Mobility",
+    metrics:{ "Market Cap":"$148B","P/E Ratio":"22.8x","Revenue":"$37B","EPS":"$2.83","Div Yield":"—","52W High":"$87","52W Low":"$56","Volume":"18M" },
+    scores:{ value:61, growth:76, momentum:69 },
+    ai:`Uber has finally achieved consistent profitability after years of losses — a major milestone. The core rides business is generating strong free cash flow, and Uber Eats is approaching profitability. The autonomous vehicle threat is real but likely a 5-10 year disruption timeline. At 22x earnings for a business growing 15-20% annually with improving margins, Uber looks attractively valued relative to growth. The network effect in both rides and delivery is a durable competitive advantage.`
+  },
+  JPM: {
+    name:"JPMorgan Chase & Co.", sector:"Financial Services",
+    metrics:{ "Market Cap":"$675B","P/E Ratio":"12.8x","Revenue":"$162B","EPS":"$18.22","Div Yield":"2.20%","52W High":"$280","52W Low":"$185","Volume":"11M" },
+    scores:{ value:76, growth:58, momentum:64 },
+    ai:`JPMorgan is the gold standard in global banking — fortress balance sheet, best-in-class management under Jamie Dimon, and dominant positions in investment banking, retail banking, and asset management. At 12x earnings with a 2.2% dividend, it trades at a significant discount to the S&P 500. Rising rates have boosted net interest income. Key risks: credit cycle deterioration and regulatory headwinds. A core holding for value-oriented investors seeking financial sector exposure.`
+  },
+  SPY: {
+    name:"SPDR S&P 500 ETF Trust", sector:"ETF / Index Fund",
+    metrics:{ "Market Cap":"$575B","P/E Ratio":"22.4x","Revenue":"—","EPS":"—","Div Yield":"1.21%","52W High":"$613","52W Low":"$491","Volume":"82M" },
+    scores:{ value:55, growth:65, momentum:70 },
+    ai:`SPY is the world's largest and most liquid ETF, tracking the S&P 500 index. It provides instant diversification across 500 of the largest US companies. At ~22x earnings, the index trades near historical average valuations. SPY is the benchmark that most active fund managers fail to beat over 10+ year periods. For most investors — especially beginners — a regular investment in SPY is one of the most proven wealth-building strategies available. Low cost, highly liquid, and battle-tested.`
   }
 };
 
