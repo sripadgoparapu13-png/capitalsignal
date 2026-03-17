@@ -474,19 +474,11 @@
 
 <script>
 const YAHOO = 'https://query1.finance.yahoo.com/v8/finance/chart/';
-const PROXIES = [
-  'https://corsproxy.io/?url=',
-  'https://api.allorigins.win/raw?url=',
-];
 
 async function fetchWithProxy(url){
-  for(const proxy of PROXIES){
-    try {
-      const res = await fetch(proxy + encodeURIComponent(url));
-      if(res.ok) return res;
-    } catch(e){ continue; }
-  }
-  return null;
+  const res = await fetch('/api/yahoo?url=' + encodeURIComponent(url));
+  if(!res.ok) throw new Error('Fetch failed');
+  return res;
 }
 
 function formatNum(n){
