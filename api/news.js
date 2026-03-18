@@ -6,10 +6,18 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-    `https://newsapi.org/v2/everything?q=${q}&domains=reuters.com,bloomberg.com,wsj.com,cnbc.com,marketwatch.com&sortBy=publishedAt&pageSize=5&language=en&apiKey=3ef3782fa0764360be0f0021a1076d40`
+      `https://gnews.io/api/v4/search?q=${q}&lang=en&country=us&max=5&apikey=71057807853be8d8682aea119d767215`,
+      { headers: { 'User-Agent': 'CapitalSignal/1.0' } }
     );
     const data = await response.json();
-    res.status(200).json(data);
+    // Convert GNews format to match our existing code
+    const articles = (data.articles || []).map(a => ({
+      title: a.title,
+      url: a.url,
+      source: { name: a.source.name },
+      publishedAt: a.publishedAt
+    }));
+    res.status(200).json({ articles });
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch news' });
   }
