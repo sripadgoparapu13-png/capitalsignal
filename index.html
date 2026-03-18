@@ -566,10 +566,10 @@
 <nav>
   <div class="logo">Capital<span>Signal</span></div>
   <div class="nav-links">
-    <a href="#">Screener</a>
-    <a href="#">Markets</a>
-    <a href="#">News</a>
-    <a href="#">Portfolio</a>
+    <a href="#screenerSection">Screener</a>
+    <a href="#marketsSection">Markets</a>
+    <a href="#watchlistSection">Watchlist</a>
+    <a href="#portfolioSection">Portfolio</a>
   </div>
   <div class="nav-badge">Beta</div>
 </nav>
@@ -675,6 +675,7 @@
   </div>
 
   <!-- PORTFOLIO TRACKER -->
+  <div id="portfolioSection" style="margin-bottom:48px;">
   <div class="section-label">Portfolio Tracker</div>
   <div class="portfolio-card">
     <div class="portfolio-summary" id="portfolioSummary" style="display:none;">
@@ -694,9 +695,9 @@
 
     <div class="portfolio-add">
       <input class="portfolio-input" id="portfolioTicker" placeholder="Ticker (e.g. AAPL)" />
-      <input class="portfolio-input" id="portfolioShares" placeholder="Shares" type="number" min="0" />
-      <input class="portfolio-input" id="portfolioCost" placeholder="Avg cost per share" type="number" min="0" />
-      <button class="portfolio-btn" onclick="addHolding()">Add Holding</button>
+      <input class="portfolio-input" id="portfolioShares" placeholder="Shares" type="number" min="0" step="any" />
+      <input class="portfolio-input" id="portfolioCost" placeholder="Avg cost per share ($)" type="number" min="0" step="any" />
+      <button class="portfolio-btn" onclick="addHolding()">+ Add Holding</button>
     </div>
 
     <div class="portfolio-holdings" id="portfolioHoldings">
@@ -705,6 +706,7 @@
   </div>
 
   <!-- STOCK SCREENER -->
+  <div id="screenerSection" style="margin-bottom:0;">
   <div class="section-label">Stock Screener</div>
   <div class="screener-card">
     <div class="screener-filters">
