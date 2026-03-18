@@ -359,6 +359,65 @@
     border-radius:50%; animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform:rotate(360deg); } }
+  .portfolio-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:48px;
+  }
+  .portfolio-summary {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:1px; background:var(--border);
+    border-radius:10px; overflow:hidden; margin-bottom:24px;
+  }
+  .portfolio-stat {
+    background:var(--surface2); padding:16px 20px;
+  }
+  .portfolio-stat-label {
+    font-size:10px; text-transform:uppercase;
+    letter-spacing:1.5px; color:var(--muted); margin-bottom:8px;
+  }
+  .portfolio-stat-value {
+    font-family:'Syne',sans-serif; font-size:22px; font-weight:700;
+  }
+  .portfolio-add {
+    display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px;
+  }
+  .portfolio-input {
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--text); font-family:'DM Mono',monospace;
+    font-size:13px; padding:10px 14px; border-radius:8px;
+    outline:none; flex:1; min-width:120px;
+    transition: border-color 0.2s;
+  }
+  .portfolio-input:focus { border-color:var(--accent); }
+  .portfolio-input::placeholder { color:var(--muted); }
+  .portfolio-btn {
+    background:var(--accent); color:#fff;
+    border:none; padding:10px 20px; border-radius:8px;
+    font-family:'Syne',sans-serif; font-size:13px; font-weight:700;
+    cursor:pointer; transition: opacity 0.2s;
+    white-space:nowrap;
+  }
+  .portfolio-btn:hover { opacity:0.88; }
+  .portfolio-holdings { display:flex; flex-direction:column; gap:10px; }
+  .portfolio-empty { color:var(--muted); font-size:13px; padding:8px 0; }
+  .holding-row {
+    display:grid; grid-template-columns:80px 1fr 1fr 1fr 1fr 40px;
+    gap:12px; align-items:center;
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:14px 16px;
+  }
+  .holding-sym {
+    font-family:'Syne',sans-serif; font-size:16px; font-weight:700;
+    cursor:pointer; color:var(--accent);
+  }
+  .holding-sym:hover { text-decoration:underline; }
+  .holding-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
+  .holding-value { font-size:14px; font-weight:500; }
+  .holding-remove {
+    background:transparent; border:none; color:var(--muted);
+    cursor:pointer; font-size:18px; transition: color 0.2s;
+  }
+  .holding-remove:hover { color:var(--red); }
   .watchlist-btn {
     margin-top:10px;
     background:transparent; border:1px solid var(--accent);
@@ -613,6 +672,36 @@
   <div id="watchlistSection" style="display:none; margin-bottom:48px;">
     <div class="section-label">My Watchlist</div>
     <div class="watchlist-grid" id="watchlistGrid"></div>
+  </div>
+
+  <!-- PORTFOLIO TRACKER -->
+  <div class="section-label">Portfolio Tracker</div>
+  <div class="portfolio-card">
+    <div class="portfolio-summary" id="portfolioSummary" style="display:none;">
+      <div class="portfolio-stat">
+        <div class="portfolio-stat-label">Total Value</div>
+        <div class="portfolio-stat-value" id="portfolioTotal">$0.00</div>
+      </div>
+      <div class="portfolio-stat">
+        <div class="portfolio-stat-label">Total Gain/Loss</div>
+        <div class="portfolio-stat-value" id="portfolioGain">$0.00</div>
+      </div>
+      <div class="portfolio-stat">
+        <div class="portfolio-stat-label">Return</div>
+        <div class="portfolio-stat-value" id="portfolioReturn">0.00%</div>
+      </div>
+    </div>
+
+    <div class="portfolio-add">
+      <input class="portfolio-input" id="portfolioTicker" placeholder="Ticker (e.g. AAPL)" />
+      <input class="portfolio-input" id="portfolioShares" placeholder="Shares" type="number" min="0" />
+      <input class="portfolio-input" id="portfolioCost" placeholder="Avg cost per share" type="number" min="0" />
+      <button class="portfolio-btn" onclick="addHolding()">Add Holding</button>
+    </div>
+
+    <div class="portfolio-holdings" id="portfolioHoldings">
+      <div class="portfolio-empty">No holdings yet. Add your first stock above!</div>
+    </div>
   </div>
 
   <!-- STOCK SCREENER -->
@@ -1170,6 +1259,112 @@ async function drawSparkline(sym, isUp, range){
   ctx.fill();
 }
 
+// PORTFOLIO TRACKER
+let portfolio = JSON.parse(localStorage.getItem('cs_portfolio') || '[]');
+
+function savePortfolio(){
+  localStorage.setItem('cs_portfolio', JSON.stringify(portfolio));
+}
+
+async function addHolding(){
+  const ticker = document.getElementById('portfolioTicker').value.trim().toUpperCase();
+  const shares = parseFloat(document.getElementById('portfolioShares').value);
+  const cost = parseFloat(document.getElementById('portfolioCost').value);
+
+  if(!ticker || !shares || !cost){
+    alert('Please fill in all fields!');
+    return;
+  }
+
+  portfolio.push({ sym: ticker, shares, cost });
+  savePortfolio();
+
+  document.getElementById('portfolioTicker').value = '';
+  document.getElementById('portfolioShares').value = '';
+  document.getElementById('portfolioCost').value = '';
+
+  await renderPortfolio();
+}
+
+function removeHolding(index){
+  portfolio.splice(index, 1);
+  savePortfolio();
+  renderPortfolio();
+}
+
+async function renderPortfolio(){
+  const holdingsEl = document.getElementById('portfolioHoldings');
+  const summaryEl = document.getElementById('portfolioSummary');
+
+  if(portfolio.length === 0){
+    holdingsEl.innerHTML = '<div class="portfolio-empty">No holdings yet. Add your first stock above!</div>';
+    summaryEl.style.display = 'none';
+    return;
+  }
+
+  holdingsEl.innerHTML = '<div class="portfolio-empty">Loading prices...</div>';
+  summaryEl.style.display = 'grid';
+
+  let totalValue = 0;
+  let totalCost = 0;
+  const rows = [];
+
+  for(const holding of portfolio){
+    let currentPrice = 0;
+    try {
+      const res = await fetchWithProxy(YAHOO + holding.sym + '?interval=1d&range=1d');
+      const data = await res.json();
+      currentPrice = data.chart.result[0].meta.regularMarketPrice;
+    } catch(e){ currentPrice = holding.cost; }
+
+    const value = currentPrice * holding.shares;
+    const costBasis = holding.cost * holding.shares;
+    const gain = value - costBasis;
+    const gainPct = ((gain / costBasis) * 100).toFixed(2);
+    const gainColor = gain >= 0 ? 'var(--green)' : 'var(--red)';
+    const gainSign = gain >= 0 ? '+' : '';
+
+    totalValue += value;
+    totalCost += costBasis;
+
+    rows.push(`
+      <div class="holding-row">
+        <div class="holding-sym" onclick="quickSearch('${holding.sym}')">${holding.sym}</div>
+        <div>
+          <div class="holding-label">Shares</div>
+          <div class="holding-value">${holding.shares}</div>
+        </div>
+        <div>
+          <div class="holding-label">Avg Cost</div>
+          <div class="holding-value">$${holding.cost.toFixed(2)}</div>
+        </div>
+        <div>
+          <div class="holding-label">Current</div>
+          <div class="holding-value">$${currentPrice.toFixed(2)}</div>
+        </div>
+        <div>
+          <div class="holding-label">Gain/Loss</div>
+          <div class="holding-value" style="color:${gainColor}">${gainSign}$${gain.toFixed(2)} (${gainSign}${gainPct}%)</div>
+        </div>
+        <button class="holding-remove" onclick="removeHolding(${portfolio.indexOf(holding)})">×</button>
+      </div>
+    `);
+  }
+
+  holdingsEl.innerHTML = rows.join('');
+
+  const totalGain = totalValue - totalCost;
+  const totalReturn = ((totalGain / totalCost) * 100).toFixed(2);
+  const gainColor = totalGain >= 0 ? 'var(--green)' : 'var(--red)';
+  const gainSign = totalGain >= 0 ? '+' : '';
+
+  document.getElementById('portfolioTotal').textContent = '$' + totalValue.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('portfolioGain').textContent = gainSign + '$' + Math.abs(totalGain).toFixed(2);
+  document.getElementById('portfolioGain').style.color = gainColor;
+  document.getElementById('portfolioReturn').textContent = gainSign + totalReturn + '%';
+  document.getElementById('portfolioReturn').style.color = gainColor;
+}
+
 // WATCHLIST
 let watchlist = JSON.parse(localStorage.getItem('cs_watchlist') || '[]');
 
@@ -1254,6 +1449,7 @@ async function fetchWatchlistPrice(sym){
 // Initialize watchlist on load
 document.addEventListener('DOMContentLoaded', () => {
   renderWatchlist();
+  renderPortfolio();
   renderScreener();
 });
 
