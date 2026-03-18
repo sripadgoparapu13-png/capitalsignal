@@ -578,7 +578,7 @@
 
 <script>
 const YAHOO = 'https://query1.finance.yahoo.com/v8/finance/chart/';
-const NEWS_KEY = '3ef3782fa0764360be0f0021a1076d40';
+const NEWS_KEY = 'PASTE_YOUR_NEWS_KEY_HERE';
 
 async function fetchWithProxy(url){
   const res = await fetch('/api/yahoo?url=' + encodeURIComponent(url));
@@ -590,7 +590,8 @@ async function fetchNews(sym){
   const newsList = document.getElementById('newsList');
   newsList.innerHTML = '<div class="news-loading">Loading news...</div>';
   try {
-    const res = await fetch('/api/news?q=' + encodeURIComponent(sym));
+    const url = `https://newsapi.org/v2/everything?q=${sym}+stock&sortBy=publishedAt&pageSize=5&language=en&apiKey=${NEWS_KEY}`;
+    const res = await fetch(url);
     const data = await res.json();
     if(data.articles && data.articles.length > 0){
       newsList.innerHTML = data.articles.map(a => `
@@ -603,7 +604,7 @@ async function fetchNews(sym){
         </a>
       `).join('');
     } else {
-      newsList.innerHTML = '<div class="news-error">No recent news found.</div>';
+      newsList.innerHTML = '<div class="news-error">No recent news found for this stock.</div>';
     }
   } catch(e) {
     newsList.innerHTML = '<div class="news-error">Unable to load news right now.</div>';
@@ -691,6 +692,90 @@ const stocks = {
     metrics:{ "Market Cap":"$575B","P/E Ratio":"22.4x","Revenue":"—","EPS":"—","Div Yield":"1.21%","52W High":"$613","52W Low":"$491","Volume":"82M" },
     scores:{ value:55, growth:65, momentum:70 },
     ai:`SPY is the world's largest and most liquid ETF, tracking the S&P 500 index. It provides instant diversification across 500 of the largest US companies. At ~22x earnings, the index trades near historical average valuations. SPY is the benchmark that most active fund managers fail to beat over 10+ year periods. For most investors — especially beginners — a regular investment in SPY is one of the most proven wealth-building strategies available. Low cost, highly liquid, and battle-tested.`
+  },
+  ORCL: {
+    name:"Oracle Corporation", sector:"Enterprise Software",
+    metrics:{ "Market Cap":"$432B","P/E Ratio":"38.2x","Revenue":"$53B","EPS":"$4.14","Div Yield":"1.12%","52W High":"$198","52W Low":"$102","Volume":"8M" },
+    scores:{ value:52, growth:74, momentum:72 },
+    ai:`Oracle has successfully transformed itself into a cloud powerhouse, with OCI (Oracle Cloud Infrastructure) growing 50%+ YoY. The Cerner acquisition adds a massive healthcare data opportunity. Database dominance in enterprises provides sticky recurring revenue. At 38x earnings, the valuation reflects the cloud transition premium. The AI infrastructure buildout is a significant tailwind — Oracle has signed massive GPU cluster deals with hyperscalers. A compelling cloud turnaround story.`
+  },
+  CRM: {
+    name:"Salesforce, Inc.", sector:"Enterprise Software / CRM",
+    metrics:{ "Market Cap":"$298B","P/E Ratio":"44.1x","Revenue":"$34B","EPS":"$6.93","Div Yield":"0.54%","52W High":"$369","52W Low":"$212","Volume":"5M" },
+    scores:{ value:49, growth:70, momentum:65 },
+    ai:`Salesforce dominates enterprise CRM with a 20%+ market share and deep customer relationships. The company has pivoted to profitability under activist investor pressure — operating margins have expanded dramatically. Agentforce, their AI agent platform, represents the next major growth driver. At 44x earnings, execution on AI monetization is critical. The data cloud and platform ecosystem create strong switching costs. A high quality compounder with improving capital allocation.`
+  },
+  ADBE: {
+    name:"Adobe Inc.", sector:"Software / Creative",
+    metrics:{ "Market Cap":"$188B","P/E Ratio":"28.4x","Revenue":"$21B","EPS":"$17.35","Div Yield":"—","52W High":"$638","52W Low":"$415","Volume":"3M" },
+    scores:{ value:56, growth:68, momentum:60 },
+    ai:`Adobe's creative software monopoly — Photoshop, Premiere, Illustrator — creates extraordinary pricing power and recurring revenue. The failed Figma acquisition removed an overhang. Firefly AI is being integrated across the Creative Cloud suite, potentially driving an upgrade cycle. At 28x earnings, Adobe looks relatively attractive compared to software peers. The risk is AI-native competitors disrupting creative workflows. Long-term, Adobe's brand and distribution moat are formidable.`
+  },
+  BAC: {
+    name:"Bank of America Corp", sector:"Financial Services",
+    metrics:{ "Market Cap":"$352B","P/E Ratio":"14.2x","Revenue":"$98B","EPS":"$3.21","Div Yield":"2.30%","52W High":"$48","52W Low":"$32","Volume":"38M" },
+    scores:{ value:72, growth:54, momentum:61 },
+    ai:`Bank of America is the second largest US bank with massive scale advantages in retail banking, wealth management, and investment banking. The interest rate sensitivity has been a headwind — BofA holds significant unrealized bond losses. However, as rates normalize, this overhang should diminish. Moynihan's focus on organic growth and cost discipline has improved profitability. At 14x earnings with a 2.3% dividend, BAC offers value for investors comfortable with financial sector cyclicality.`
+  },
+  GS: {
+    name:"Goldman Sachs Group", sector:"Investment Banking",
+    metrics:{ "Market Cap":"$178B","P/E Ratio":"15.8x","Revenue":"$46B","EPS":"$30.06","Div Yield":"2.10%","52W High":"$648","52W Low":"$415","Volume":"2M" },
+    scores:{ value:68, growth:62, momentum:67 },
+    ai:`Goldman Sachs is the premier investment bank globally, dominating M&A advisory and equity underwriting. The retreat from consumer banking (Marcus) removes a major distraction and cost center. Trading revenues have been robust given market volatility. Asset and wealth management is becoming a larger, more stable earnings contributor. At ~16x earnings, Goldman trades at a discount to its historical premium. A strong cycle play when deal activity and capital markets recover.`
+  },
+  V: {
+    name:"Visa Inc.", sector:"Financial Technology",
+    metrics:{ "Market Cap":"$612B","P/E Ratio":"31.4x","Revenue":"$35B","EPS":"$9.92","Div Yield":"0.74%","52W High":"$354","52W Low":"$261","Volume":"6M" },
+    scores:{ value:63, growth:72, momentum:74 },
+    ai:`Visa operates one of the most powerful business models ever created — a toll booth on global commerce. With 80%+ operating margins and network effects across 4+ billion cards, the moat is virtually unassailable. Cross-border volume recovery post-COVID has been a strong tailwind. The shift from cash to digital payments is a decade-long secular growth driver. At 31x earnings, Visa commands a premium that is well-justified by its return on equity and earnings consistency.`
+  },
+  MA: {
+    name:"Mastercard Incorporated", sector:"Financial Technology",
+    metrics:{ "Market Cap":"$470B","P/E Ratio":"37.2x","Revenue":"$27B","EPS":"$13.89","Div Yield":"0.56%","52W High":"$570","52W Low":"$415","Volume":"3M" },
+    scores:{ value:58, growth:74, momentum:73 },
+    ai:`Mastercard mirrors Visa's exceptional business model with similarly high margins and network effects. Mastercard has historically grown slightly faster than Visa due to greater international exposure and value-added services. The cybersecurity, data analytics, and open banking initiatives provide additional growth vectors beyond core payment processing. A near-perfect business — consistent earnings growth, massive buybacks, and a global brand. The premium valuation is justified for long-term holders.`
+  },
+  JNJ: {
+    name:"Johnson & Johnson", sector:"Healthcare",
+    metrics:{ "Market Cap":"$378B","P/E Ratio":"22.6x","Revenue":"$88B","EPS":"$5.49","Div Yield":"3.10%","52W High":"$168","52W Low":"$143","Volume":"8M" },
+    scores:{ value:70, growth:52, momentum:55 },
+    ai:`Johnson & Johnson is the definition of a defensive healthcare blue chip — 60+ consecutive years of dividend increases, a fortress balance sheet, and diversified revenue across pharmaceuticals and medical devices. Post-Kenvue spinoff, JNJ is more focused on higher-growth pharma and MedTech. The talc litigation overhang remains but is manageable. At 22x earnings with a 3.1% dividend, JNJ offers stability and income for conservative investors seeking healthcare exposure.`
+  },
+  PFE: {
+    name:"Pfizer Inc.", sector:"Pharmaceuticals",
+    metrics:{ "Market Cap":"$142B","P/E Ratio":"10.8x","Revenue":"$58B","EPS":"$1.84","Div Yield":"6.80%","52W High":"$32","52W Low":"$24","Volume":"32M" },
+    scores:{ value:78, growth:45, momentum:42 },
+    ai:`Pfizer is in post-COVID hangover mode — revenues have collapsed from their 2022 peak as vaccine and antiviral demand normalized. The stock trades at a deep value multiple of ~11x earnings with a 6.8% dividend. The pipeline is deep with several potential blockbusters. The Seagen acquisition adds oncology strength. For value investors, Pfizer at these levels offers significant margin of safety. The key risk is pipeline failures and continued COVID product erosion. A contrarian opportunity.`
+  },
+  UNH: {
+    name:"UnitedHealth Group", sector:"Healthcare / Insurance",
+    metrics:{ "Market Cap":"$498B","P/E Ratio":"22.1x","Revenue":"$372B","EPS":"$22.18","Div Yield":"1.50%","52W High":"$630","52W Low":"$440","Volume":"3M" },
+    scores:{ value:61, growth:68, momentum:58 },
+    ai:`UnitedHealth is the largest US health insurer with an unmatched combination of insurance (UnitedHealthcare) and healthcare services (Optum). Optum's data, analytics, and care delivery capabilities create a healthcare ecosystem with significant competitive advantages. Revenue growing at 10%+ annually despite being a $372B company is remarkable. Regulatory risk around Medicare Advantage reimbursement is the primary overhang. At 22x earnings, UNH offers quality growth at a reasonable price.`
+  },
+  COST: {
+    name:"Costco Wholesale Corp", sector:"Consumer / Retail",
+    metrics:{ "Market Cap":"$412B","P/E Ratio":"55.8x","Revenue":"$242B","EPS":"$16.56","Div Yield":"0.49%","52W High":"$1,078","52W Low":"$700","Volume":"2M" },
+    scores:{ value:42, growth:71, momentum:76 },
+    ai:`Costco's membership model creates one of retail's most loyal customer bases — 93% renewal rates and growing membership fees provide high-margin predictable income. The treasure hunt experience and value proposition are nearly impossible to replicate. International expansion (particularly in Asia) is an underappreciated growth driver. At 56x earnings, Costco is expensive by any traditional metric but has earned a premium for decades of consistent execution. A compounding machine.`
+  },
+  WMT: {
+    name:"Walmart Inc.", sector:"Consumer / Retail",
+    metrics:{ "Market Cap":"$782B","P/E Ratio":"38.4x","Revenue":"$681B","EPS":"$2.42","Div Yield":"0.85%","52W High":"$105","52W Low":"$60","Volume":"18M" },
+    scores:{ value:48, growth:64, momentum:71 },
+    ai:`Walmart has successfully reinvented itself as a technology-driven omnichannel retailer. The advertising business and Walmart+ membership are high-margin additions to the low-margin retail core. Flipkart and PhonePe provide significant emerging market optionality. At 38x earnings, the market is paying a premium for Walmart's transformation story — historically the stock traded at 15-20x. Supply chain investments are paying dividends in market share gains. A defensive growth story.`
+  },
+  NKE: {
+    name:"Nike, Inc.", sector:"Consumer / Apparel",
+    metrics:{ "Market Cap":"$112B","P/E Ratio":"24.6x","Revenue":"$51B","EPS":"$3.73","Div Yield":"1.90%","52W High":"$101","52W Low":"$70","Volume":"10M" },
+    scores:{ value:58, growth:52, momentum:48 },
+    ai:`Nike is the world's most valuable sports brand but is navigating a difficult transition period — pulling back from wholesale too aggressively hurt revenues, and they're now rebuilding those relationships. New CEO Elliott Hill brings operational focus after years of strategic missteps. China recovery and innovation pipeline (new shoe platforms) are key catalysts. At 25x earnings near multi-year lows, Nike offers a compelling turnaround opportunity for patient investors who believe in the brand's long-term durability.`
+  },
+  MCD: {
+    name:"McDonald's Corporation", sector:"Consumer / Restaurants",
+    metrics:{ "Market Cap":"$218B","P/E Ratio":"24.8x","Revenue":"$25B","EPS":"$11.84","Div Yield":"2.30%","52W High":"$317","52W Low":"$243","Volume":"4M" },
+    scores:{ value:60, growth:56, momentum:62 },
+    ai:`McDonald's is the ultimate franchise business — 95% franchised model generates royalty income with minimal capital requirements. The real estate portfolio is deeply undervalued. Digital initiatives (the app has 150M+ users) are driving frequency and data advantages. International markets provide steady growth. At 25x earnings with a 2.3% dividend, McDonald's offers defensive characteristics with consistent growth. A classic Buffett-style business — simple, durable, and generating massive free cash flow.`
   }
 };
 
