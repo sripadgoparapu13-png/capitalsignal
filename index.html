@@ -359,6 +359,36 @@
     border-radius:50%; animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform:rotate(360deg); } }
+  .watchlist-btn {
+    margin-top:10px;
+    background:transparent; border:1px solid var(--accent);
+    color:var(--accent); font-family:'DM Mono',monospace;
+    font-size:11px; padding:6px 14px; border-radius:6px;
+    cursor:pointer; transition: all 0.2s;
+  }
+  .watchlist-btn:hover, .watchlist-btn.added {
+    background:var(--accent); color:#fff;
+  }
+  .watchlist-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr));
+    gap:12px;
+  }
+  .watchlist-item {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; padding:16px; cursor:pointer;
+    transition: all 0.2s; position:relative;
+  }
+  .watchlist-item:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .watchlist-sym { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; }
+  .watchlist-name { color:var(--muted); font-size:11px; margin-top:4px; margin-bottom:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .watchlist-price { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .watchlist-remove {
+    position:absolute; top:10px; right:10px;
+    background:transparent; border:none; color:var(--muted);
+    cursor:pointer; font-size:16px; line-height:1;
+    transition: color 0.2s;
+  }
+  .watchlist-remove:hover { color:var(--red); }
   .screener-card {
     background:var(--surface); border:1px solid var(--border);
     border-radius:16px; padding:24px; margin-bottom:48px;
@@ -538,6 +568,7 @@
             <span id="r-change">—</span>
             <span id="r-changepct">—</span>
           </div>
+          <button class="watchlist-btn" id="watchlistBtn" onclick="toggleWatchlist()">+ Add to Watchlist</button>
         </div>
       </div>
 
@@ -576,6 +607,12 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- WATCHLIST -->
+  <div id="watchlistSection" style="display:none; margin-bottom:48px;">
+    <div class="section-label">My Watchlist</div>
+    <div class="watchlist-grid" id="watchlistGrid"></div>
   </div>
 
   <!-- STOCK SCREENER -->
@@ -1037,6 +1074,9 @@ function renderCard(sym, d){
   card.classList.add('visible');
   card.scrollIntoView({behavior:'smooth', block:'nearest'});
 
+  // Update watchlist button
+  updateWatchlistBtn(sym);
+
   // Fetch news
   fetchNews(sym);
 }
@@ -1132,6 +1172,93 @@ async function drawSparkline(sym, isUp, range){
   ctx.fill();
 }
 
+// WATCHLIST
+let watchlist = JSON.parse(localStorage.getItem('cs_watchlist') || '[]');
+
+function saveWatchlist(){
+  localStorage.setItem('cs_watchlist', JSON.stringify(watchlist));
+}
+
+function toggleWatchlist(){
+  const sym = document.getElementById('r-ticker').textContent;
+  if(!sym || sym === '—') return;
+  const btn = document.getElementById('watchlistBtn');
+  if(watchlist.includes(sym)){
+    watchlist = watchlist.filter(s => s !== sym);
+    btn.textContent = '+ Add to Watchlist';
+    btn.classList.remove('added');
+  } else {
+    watchlist.push(sym);
+    btn.textContent = '✓ In Watchlist';
+    btn.classList.add('added');
+  }
+  saveWatchlist();
+  renderWatchlist();
+}
+
+function updateWatchlistBtn(sym){
+  const btn = document.getElementById('watchlistBtn');
+  if(watchlist.includes(sym)){
+    btn.textContent = '✓ In Watchlist';
+    btn.classList.add('added');
+  } else {
+    btn.textContent = '+ Add to Watchlist';
+    btn.classList.remove('added');
+  }
+}
+
+function removeFromWatchlist(sym, e){
+  e.stopPropagation();
+  watchlist = watchlist.filter(s => s !== sym);
+  saveWatchlist();
+  renderWatchlist();
+  const currentSym = document.getElementById('r-ticker').textContent;
+  if(currentSym === sym) updateWatchlistBtn(sym);
+}
+
+function renderWatchlist(){
+  const section = document.getElementById('watchlistSection');
+  const grid = document.getElementById('watchlistGrid');
+  if(watchlist.length === 0){
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
+  grid.innerHTML = watchlist.map(sym => {
+    const d = stocks[sym];
+    const name = d ? d.name : sym;
+    return `
+      <div class="watchlist-item" onclick="quickSearch('${sym}')">
+        <button class="watchlist-remove" onclick="removeFromWatchlist('${sym}', event)">×</button>
+        <div class="watchlist-sym">${sym}</div>
+        <div class="watchlist-name">${name}</div>
+        <div class="watchlist-price" id="wl-price-${sym}">Loading...</div>
+      </div>
+    `;
+  }).join('');
+  // Fetch live prices for watchlist
+  watchlist.forEach(sym => fetchWatchlistPrice(sym));
+}
+
+async function fetchWatchlistPrice(sym){
+  try {
+    const res = await fetchWithProxy(YAHOO + sym + '?interval=1d&range=1d');
+    const data = await res.json();
+    const price = data.chart.result[0].meta.regularMarketPrice;
+    const el = document.getElementById('wl-price-' + sym);
+    if(el) el.textContent = '$' + price.toFixed(2);
+  } catch(e) {
+    const el = document.getElementById('wl-price-' + sym);
+    if(el) el.textContent = '—';
+  }
+}
+
+// Initialize watchlist on load
+document.addEventListener('DOMContentLoaded', () => {
+  renderWatchlist();
+  renderScreener();
+});
+
 // SCREENER
 let screenerFilters = { sector: 'all', sort: 'value' };
 
@@ -1176,7 +1303,6 @@ function renderScreener(){
 }
 
 // Initialize screener on page load
-document.addEventListener('DOMContentLoaded', renderScreener);
 </script>
 </body>
 </html>
