@@ -359,6 +359,55 @@
     border-radius:50%; animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform:rotate(360deg); } }
+  .screener-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:48px;
+  }
+  .screener-filters { display:flex; flex-direction:column; gap:16px; margin-bottom:24px; }
+  .filter-group { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .filter-label {
+    font-size:11px; text-transform:uppercase; letter-spacing:2px;
+    color:var(--muted); min-width:70px;
+  }
+  .filter-options { display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-btn {
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--muted); font-family:'DM Mono',monospace;
+    font-size:11px; padding:5px 14px; border-radius:6px;
+    cursor:pointer; transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    border-color:var(--accent); color:var(--accent);
+    background:rgba(47,128,237,0.08);
+  }
+  .screener-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+    gap:12px;
+  }
+  .screener-item {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:16px; cursor:pointer;
+    transition: all 0.2s;
+  }
+  .screener-item:hover {
+    border-color:var(--accent);
+    transform:translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .screener-sym {
+    font-family:'Syne',sans-serif; font-size:18px; font-weight:700;
+    margin-bottom:4px;
+  }
+  .screener-name { color:var(--muted); font-size:11px; margin-bottom:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .screener-scores { display:flex; gap:8px; }
+  .screener-score {
+    font-size:10px; padding:3px 8px; border-radius:4px;
+    background:rgba(47,128,237,0.08); color:var(--accent);
+  }
+  .screener-sector {
+    font-size:10px; color:var(--muted); margin-top:8px;
+    text-transform:uppercase; letter-spacing:1px;
+  }
   .section-label {
     font-size:11px; text-transform:uppercase;
     letter-spacing:3px; color:var(--muted); margin-bottom:28px;
@@ -527,6 +576,34 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- STOCK SCREENER -->
+  <div class="section-label">Stock Screener</div>
+  <div class="screener-card">
+    <div class="screener-filters">
+      <div class="filter-group">
+        <div class="filter-label">Sector</div>
+        <div class="filter-options" id="filterSector">
+          <button class="filter-btn active" onclick="setFilter('sector', 'all', this)">All</button>
+          <button class="filter-btn" onclick="setFilter('sector', 'Technology', this)">Tech</button>
+          <button class="filter-btn" onclick="setFilter('sector', 'Financial', this)">Finance</button>
+          <button class="filter-btn" onclick="setFilter('sector', 'Healthcare', this)">Healthcare</button>
+          <button class="filter-btn" onclick="setFilter('sector', 'Consumer', this)">Consumer</button>
+          <button class="filter-btn" onclick="setFilter('sector', 'Semiconductors', this)">Chips</button>
+          <button class="filter-btn" onclick="setFilter('sector', 'ETF', this)">ETF</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <div class="filter-label">Sort By</div>
+        <div class="filter-options" id="filterSort">
+          <button class="filter-btn active" onclick="setSort('value', this)">Value Score</button>
+          <button class="filter-btn" onclick="setSort('growth', this)">Growth Score</button>
+          <button class="filter-btn" onclick="setSort('momentum', this)">Momentum</button>
+        </div>
+      </div>
+    </div>
+    <div class="screener-grid" id="screenerGrid"></div>
   </div>
 
   <div class="section-label">What CapitalSignal Offers</div>
@@ -1054,6 +1131,52 @@ async function drawSparkline(sym, isUp, range){
   ctx.fillStyle = actualUp?'#2F80ED':'#ff4d6a';
   ctx.fill();
 }
+
+// SCREENER
+let screenerFilters = { sector: 'all', sort: 'value' };
+
+function setFilter(type, value, btn){
+  screenerFilters[type] = value;
+  btn.closest('.filter-options').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderScreener();
+}
+
+function setSort(value, btn){
+  screenerFilters.sort = value;
+  btn.closest('.filter-options').querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderScreener();
+}
+
+function renderScreener(){
+  const grid = document.getElementById('screenerGrid');
+  let items = Object.entries(stocks);
+
+  // Filter by sector
+  if(screenerFilters.sector !== 'all'){
+    items = items.filter(([sym, d]) => d.sector && d.sector.toLowerCase().includes(screenerFilters.sector.toLowerCase()));
+  }
+
+  // Sort
+  items.sort((a, b) => b[1].scores[screenerFilters.sort] - a[1].scores[screenerFilters.sort]);
+
+  grid.innerHTML = items.map(([sym, d]) => `
+    <div class="screener-item" onclick="quickSearch('${sym}')">
+      <div class="screener-sym">${sym}</div>
+      <div class="screener-name">${d.name}</div>
+      <div class="screener-scores">
+        <span class="screener-score">V: ${d.scores.value}</span>
+        <span class="screener-score">G: ${d.scores.growth}</span>
+        <span class="screener-score">M: ${d.scores.momentum}</span>
+      </div>
+      <div class="screener-sector">${d.sector}</div>
+    </div>
+  `).join('');
+}
+
+// Initialize screener on page load
+document.addEventListener('DOMContentLoaded', renderScreener);
 </script>
 </body>
 </html>
