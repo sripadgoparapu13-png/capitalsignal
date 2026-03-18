@@ -692,7 +692,6 @@
 
 <script>
 const YAHOO = 'https://query1.finance.yahoo.com/v8/finance/chart/';
-const NEWS_KEY = 'PASTE_YOUR_NEWS_KEY_HERE';
 
 async function fetchWithProxy(url){
   const res = await fetch('/api/yahoo?url=' + encodeURIComponent(url));
@@ -704,8 +703,7 @@ async function fetchNews(sym){
   const newsList = document.getElementById('newsList');
   newsList.innerHTML = '<div class="news-loading">Loading news...</div>';
   try {
-    const url = `https://newsapi.org/v2/everything?q=${sym}+stock&sortBy=publishedAt&pageSize=5&language=en&apiKey=${NEWS_KEY}`;
-    const res = await fetch(url);
+    const res = await fetch('/api/news?q=' + encodeURIComponent(sym));
     const data = await res.json();
     if(data.articles && data.articles.length > 0){
       newsList.innerHTML = data.articles.map(a => `
