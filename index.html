@@ -582,10 +582,101 @@
     .feat-card { padding:18px; }
     footer { flex-direction:column; gap:8px; text-align:center; padding:20px 16px; }
     .chart-section { padding:16px; }
+    .footer-links { justify-content:center; }
+    .footer-right { text-align:center; }
+    footer { grid-template-columns:1fr; gap:20px; }
+  }
+
+  /* LOADING SCREEN */
+  #loadingScreen {
+    position:fixed; inset:0; z-index:9999;
+    background:var(--bg);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:20px;
+    transition: opacity 0.5s ease;
+  }
+  #loadingScreen.hidden { opacity:0; pointer-events:none; }
+  .loading-logo {
+    font-family:'Syne',sans-serif; font-size:36px; font-weight:800;
+  }
+  .loading-logo span { color:var(--accent); }
+  .loading-bar-bg {
+    width:200px; height:3px;
+    background:var(--border); border-radius:2px; overflow:hidden;
+  }
+  .loading-bar-fill {
+    height:100%; background:var(--accent); border-radius:2px;
+    animation: loadBar 1.5s ease forwards;
+  }
+  @keyframes loadBar {
+    from { width:0%; }
+    to { width:100%; }
+  }
+  .loading-text { color:var(--muted); font-size:12px; letter-spacing:2px; text-transform:uppercase; }
+
+  /* DARK/LIGHT MODE */
+  body.light {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface2: #f0f2f5;
+    --border: #e0e4ea;
+    --text: #0d1117;
+    --muted: #6b7280;
+  }
+  .mode-toggle {
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--muted); font-size:16px;
+    width:36px; height:36px; border-radius:8px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition: all 0.2s;
+  }
+  .mode-toggle:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* PROMINENT SEARCH BAR */
+  .search-wrap {
+    display:flex; gap:12px; max-width:700px;
+    margin-bottom:20px;
+  }
+  .search-input {
+    flex:1;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    color: var(--text);
+    font-family:'DM Mono',monospace;
+    font-size:16px; padding:20px 24px;
+    border-radius:14px; outline:none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(47,128,237,0.12), 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .search-btn {
+    background: var(--accent); color:#fff;
+    border:none; padding:20px 36px;
+    border-radius:14px; cursor:pointer;
+    font-family:'Syne',sans-serif;
+    font-size:15px; font-weight:700; letter-spacing:0.5px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(47,128,237,0.35);
+  }
+  .search-btn:hover {
+    opacity:0.9; transform:translateY(-2px);
+    box-shadow: 0 8px 28px rgba(47,128,237,0.45);
   }
 </style>
 </head>
 <body>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+  <div class="loading-logo">Capital<span>Signal</span></div>
+  <div class="loading-bar-bg">
+    <div class="loading-bar-fill"></div>
+  </div>
+  <div class="loading-text">Loading market data...</div>
+</div>
 
 <nav>
   <div class="logo">Capital<span>Signal</span></div>
@@ -595,7 +686,10 @@
     <a href="#watchlistSection">Watchlist</a>
     <a href="#portfolioSection">Portfolio</a>
   </div>
-  <div class="nav-badge">Beta</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <button class="mode-toggle" onclick="toggleMode()" id="modeBtn">🌙</button>
+    <div class="nav-badge">Beta</div>
+  </div>
 </nav>
 
 <div class="ticker-wrap">
@@ -1194,11 +1288,17 @@ function renderCard(sym, d){
     `<div class="score-item">
       <div class="score-name">${k} Score</div>
       <div class="score-bar-bg">
-        <div class="score-bar-fill" style="width:${v}%;background:${scoreColors[k](v)}"></div>
+        <div class="score-bar-fill" style="width:0%;background:${scoreColors[k](v)}" data-width="${v}"></div>
       </div>
       <div class="score-val" style="color:${scoreColors[k](v)}">${v}/100</div>
     </div>`
   ).join('');
+  // Animate bars after render
+  setTimeout(() => {
+    document.querySelectorAll('.score-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  }, 100);
 
   document.getElementById('r-ai').textContent = d.ai;
 
@@ -1581,6 +1681,28 @@ function renderScreener(){
       <div class="screener-sector">${d.sector}</div>
     </div>
   `).join('');
+}
+
+// LOADING SCREEN
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const screen = document.getElementById('loadingScreen');
+    screen.classList.add('hidden');
+    setTimeout(() => screen.remove(), 500);
+  }, 1800);
+});
+
+// DARK/LIGHT MODE
+function toggleMode(){
+  document.body.classList.toggle('light');
+  const btn = document.getElementById('modeBtn');
+  btn.textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('cs_mode', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+// Load saved mode
+if(localStorage.getItem('cs_mode') === 'light'){
+  document.body.classList.add('light');
+  document.getElementById('modeBtn').textContent = '🌙';
 }
 
 // AUTO REFRESH PRICES
