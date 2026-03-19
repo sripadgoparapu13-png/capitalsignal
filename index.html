@@ -1215,6 +1215,9 @@ function renderCard(sym, d){
   // Update watchlist button
   updateWatchlistBtn(sym);
 
+  // Start auto refresh
+  startAutoRefresh(sym);
+
   // Fetch news
   fetchNews(sym);
 }
@@ -1533,6 +1536,8 @@ async function loadLiveTicker(){
       track.innerHTML = html + html;
     }
   } catch(e){}
+  // Refresh ticker every 5 minutes
+  setTimeout(loadLiveTicker, 300000);
 }
 
 // SCREENER
@@ -1576,6 +1581,44 @@ function renderScreener(){
       <div class="screener-sector">${d.sector}</div>
     </div>
   `).join('');
+}
+
+// AUTO REFRESH PRICES
+let autoRefreshInterval = null;
+
+function startAutoRefresh(sym){
+  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(async () => {
+    if(!sym) return;
+    try {
+      const res = await fetchWithProxy(YAHOO + sym + '?interval=1d&range=1d');
+      const data = await res.json();
+      const meta = data.chart.result[0].meta;
+      const livePrice = meta.regularMarketPrice;
+      const prevClose = meta.chartPreviousClose;
+      const liveChange = parseFloat((livePrice - prevClose).toFixed(2));
+      const liveChangePct = parseFloat(((liveChange / prevClose) * 100).toFixed(2));
+
+      const priceEl = document.getElementById('r-price');
+      const chgEl = document.getElementById('r-change');
+      const chgPctEl = document.getElementById('r-changepct');
+
+      if(priceEl){
+        priceEl.textContent = `$${livePrice.toFixed(2)}`;
+        priceEl.style.color = liveChange >= 0 ? 'var(--green)' : 'var(--red)';
+      }
+      if(chgEl){
+        const up = liveChange >= 0;
+        chgEl.textContent = (up?'+':'')+liveChange.toFixed(2);
+        chgEl.className = 'ticker-chg ' + (up?'up':'down');
+      }
+      if(chgPctEl){
+        const up = liveChange >= 0;
+        chgPctEl.textContent = `(${up?'+':''}${liveChangePct.toFixed(2)}%)`;
+        chgPctEl.className = 'ticker-chg ' + (up?'up':'down');
+      }
+    } catch(e){}
+  }, 60000); // refresh every 60 seconds
 }
 
 // Initialize screener on page load
