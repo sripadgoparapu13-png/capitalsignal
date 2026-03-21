@@ -145,6 +145,31 @@
     display:flex; gap:12px; max-width:620px;
     margin-bottom:20px;
   }
+  .suggestions-dropdown {
+    position:absolute; top:calc(100% + 6px); left:0; right:0;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden;
+    z-index:1000; display:none;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+  .suggestions-dropdown.visible { display:block; }
+  .suggestion-item {
+    display:flex; align-items:center; gap:14px;
+    padding:12px 16px; cursor:pointer; transition:background 0.15s;
+  }
+  .suggestion-item:hover, .suggestion-item.selected {
+    background:rgba(47,128,237,0.08);
+  }
+  .suggestion-sym {
+    font-family:'Syne',sans-serif; font-size:15px; font-weight:700;
+    color:var(--accent); min-width:60px;
+  }
+  .suggestion-name { color:var(--muted); font-size:13px; }
+  .suggestion-sector {
+    margin-left:auto; font-size:10px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:1px;
+  }
+  .suggestion-empty { padding:16px; color:var(--muted); font-size:13px; text-align:center; }
   .search-input {
     flex:1;
     background: var(--surface);
@@ -154,6 +179,7 @@
     font-size:15px; padding:18px 22px;
     border-radius:12px; outline:none;
     transition: border-color 0.2s, box-shadow 0.2s;
+    width:100%;
   }
   .search-input:focus {
     border-color: var(--accent);
@@ -701,10 +727,15 @@
   <h1>The signal<br><span class="accent">through.</span><br><span class="dim">the noise.</span></h1>
   <p class="hero-sub">Cut through the noise. CapitalSignal gives you instant AI-powered analysis on any stock — built for the next generation of investors.</p>
 
-  <div class="search-wrap">
-    <input class="search-input" id="searchInput" type="text"
-      placeholder="Search ticker or company (e.g. AAPL, Tesla...)"
-      autocomplete="off"/>
+  <div class="search-wrap" style="position:relative;">
+    <div style="flex:1;position:relative;">
+      <input class="search-input" id="searchInput" type="text"
+        placeholder="Search ticker or company (e.g. AAPL, Tesla...)"
+        autocomplete="off"
+        oninput="showSuggestions()"
+        onkeydown="handleSearchKey(event)"/>
+      <div class="suggestions-dropdown" id="suggestionsDropdown"></div>
+    </div>
     <button class="search-btn" onclick="analyzeStock()">Analyze →</button>
   </div>
   <div class="quick-picks">
@@ -1682,6 +1713,134 @@ function renderScreener(){
     </div>
   `).join('');
 }
+
+// SEARCH SUGGESTIONS
+const allStocks = [
+  {sym:'AAPL',name:'Apple Inc.',sector:'Tech'},
+  {sym:'MSFT',name:'Microsoft Corporation',sector:'Tech'},
+  {sym:'GOOGL',name:'Alphabet Inc.',sector:'Tech'},
+  {sym:'AMZN',name:'Amazon.com Inc.',sector:'E-Commerce'},
+  {sym:'NVDA',name:'NVIDIA Corporation',sector:'Chips'},
+  {sym:'META',name:'Meta Platforms Inc.',sector:'Social'},
+  {sym:'TSLA',name:'Tesla Inc.',sector:'EV'},
+  {sym:'NFLX',name:'Netflix Inc.',sector:'Streaming'},
+  {sym:'AMD',name:'Advanced Micro Devices',sector:'Chips'},
+  {sym:'UBER',name:'Uber Technologies',sector:'Mobility'},
+  {sym:'JPM',name:'JPMorgan Chase',sector:'Finance'},
+  {sym:'BAC',name:'Bank of America',sector:'Finance'},
+  {sym:'GS',name:'Goldman Sachs',sector:'Finance'},
+  {sym:'V',name:'Visa Inc.',sector:'Fintech'},
+  {sym:'MA',name:'Mastercard Inc.',sector:'Fintech'},
+  {sym:'JNJ',name:'Johnson & Johnson',sector:'Healthcare'},
+  {sym:'PFE',name:'Pfizer Inc.',sector:'Pharma'},
+  {sym:'UNH',name:'UnitedHealth Group',sector:'Healthcare'},
+  {sym:'COST',name:'Costco Wholesale',sector:'Retail'},
+  {sym:'WMT',name:'Walmart Inc.',sector:'Retail'},
+  {sym:'NKE',name:'Nike Inc.',sector:'Apparel'},
+  {sym:'MCD',name:'McDonald\'s Corp',sector:'Food'},
+  {sym:'ORCL',name:'Oracle Corporation',sector:'Software'},
+  {sym:'CRM',name:'Salesforce Inc.',sector:'Software'},
+  {sym:'ADBE',name:'Adobe Inc.',sector:'Software'},
+  {sym:'SPY',name:'S&P 500 ETF',sector:'ETF'},
+  {sym:'QQQ',name:'NASDAQ 100 ETF',sector:'ETF'},
+  {sym:'DIA',name:'Dow Jones ETF',sector:'ETF'},
+  {sym:'VTI',name:'Vanguard Total Market ETF',sector:'ETF'},
+  {sym:'ARKK',name:'ARK Innovation ETF',sector:'ETF'},
+  {sym:'INTC',name:'Intel Corporation',sector:'Chips'},
+  {sym:'QCOM',name:'Qualcomm Inc.',sector:'Chips'},
+  {sym:'AVGO',name:'Broadcom Inc.',sector:'Chips'},
+  {sym:'PYPL',name:'PayPal Holdings',sector:'Fintech'},
+  {sym:'SQ',name:'Block Inc.',sector:'Fintech'},
+  {sym:'SHOP',name:'Shopify Inc.',sector:'E-Commerce'},
+  {sym:'SNAP',name:'Snap Inc.',sector:'Social'},
+  {sym:'SPOT',name:'Spotify Technology',sector:'Streaming'},
+  {sym:'ABNB',name:'Airbnb Inc.',sector:'Travel'},
+  {sym:'BKNG',name:'Booking Holdings',sector:'Travel'},
+  {sym:'DIS',name:'Walt Disney Company',sector:'Entertainment'},
+  {sym:'CMCSA',name:'Comcast Corporation',sector:'Media'},
+  {sym:'T',name:'AT&T Inc.',sector:'Telecom'},
+  {sym:'VZ',name:'Verizon Communications',sector:'Telecom'},
+  {sym:'XOM',name:'Exxon Mobil',sector:'Energy'},
+  {sym:'CVX',name:'Chevron Corporation',sector:'Energy'},
+  {sym:'BRK.B',name:'Berkshire Hathaway',sector:'Finance'},
+  {sym:'GE',name:'GE Aerospace',sector:'Industrial'},
+  {sym:'BA',name:'Boeing Company',sector:'Aerospace'},
+  {sym:'CAT',name:'Caterpillar Inc.',sector:'Industrial'},
+];
+
+let selectedIndex = -1;
+
+function showSuggestions(){
+  const input = document.getElementById('searchInput').value.trim().toUpperCase();
+  const dropdown = document.getElementById('suggestionsDropdown');
+  selectedIndex = -1;
+
+  if(input.length < 1){
+    dropdown.classList.remove('visible');
+    dropdown.innerHTML = '';
+    return;
+  }
+
+  // Filter stocks that match the input
+  // This checks if the ticker starts with the input OR the company name contains it
+  const matches = allStocks.filter(s =>
+    s.sym.startsWith(input) ||
+    s.name.toUpperCase().includes(input)
+  ).slice(0, 7); // Show max 7 suggestions
+
+  if(matches.length === 0){
+    dropdown.innerHTML = '<div class="suggestion-empty">No matching stocks found</div>';
+    dropdown.classList.add('visible');
+    return;
+  }
+
+  dropdown.innerHTML = matches.map((s, i) => `
+    <div class="suggestion-item" onclick="selectSuggestion('${s.sym}')" data-index="${i}">
+      <span class="suggestion-sym">${s.sym}</span>
+      <span class="suggestion-name">${s.name}</span>
+      <span class="suggestion-sector">${s.sector}</span>
+    </div>
+  `).join('');
+
+  dropdown.classList.add('visible');
+}
+
+function selectSuggestion(sym){
+  document.getElementById('searchInput').value = sym;
+  document.getElementById('suggestionsDropdown').classList.remove('visible');
+  analyzeStock();
+}
+
+function handleSearchKey(e){
+  const dropdown = document.getElementById('suggestionsDropdown');
+  const items = dropdown.querySelectorAll('.suggestion-item');
+
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+    items.forEach((item, i) => item.classList.toggle('selected', i === selectedIndex));
+  } else if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    selectedIndex = Math.max(selectedIndex - 1, -1);
+    items.forEach((item, i) => item.classList.toggle('selected', i === selectedIndex));
+  } else if(e.key === 'Enter'){
+    if(selectedIndex >= 0 && items[selectedIndex]){
+      items[selectedIndex].click();
+    } else {
+      analyzeStock();
+    }
+    dropdown.classList.remove('visible');
+  } else if(e.key === 'Escape'){
+    dropdown.classList.remove('visible');
+  }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if(!e.target.closest('.search-wrap')){
+    document.getElementById('suggestionsDropdown').classList.remove('visible');
+  }
+});
 
 // LOADING SCREEN
 window.addEventListener('load', () => {
