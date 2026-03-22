@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>About — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#12121a; --surface2:#1a1a26;
+    --border:#2a2a3a; --accent:#2F80ED; --accent2:#56CCF2;
+    --text:#f0f0f5; --muted:#6b6b85; --red:#ff4d6a; --green:#00c878;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'DM Mono',monospace; min-height:100vh;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(47,128,237,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,128,237,0.03) 1px, transparent 1px);
+    background-size:40px 40px; pointer-events:none; z-index:0;
+  }
+  body.light {
+    --bg:#f5f7fa; --surface:#ffffff; --surface2:#f0f2f5;
+    --border:#e0e4ea; --text:#0d1117; --muted:#6b7280;
+  }
+
+  /* NAV */
+  nav {
+    position:sticky; top:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 40px;
+    background:rgba(10,10,15,0.85); backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+  }
+  .logo {
+    font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
+    text-decoration:none; color:var(--text);
+  }
+  .logo span { color:var(--accent); }
+  .nav-links { display:flex; gap:32px; }
+  .nav-links a {
+    color:var(--muted); text-decoration:none;
+    font-size:12px; letter-spacing:1px; text-transform:uppercase; transition:color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color:var(--accent); }
+  .nav-right { display:flex; align-items:center; gap:10px; }
+  .mode-toggle {
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--muted); font-size:16px; width:36px; height:36px;
+    border-radius:8px; cursor:pointer; display:flex; align-items:center;
+    justify-content:center; transition:all 0.2s;
+  }
+  .mode-toggle:hover { border-color:var(--accent); color:var(--accent); }
+  .nav-badge {
+    background:var(--accent); color:#fff; font-size:11px;
+    padding:6px 14px; border-radius:20px; font-family:'Syne',sans-serif;
+  }
+
+  /* MAIN */
+  .main {
+    max-width:900px; margin:0 auto;
+    padding:72px 40px; position:relative; z-index:1;
+  }
+
+  /* HERO */
+  .about-hero {
+    text-align:center; margin-bottom:72px;
+    animation: fadeUp 0.6s ease both;
+  }
+  @keyframes fadeUp {
+    from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)}
+  }
+  .about-tag {
+    display:inline-flex; align-items:center; gap:8px;
+    background:rgba(47,128,237,0.08); border:1px solid rgba(47,128,237,0.2);
+    color:var(--accent); font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    padding:6px 16px; border-radius:20px; margin-bottom:24px;
+  }
+  .about-title {
+    font-family:'Syne',sans-serif; font-size:52px; font-weight:800;
+    letter-spacing:-2px; line-height:1.0; margin-bottom:20px;
+  }
+  .about-title span { color:var(--accent); }
+  .about-subtitle {
+    color:var(--muted); font-size:16px; line-height:1.7;
+    max-width:580px; margin:0 auto;
+  }
+
+  /* FOUNDER CARD */
+  .founder-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; padding:40px; margin-bottom:48px;
+    display:grid; grid-template-columns:auto 1fr; gap:32px;
+    align-items:start;
+    animation: fadeUp 0.6s ease both; animation-delay:0.1s; opacity:0;
+  }
+  .founder-avatar {
+    width:80px; height:80px; border-radius:50%;
+    background:linear-gradient(135deg, var(--accent), var(--accent2));
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:32px; font-weight:800;
+    color:#fff; flex-shrink:0;
+  }
+  .founder-name {
+    font-family:'Syne',sans-serif; font-size:24px; font-weight:800;
+    margin-bottom:4px;
+  }
+  .founder-title { color:var(--accent); font-size:12px; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; }
+  .founder-bio { color:#c0c0d0; font-size:14px; line-height:1.8; }
+  .founder-bio p { margin-bottom:12px; }
+  .founder-bio p:last-child { margin-bottom:0; }
+
+  /* SECTIONS */
+  .about-section {
+    margin-bottom:48px;
+    animation: fadeUp 0.6s ease both; opacity:0;
+  }
+  .about-section:nth-child(3) { animation-delay:0.2s; }
+  .about-section:nth-child(4) { animation-delay:0.3s; }
+  .about-section:nth-child(5) { animation-delay:0.4s; }
+  .section-heading {
+    font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
+    margin-bottom:20px; display:flex; align-items:center; gap:12px;
+  }
+  .section-heading span { color:var(--accent); }
+  .section-text { color:#c0c0d0; font-size:14px; line-height:1.8; }
+  .section-text p { margin-bottom:12px; }
+  .section-text p:last-child { margin-bottom:0; }
+
+  /* TECH STACK */
+  .tech-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(180px,1fr));
+    gap:12px; margin-top:20px;
+  }
+  .tech-card {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:16px; transition:all 0.2s;
+  }
+  .tech-card:hover { border-color:var(--accent); }
+  .tech-icon { font-size:24px; margin-bottom:8px; }
+  .tech-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:4px; }
+  .tech-desc { color:var(--muted); font-size:11px; }
+
+  /* STATS */
+  .stats-row {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:16px; margin-top:20px;
+  }
+  .stat-box {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:12px; padding:20px; text-align:center;
+  }
+  .stat-number {
+    font-family:'Syne',sans-serif; font-size:28px; font-weight:800;
+    color:var(--accent); margin-bottom:6px;
+  }
+  .stat-desc { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:1px; }
+
+  /* ROADMAP */
+  .roadmap { display:flex; flex-direction:column; gap:0; margin-top:20px; }
+  .roadmap-item {
+    display:flex; gap:20px; align-items:flex-start;
+    padding:20px 0; border-bottom:1px solid var(--border);
+  }
+  .roadmap-item:last-child { border-bottom:none; }
+  .roadmap-dot {
+    width:12px; height:12px; border-radius:50%; margin-top:4px; flex-shrink:0;
+  }
+  .roadmap-dot.done { background:var(--green); }
+  .roadmap-dot.inprogress { background:var(--accent); animation:pulse 1.5s infinite; }
+  .roadmap-dot.planned { background:var(--border); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .roadmap-content {}
+  .roadmap-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:4px; }
+  .roadmap-desc { color:var(--muted); font-size:12px; line-height:1.6; }
+  .roadmap-badge {
+    display:inline-block; font-size:10px; padding:2px 10px;
+    border-radius:10px; margin-left:8px; text-transform:uppercase; letter-spacing:1px;
+  }
+  .badge-done { background:rgba(0,200,120,0.1); color:var(--green); }
+  .badge-progress { background:rgba(47,128,237,0.1); color:var(--accent); }
+  .badge-planned { background:rgba(107,107,133,0.15); color:var(--muted); }
+
+  /* CONTACT */
+  .contact-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:20px; padding:40px; margin-bottom:48px;
+  }
+  .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:20px; }
+  .contact-input, .contact-textarea {
+    background:var(--surface2); border:1px solid var(--border);
+    color:var(--text); font-family:'DM Mono',monospace;
+    font-size:13px; padding:12px 16px; border-radius:10px;
+    outline:none; transition:border-color 0.2s; width:100%;
+  }
+  .contact-input:focus, .contact-textarea:focus { border-color:var(--accent); }
+  .contact-input::placeholder, .contact-textarea::placeholder { color:var(--muted); }
+  .contact-full { grid-column:1/-1; }
+  .contact-textarea { height:120px; resize:vertical; }
+  .contact-btn {
+    grid-column:1/-1; background:var(--accent); color:#fff;
+    border:none; padding:14px; border-radius:10px; cursor:pointer;
+    font-family:'Syne',sans-serif; font-size:14px; font-weight:700;
+    transition:all 0.2s; box-shadow:0 4px 20px rgba(47,128,237,0.3);
+  }
+  .contact-btn:hover { opacity:0.9; transform:translateY(-1px); }
+  .contact-success {
+    display:none; text-align:center; padding:20px;
+    color:var(--green); font-size:14px;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top:1px solid var(--border); padding:32px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+    color:var(--muted); font-size:12px; background:var(--surface);
+    position:relative; z-index:1;
+  }
+  .footer-logo { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--text); }
+  .footer-logo span { color:var(--accent); }
+
+  @media(max-width:768px){
+    nav { padding:12px 16px; } .nav-links { display:none; }
+    .main { padding:40px 16px; } .about-title { font-size:32px; }
+    .founder-card { grid-template-columns:1fr; }
+    .stats-row { grid-template-columns:repeat(2,1fr); }
+    .contact-grid { grid-template-columns:1fr; }
+    footer { flex-direction:column; gap:12px; padding:20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">Capital<span>Signal</span></a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/markets.html">Markets</a>
+    <a href="/news.html">News</a>
+    <a href="/compare.html">Compare</a>
+    <a href="/about.html" class="active">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="mode-toggle" onclick="toggleMode()" id="modeBtn">🌙</button>
+    <div class="nav-badge">Beta</div>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- HERO -->
+  <div class="about-hero">
+    <div class="about-tag">Our Story</div>
+    <div class="about-title">Built by a student,<br>for <span>everyone.</span></div>
+    <p class="about-subtitle">CapitalSignal started as a high school project and became a real financial platform. Here's the story behind it.</p>
+  </div>
+
+  <!-- FOUNDER -->
+  <div class="founder-card">
+    <div class="founder-avatar">S</div>
+    <div>
+      <div class="founder-name">Sripad</div>
+      <div class="founder-title">Founder & Developer — Age 16</div>
+      <div class="founder-bio">
+        <p>I'm a 16-year-old high school sophomore who had absolutely zero coding experience when I started building CapitalSignal. I'd always been interested in investing but found every good tool either too expensive or too complicated for someone just starting out.</p>
+        <p>So I decided to build my own. I taught myself HTML, CSS, and JavaScript from scratch — learning by doing, breaking things, fixing them, and slowly understanding how it all works. What started as a simple prototype became a full financial platform with real-time data, charts, news, a stock screener, portfolio tracker, and more.</p>
+        <p>CapitalSignal is proof that you don't need a computer science degree, years of experience, or a big team to build something real. You just need curiosity and the willingness to keep going when things break.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <div class="about-section">
+    <div class="section-heading">🎯 The <span>Mission</span></div>
+    <div class="section-text">
+      <p>Wall Street has always had an information advantage. Professional investors pay thousands of dollars per month for Bloomberg terminals, research reports, and data feeds. Regular people — students, young professionals, everyday investors — are left with cluttered free tools packed with ads and paywalls.</p>
+      <p>CapitalSignal exists to close that gap. Our mission is to give every investor — regardless of age, experience, or budget — access to the same quality of financial analysis that professionals use. For free. Always.</p>
+      <p>We believe that better-informed investors make better decisions. And better financial decisions create better lives.</p>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="about-section">
+    <div class="section-heading">📊 By the <span>Numbers</span></div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-number">3</div>
+        <div class="stat-desc">Weeks to build</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">27+</div>
+        <div class="stat-desc">Stocks analyzed</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">5</div>
+        <div class="stat-desc">Pages & features</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">0</div>
+        <div class="stat-desc">Prior coding exp.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="about-section">
+    <div class="section-heading">⚙️ How It's <span>Built</span></div>
+    <div class="section-text">
+      <p>CapitalSignal is built entirely with web technologies — no fancy frameworks, no large teams, no venture capital. Just clean code and free APIs.</p>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tech-icon">🌐</div>
+        <div class="tech-name">HTML / CSS / JS</div>
+        <div class="tech-desc">The core of every web page</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">▲</div>
+        <div class="tech-name">Vercel</div>
+        <div class="tech-desc">Hosting & serverless backend</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">📈</div>
+        <div class="tech-name">Yahoo Finance API</div>
+        <div class="tech-desc">Real-time stock prices & charts</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">📰</div>
+        <div class="tech-name">GNews API</div>
+        <div class="tech-desc">Financial news aggregation</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🐙</div>
+        <div class="tech-name">GitHub</div>
+        <div class="tech-desc">Version control & deployment</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">🤖</div>
+        <div class="tech-name">Claude AI</div>
+        <div class="tech-desc">AI-assisted development</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="about-section">
+    <div class="section-heading">🗺️ <span>Roadmap</span></div>
+    <div class="section-text">
+      <p>CapitalSignal is actively being developed. Here's what's been built and what's coming next.</p>
+    </div>
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-dot done"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Real-time stock prices & charts <span class="roadmap-badge badge-done">Done</span></div>
+          <div class="roadmap-desc">Live prices, 1M–5Y charts, and key financial metrics for any stock.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot done"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Stock Screener <span class="roadmap-badge badge-done">Done</span></div>
+          <div class="roadmap-desc">Filter stocks by sector, value score, growth, and momentum.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot done"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Portfolio Tracker <span class="roadmap-badge badge-done">Done</span></div>
+          <div class="roadmap-desc">Track holdings with live gain/loss calculations.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot done"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Financial News <span class="roadmap-badge badge-done">Done</span></div>
+          <div class="roadmap-desc">Real-time news from Reuters, Bloomberg, CNBC and WSJ.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot done"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Stock Comparison Tool <span class="roadmap-badge badge-done">Done</span></div>
+          <div class="roadmap-desc">Side-by-side analysis of any two stocks with winner highlighting.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot inprogress"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Real-time AI Analysis <span class="roadmap-badge badge-progress">In Progress</span></div>
+          <div class="roadmap-desc">Claude AI generating fresh, real-time stock analysis for any ticker.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot planned"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Price Alerts <span class="roadmap-badge badge-planned">Coming Soon</span></div>
+          <div class="roadmap-desc">Get notified when a stock hits your target price.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot planned"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Earnings Calendar <span class="roadmap-badge badge-planned">Coming Soon</span></div>
+          <div class="roadmap-desc">Track upcoming earnings reports for your watchlisted stocks.</div>
+        </div>
+      </div>
+      <div class="roadmap-item">
+        <div class="roadmap-dot planned"></div>
+        <div class="roadmap-content">
+          <div class="roadmap-title">Mobile App <span class="roadmap-badge badge-planned">Coming Soon</span></div>
+          <div class="roadmap-desc">Native iOS and Android app for CapitalSignal.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="contact-card">
+    <div class="section-heading">✉️ Get in <span>Touch</span></div>
+    <div class="section-text">
+      <p>Have feedback, a feature request, or just want to say hi? I'd love to hear from you.</p>
+    </div>
+    <div class="contact-grid" id="contactForm">
+      <input class="contact-input" id="contactName" placeholder="Your name" />
+      <input class="contact-input" id="contactEmail" placeholder="Your email" type="email" />
+      <input class="contact-input contact-full" id="contactSubject" placeholder="Subject" />
+      <textarea class="contact-textarea contact-full" id="contactMessage" placeholder="Your message..."></textarea>
+      <button class="contact-btn" onclick="submitContact()">Send Message →</button>
+    </div>
+    <div class="contact-success" id="contactSuccess">
+      ✓ Message sent! I'll get back to you soon. — Sripad
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">Capital<span>Signal</span></div>
+  <span>© 2025 CapitalSignal — Built by Sripad, age 16</span>
+</footer>
+
+<script>
+function submitContact(){
+  const name = document.getElementById('contactName').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  const message = document.getElementById('contactMessage').value.trim();
+
+  if(!name || !email || !message){
+    alert('Please fill in your name, email, and message!');
+    return;
+  }
+
+  // In a real app this would send to a backend
+  // For now we show a success message
+  document.getElementById('contactForm').style.display = 'none';
+  document.getElementById('contactSuccess').style.display = 'block';
+}
+
+function toggleMode(){
+  document.body.classList.toggle('light');
+  document.getElementById('modeBtn').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('cs_mode', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+if(localStorage.getItem('cs_mode') === 'light'){
+  document.body.classList.add('light');
+  document.getElementById('modeBtn').textContent = '🌙';
+}
+</script>
+</body>
+</html>
