@@ -668,7 +668,62 @@
     .chart-ranges { flex-wrap:wrap; gap:6px; }
     .range-btn { font-size:10px; padding:4px 10px; }
     .score-section { grid-template-columns:1fr; gap:16px; padding:16px; }
-    .ai-section { padding:16px; }
+    .analyst-section {
+    padding:24px 28px;
+    border-top:1px solid var(--border);
+  }
+  .analyst-label {
+    display:flex; align-items:center; gap:8px;
+    font-size:11px; text-transform:uppercase; letter-spacing:2px;
+    color:var(--accent); margin-bottom:20px;
+  }
+  .analyst-label::before { content:'📊'; font-size:14px; }
+  .analyst-grid {
+    display:grid; grid-template-columns:1fr 1fr; gap:24px;
+  }
+  .analyst-consensus { display:flex; flex-direction:column; gap:12px; }
+  .consensus-badge {
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
+    margin-bottom:4px;
+  }
+  .consensus-dot {
+    width:12px; height:12px; border-radius:50%;
+  }
+  .consensus-strong-buy { color:#00c878; }
+  .consensus-buy { color:#56CCF2; }
+  .consensus-hold { color:#f5c84a; }
+  .consensus-sell { color:var(--red); }
+  .consensus-dot.strong-buy { background:#00c878; }
+  .consensus-dot.buy { background:#56CCF2; }
+  .consensus-dot.hold { background:#f5c84a; }
+  .consensus-dot.sell { background:var(--red); }
+  .analyst-count { color:var(--muted); font-size:13px; }
+  .rating-bars { display:flex; flex-direction:column; gap:8px; }
+  .rating-bar-row { display:flex; align-items:center; gap:10px; }
+  .rating-bar-label { font-size:11px; color:var(--muted); width:60px; text-align:right; }
+  .rating-bar-bg { flex:1; height:8px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+  .rating-bar-fill { height:100%; border-radius:4px; transition:width 1s ease; }
+  .rating-bar-count { font-size:11px; color:var(--muted); width:24px; }
+  .price-target-section { display:flex; flex-direction:column; gap:12px; }
+  .pt-current { font-size:13px; color:var(--muted); }
+  .pt-target {
+    font-family:'Syne',sans-serif; font-size:28px; font-weight:800;
+  }
+  .pt-upside {
+    font-size:14px; font-weight:600; padding:4px 12px;
+    border-radius:20px; display:inline-block;
+  }
+  .pt-upside.positive { background:rgba(0,200,120,0.1); color:#00c878; }
+  .pt-upside.negative { background:rgba(255,77,106,0.1); color:var(--red); }
+  .pt-range { color:var(--muted); font-size:12px; margin-top:4px; }
+  .pt-bar-wrap { margin-top:8px; }
+  .pt-bar-bg { height:6px; background:var(--surface2); border-radius:3px; position:relative; }
+  .pt-bar-current { position:absolute; top:-3px; width:12px; height:12px; background:var(--accent); border-radius:50%; transform:translateX(-50%); transition:left 1s ease; }
+  .pt-bar-target { position:absolute; top:-3px; width:12px; height:12px; background:#00c878; border-radius:50%; transform:translateX(-50%); transition:left 1s ease; }
+  .pt-bar-labels { display:flex; justify-content:space-between; margin-top:8px; font-size:10px; color:var(--muted); }
+  .analyst-no-data { color:var(--muted); font-size:13px; }
+  .ai-section { padding:16px; }
     .ai-text { font-size:13px; }
     .features-grid { grid-template-columns:1fr; }
     .feat-card { padding:18px; }
@@ -888,6 +943,12 @@
       <div class="ai-section">
         <div class="ai-label">AI Analysis Summary</div>
         <div class="ai-text" id="r-ai">—</div>
+      </div>
+
+      <!-- ANALYST RATINGS -->
+      <div class="analyst-section" id="analystSection">
+        <div class="analyst-label">Wall Street Analyst Ratings</div>
+        <div class="analyst-body" id="analystBody"></div>
       </div>
 
       <div class="news-section" id="newsSection">
@@ -1453,6 +1514,9 @@ function renderCard(sym, d){
   // Update watchlist button
   updateWatchlistBtn(sym);
 
+  // Render analyst ratings
+  renderAnalystRatings(sym, d.price);
+
   // Start auto refresh
   startAutoRefresh(sym);
 
@@ -1925,6 +1989,132 @@ function renderScreener(){
       <div class="screener-sector">${d.sector}</div>
     </div>
   `).join('');
+}
+
+// ANALYST RATINGS DATA
+// buy=strong buy, buy=buy, hold=hold, sell=sell
+// lowTarget, avgTarget, highTarget = analyst price targets
+const analystData = {
+  AAPL: { strongBuy:12, buy:8, hold:6, sell:1, lowTarget:198, avgTarget:248, highTarget:300 },
+  MSFT: { strongBuy:18, buy:10, hold:4, sell:0, lowTarget:380, avgTarget:472, highTarget:550 },
+  NVDA: { strongBuy:22, buy:12, hold:3, sell:0, lowTarget:700, avgTarget:1050, highTarget:1400 },
+  GOOGL: { strongBuy:15, buy:12, hold:5, sell:1, lowTarget:160, avgTarget:210, highTarget:260 },
+  AMZN: { strongBuy:20, buy:14, hold:3, sell:0, lowTarget:190, avgTarget:240, highTarget:290 },
+  META: { strongBuy:18, buy:10, hold:4, sell:1, lowTarget:480, avgTarget:680, highTarget:850 },
+  TSLA: { strongBuy:8, buy:6, hold:12, sell:8, lowTarget:120, avgTarget:280, highTarget:500 },
+  NFLX: { strongBuy:10, buy:8, hold:7, sell:2, lowTarget:550, avgTarget:780, highTarget:1000 },
+  AMD:  { strongBuy:14, buy:10, hold:6, sell:1, lowTarget:110, avgTarget:185, highTarget:260 },
+  UBER: { strongBuy:16, buy:10, hold:4, sell:0, lowTarget:65, avgTarget:95, highTarget:130 },
+  JPM:  { strongBuy:10, buy:8, hold:7, sell:2, lowTarget:210, avgTarget:265, highTarget:320 },
+  BAC:  { strongBuy:8, buy:10, hold:8, sell:2, lowTarget:35, avgTarget:48, highTarget:62 },
+  GS:   { strongBuy:9, buy:8, hold:6, sell:2, lowTarget:480, avgTarget:598, highTarget:720 },
+  V:    { strongBuy:14, buy:10, hold:5, sell:0, lowTarget:290, avgTarget:355, highTarget:410 },
+  MA:   { strongBuy:13, buy:9, hold:5, sell:0, lowTarget:470, avgTarget:560, highTarget:650 },
+  JNJ:  { strongBuy:6, buy:8, hold:9, sell:3, lowTarget:140, avgTarget:162, highTarget:185 },
+  PFE:  { strongBuy:4, buy:6, hold:12, sell:4, lowTarget:22, avgTarget:30, highTarget:40 },
+  UNH:  { strongBuy:12, buy:10, hold:4, sell:1, lowTarget:460, avgTarget:570, highTarget:680 },
+  COST: { strongBuy:10, buy:8, hold:7, sell:1, lowTarget:850, avgTarget:1020, highTarget:1200 },
+  WMT:  { strongBuy:12, buy:10, hold:5, sell:1, lowTarget:80, avgTarget:105, highTarget:130 },
+  NKE:  { strongBuy:8, buy:10, hold:8, sell:4, lowTarget:68, avgTarget:90, highTarget:115 },
+  MCD:  { strongBuy:10, buy:8, hold:6, sell:1, lowTarget:260, avgTarget:310, highTarget:360 },
+  ORCL: { strongBuy:10, buy:8, hold:7, sell:1, lowTarget:150, avgTarget:195, highTarget:240 },
+  CRM:  { strongBuy:12, buy:10, hold:6, sell:1, lowTarget:260, avgTarget:340, highTarget:420 },
+  ADBE: { strongBuy:10, buy:8, hold:8, sell:2, lowTarget:420, avgTarget:520, highTarget:640 },
+  SPY:  { strongBuy:0, buy:0, hold:0, sell:0, lowTarget:0, avgTarget:0, highTarget:0 },
+};
+
+function renderAnalystRatings(sym, currentPrice){
+  const body = document.getElementById('analystBody');
+  const d = analystData[sym];
+
+  if(!d || d.avgTarget === 0){
+    body.innerHTML = '<div class="analyst-no-data">Analyst data not yet available for this stock. Check back soon!</div>';
+    return;
+  }
+
+  const total = d.strongBuy + d.buy + d.hold + d.sell;
+  const upside = (((d.avgTarget - currentPrice) / currentPrice) * 100).toFixed(1);
+  const isPositive = parseFloat(upside) >= 0;
+
+  // Determine consensus
+  const buyPct = (d.strongBuy + d.buy) / total;
+  let consensus, consensusClass, dotClass;
+  if(buyPct >= 0.7){ consensus = 'Strong Buy'; consensusClass = 'consensus-strong-buy'; dotClass = 'strong-buy'; }
+  else if(buyPct >= 0.5){ consensus = 'Buy'; consensusClass = 'consensus-buy'; dotClass = 'buy'; }
+  else if(d.hold / total >= 0.4){ consensus = 'Hold'; consensusClass = 'consensus-hold'; dotClass = 'hold'; }
+  else { consensus = 'Sell'; consensusClass = 'consensus-sell'; dotClass = 'sell'; }
+
+  // Price target bar position
+  const low = d.lowTarget;
+  const high = d.highTarget;
+  const range = high - low;
+  const currentPct = Math.min(Math.max(((currentPrice - low) / range) * 100, 0), 100);
+  const targetPct = Math.min(Math.max(((d.avgTarget - low) / range) * 100, 0), 100);
+
+  body.innerHTML = `
+    <div class="analyst-grid">
+      <div class="analyst-consensus">
+        <div class="consensus-badge ${consensusClass}">
+          <div class="consensus-dot ${dotClass}"></div>
+          ${consensus}
+        </div>
+        <div class="analyst-count">${total} analyst${total !== 1 ? 's' : ''} covering ${sym}</div>
+        <div class="rating-bars">
+          <div class="rating-bar-row">
+            <div class="rating-bar-label">Strong Buy</div>
+            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width:0%;background:#00c878" data-width="${(d.strongBuy/total*100).toFixed(0)}"></div></div>
+            <div class="rating-bar-count">${d.strongBuy}</div>
+          </div>
+          <div class="rating-bar-row">
+            <div class="rating-bar-label">Buy</div>
+            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width:0%;background:#56CCF2" data-width="${(d.buy/total*100).toFixed(0)}"></div></div>
+            <div class="rating-bar-count">${d.buy}</div>
+          </div>
+          <div class="rating-bar-row">
+            <div class="rating-bar-label">Hold</div>
+            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width:0%;background:#f5c84a" data-width="${(d.hold/total*100).toFixed(0)}"></div></div>
+            <div class="rating-bar-count">${d.hold}</div>
+          </div>
+          <div class="rating-bar-row">
+            <div class="rating-bar-label">Sell</div>
+            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width:0%;background:var(--red)" data-width="${(d.sell/total*100).toFixed(0)}"></div></div>
+            <div class="rating-bar-count">${d.sell}</div>
+          </div>
+        </div>
+      </div>
+      <div class="price-target-section">
+        <div class="pt-current">Average Price Target</div>
+        <div class="pt-target">$${d.avgTarget.toLocaleString()}</div>
+        <div>
+          <span class="pt-upside ${isPositive?'positive':'negative'}">
+            ${isPositive?'↑':'↓'} ${Math.abs(upside)}% ${isPositive?'upside':'downside'}
+          </span>
+        </div>
+        <div class="pt-range">Range: $${d.lowTarget} — $${d.highTarget}</div>
+        <div class="pt-bar-wrap">
+          <div class="pt-bar-bg">
+            <div class="pt-bar-current" id="ptBarCurrent" style="left:${currentPct}%"></div>
+            <div class="pt-bar-target" id="ptBarTarget" style="left:0%" data-target="${targetPct}"></div>
+          </div>
+          <div class="pt-bar-labels">
+            <span>$${d.lowTarget} Low</span>
+            <span style="color:var(--accent)">● Current</span>
+            <span style="color:#00c878">● Target</span>
+            <span>$${d.highTarget} High</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.rating-bar-fill').forEach(b => {
+      b.style.width = b.dataset.width + '%';
+    });
+    const targetBar = document.getElementById('ptBarTarget');
+    if(targetBar) targetBar.style.left = targetBar.dataset.target + '%';
+  }, 100);
 }
 
 // SEARCH SUGGESTIONS
