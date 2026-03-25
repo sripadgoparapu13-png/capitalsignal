@@ -3,251 +3,121 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>News — CapitalSignal</title>
+<title>Earnings Calendar — CapitalSignal</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: #2a2a3a;
-    --accent: #2F80ED;
-    --accent2: #56CCF2;
-    --text: #f0f0f5;
-    --muted: #6b6b85;
-    --red: #ff4d6a;
-    --green: #2F80ED;
+    --bg:#0a0a0f; --surface:#12121a; --surface2:#1a1a26;
+    --border:#2a2a3a; --accent:#2F80ED; --accent2:#56CCF2;
+    --text:#f0f0f5; --muted:#6b6b85; --red:#ff4d6a; --green:#00c878;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; }
-  body {
-    background:var(--bg); color:var(--text);
-    font-family:'DM Mono',monospace; min-height:100vh;
-  }
+  body { background:var(--bg); color:var(--text); font-family:'DM Mono',monospace; min-height:100vh; }
   body::before {
     content:''; position:fixed; inset:0;
-    background-image:
-      linear-gradient(rgba(47,128,237,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(47,128,237,0.03) 1px, transparent 1px);
-    background-size:40px 40px;
-    pointer-events:none; z-index:0;
+    background-image: linear-gradient(rgba(47,128,237,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(47,128,237,0.03) 1px, transparent 1px);
+    background-size:40px 40px; pointer-events:none; z-index:0;
   }
-  body.light {
-    --bg:#f5f7fa; --surface:#ffffff; --surface2:#f0f2f5;
-    --border:#e0e4ea; --text:#0d1117; --muted:#6b7280;
-  }
+  body.light { --bg:#f5f7fa; --surface:#ffffff; --surface2:#f0f2f5; --border:#e0e4ea; --text:#0d1117; --muted:#6b7280; }
 
-  /* NAV */
   nav {
     position:sticky; top:0; z-index:100;
     display:flex; align-items:center; justify-content:space-between;
-    padding:16px 40px;
-    background:rgba(10,10,15,0.85);
-    backdrop-filter:blur(20px);
+    padding:16px 40px; background:rgba(10,10,15,0.85); backdrop-filter:blur(20px);
     border-bottom:1px solid var(--border);
   }
-  .logo {
-    font-family:'Syne',sans-serif; font-size:22px; font-weight:800;
-    letter-spacing:-0.5px; text-decoration:none; color:var(--text);
-  }
+  .logo { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; text-decoration:none; color:var(--text); }
   .logo span { color:var(--accent); }
   .nav-links { display:flex; gap:32px; }
-  .nav-links a {
-    color:var(--muted); text-decoration:none;
-    font-size:12px; letter-spacing:1px; text-transform:uppercase;
-    transition:color 0.2s;
-  }
+  .nav-links a { color:var(--muted); text-decoration:none; font-size:12px; letter-spacing:1px; text-transform:uppercase; transition:color 0.2s; }
   .nav-links a:hover, .nav-links a.active { color:var(--accent); }
+  .hamburger { display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:4px; }
+  .hamburger span { display:block; width:22px; height:2px; background:var(--text); border-radius:2px; transition:all 0.3s ease; }
+  .hamburger.open span:nth-child(1) { transform:rotate(45deg) translate(5px,5px); }
+  .hamburger.open span:nth-child(2) { opacity:0; }
+  .hamburger.open span:nth-child(3) { transform:rotate(-45deg) translate(5px,-5px); }
+  .mobile-menu { display:none; flex-direction:column; background:var(--surface); border-bottom:1px solid var(--border); padding:8px 0; position:relative; z-index:99; }
+  .mobile-menu.open { display:flex; }
+  .mobile-menu a { color:var(--muted); text-decoration:none; font-size:13px; letter-spacing:1px; text-transform:uppercase; padding:12px 24px; transition:all 0.2s; border-bottom:1px solid var(--border); }
+  .mobile-menu a:last-child { border-bottom:none; }
+  .mobile-menu a:hover, .mobile-menu a.active { color:var(--accent); background:rgba(47,128,237,0.05); }
   .nav-right { display:flex; align-items:center; gap:10px; }
-  .mode-toggle {
-    background:var(--surface2); border:1px solid var(--border);
-    color:var(--muted); font-size:16px;
-    width:36px; height:36px; border-radius:8px;
-    cursor:pointer; display:flex; align-items:center; justify-content:center;
-    transition:all 0.2s;
-  }
+  .mode-toggle { background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-size:16px; width:36px; height:36px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
   .mode-toggle:hover { border-color:var(--accent); color:var(--accent); }
-  .nav-badge {
-    background:var(--accent); color:#fff;
-    font-size:11px; padding:6px 14px; border-radius:20px;
-    font-family:'Syne',sans-serif;
-  }
+  .nav-badge { background:var(--accent); color:#fff; font-size:11px; padding:6px 14px; border-radius:20px; font-family:'Syne',sans-serif; }
 
-  /* TICKER */
-  .ticker-wrap {
-    overflow:hidden; border-bottom:1px solid var(--border);
-    background:var(--surface); padding:10px 0;
-  }
-  .ticker-track {
-    display:flex; animation:ticker 30s linear infinite; width:max-content;
-  }
-  @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-  .ticker-item {
-    display:flex; align-items:center; gap:8px;
-    padding:0 28px; white-space:nowrap; font-size:12px;
-    border-right:1px solid var(--border);
-  }
-  .ticker-sym { font-weight:500; }
-  .ticker-price { color:var(--muted); }
-  .up { color:#00c878; }
-  .down { color:var(--red); }
+  .main { max-width:1100px; margin:0 auto; padding:48px 40px; position:relative; z-index:1; }
 
-  /* MAIN */
-  .main {
-    max-width:1200px; margin:0 auto;
-    padding:48px 40px; position:relative; z-index:1;
-  }
-
-  /* PAGE HEADER */
-  .page-header { margin-bottom:36px; }
-  .page-title {
-    font-family:'Syne',sans-serif; font-size:42px; font-weight:800;
-    letter-spacing:-1.5px; margin-bottom:8px;
-  }
+  .page-header { margin-bottom:40px; }
+  .page-title { font-family:'Syne',sans-serif; font-size:42px; font-weight:800; letter-spacing:-1.5px; margin-bottom:8px; }
   .page-title span { color:var(--accent); }
   .page-sub { color:var(--muted); font-size:14px; }
 
-  /* SEARCH & FILTERS */
-  .news-controls {
-    display:flex; gap:16px; margin-bottom:32px;
-    flex-wrap:wrap; align-items:center;
-  }
-  .news-search-wrap {
-    flex:1; min-width:260px;
-    position:relative;
-  }
-  .news-search {
-    width:100%;
-    background:var(--surface); border:1px solid var(--border);
-    color:var(--text); font-family:'DM Mono',monospace;
-    font-size:14px; padding:12px 16px 12px 40px;
-    border-radius:10px; outline:none;
-    transition:border-color 0.2s;
-  }
-  .news-search:focus { border-color:var(--accent); }
-  .news-search::placeholder { color:var(--muted); }
-  .search-icon {
-    position:absolute; left:14px; top:50%; transform:translateY(-50%);
-    color:var(--muted); font-size:14px; pointer-events:none;
-  }
-  .topic-filters { display:flex; gap:8px; flex-wrap:wrap; }
-  .topic-btn {
-    background:var(--surface); border:1px solid var(--border);
-    color:var(--muted); font-family:'DM Mono',monospace;
-    font-size:11px; padding:8px 16px; border-radius:20px;
-    cursor:pointer; transition:all 0.2s; white-space:nowrap;
-  }
-  .topic-btn:hover, .topic-btn.active {
-    border-color:var(--accent); color:var(--accent);
-    background:rgba(47,128,237,0.08);
-  }
+  /* WEEK TABS */
+  .week-tabs { display:flex; gap:8px; margin-bottom:32px; flex-wrap:wrap; }
+  .week-tab { background:var(--surface); border:1px solid var(--border); color:var(--muted); font-family:'DM Mono',monospace; font-size:12px; padding:8px 20px; border-radius:8px; cursor:pointer; transition:all 0.2s; }
+  .week-tab:hover, .week-tab.active { border-color:var(--accent); color:var(--accent); background:rgba(47,128,237,0.08); }
 
-  /* NEWS LAYOUT */
-  .news-layout { display:grid; grid-template-columns:1fr 340px; gap:32px; }
+  /* CALENDAR GRID */
+  .calendar-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:48px; }
+  .day-column { display:flex; flex-direction:column; gap:0; }
+  .day-header { background:var(--surface2); border:1px solid var(--border); border-radius:10px 10px 0 0; padding:12px 16px; text-align:center; }
+  .day-name { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; }
+  .day-date { color:var(--muted); font-size:11px; margin-top:2px; }
+  .day-header.today { background:rgba(47,128,237,0.1); border-color:var(--accent); }
+  .day-header.today .day-name { color:var(--accent); }
+  .day-earnings { border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px; overflow:hidden; min-height:100px; }
+  .earning-item { padding:10px 12px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.2s; text-decoration:none; display:block; color:var(--text); }
+  .earning-item:last-child { border-bottom:none; }
+  .earning-item:hover { background:rgba(47,128,237,0.06); }
+  .earning-sym { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; }
+  .earning-time { font-size:10px; color:var(--muted); margin-top:2px; }
+  .earning-eps { font-size:10px; margin-top:3px; }
+  .beat { color:var(--green); }
+  .miss { color:var(--red); }
+  .pending { color:var(--muted); }
+  .day-empty { padding:16px; color:var(--muted); font-size:11px; text-align:center; }
 
-  /* NEWS FEED */
-  .news-feed { display:flex; flex-direction:column; gap:0; }
-  .news-card {
-    display:flex; gap:20px; padding:20px 0;
-    border-bottom:1px solid var(--border);
-    text-decoration:none; color:var(--text);
-    transition:all 0.2s;
-    animation:fadeIn 0.3s ease;
-  }
-  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  .news-card:hover { background:rgba(47,128,237,0.03); margin:0 -16px; padding:20px 16px; border-radius:10px; border-bottom-color:transparent; }
-  .news-card:first-child { padding-top:0; }
-  .news-content { flex:1; }
-  .news-source-row {
-    display:flex; align-items:center; gap:10px; margin-bottom:8px;
-  }
-  .news-source-badge {
-    background:rgba(47,128,237,0.1); color:var(--accent);
-    font-size:10px; padding:3px 10px; border-radius:20px;
-    text-transform:uppercase; letter-spacing:1px;
-  }
-  .news-time { color:var(--muted); font-size:11px; }
-  .news-headline {
-    font-family:'Syne',sans-serif; font-size:16px; font-weight:700;
-    line-height:1.4; margin-bottom:8px; color:var(--text);
-  }
-  .news-desc { color:var(--muted); font-size:13px; line-height:1.6; }
-  .news-img {
-    width:120px; height:80px; border-radius:8px;
-    object-fit:cover; flex-shrink:0; background:var(--surface2);
-  }
-  .news-loading-state {
-    display:flex; flex-direction:column; gap:16px; padding:20px 0;
-  }
-  .news-skeleton {
-    height:80px; background:var(--surface2);
-    border-radius:8px; animation:shimmer 1.5s infinite;
-  }
-  @keyframes shimmer {
-    0%{opacity:1} 50%{opacity:0.5} 100%{opacity:1}
-  }
-  .no-news { color:var(--muted); font-size:14px; padding:40px 0; text-align:center; }
+  /* UPCOMING LIST */
+  .section-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
 
-  /* SIDEBAR */
-  .news-sidebar { display:flex; flex-direction:column; gap:24px; }
-  .sidebar-card {
-    background:var(--surface); border:1px solid var(--border);
-    border-radius:14px; overflow:hidden;
-  }
-  .sidebar-header {
-    padding:14px 18px; border-bottom:1px solid var(--border);
-    font-family:'Syne',sans-serif; font-size:13px; font-weight:700;
-    text-transform:uppercase; letter-spacing:1px; color:var(--muted);
-  }
-  .trending-list { padding:8px 0; }
-  .trending-item {
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 18px; cursor:pointer; transition:background 0.2s;
-    text-decoration:none; color:var(--text);
-  }
-  .trending-item:hover { background:var(--surface2); }
-  .trending-sym { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; }
-  .trending-chg { font-size:12px; font-weight:500; }
-  .quick-links { padding:12px; display:flex; flex-direction:column; gap:8px; }
-  .quick-link {
-    display:flex; align-items:center; gap:10px;
-    padding:10px 12px; border-radius:8px;
-    background:var(--surface2); text-decoration:none; color:var(--text);
-    font-size:13px; transition:all 0.2s;
-  }
-  .quick-link:hover { border-color:var(--accent); background:rgba(47,128,237,0.08); }
-  .quick-link-icon { font-size:18px; }
+  .earnings-table { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:48px; }
+  .et-header { display:grid; grid-template-columns:1fr 1fr 120px 120px 120px 100px; gap:0; padding:12px 20px; border-bottom:1px solid var(--border); background:var(--surface2); }
+  .eth { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); }
+  .eth.right { text-align:right; }
+  .et-row { display:grid; grid-template-columns:1fr 1fr 120px 120px 120px 100px; gap:0; padding:14px 20px; border-bottom:1px solid var(--border); align-items:center; cursor:pointer; transition:background 0.2s; text-decoration:none; color:var(--text); }
+  .et-row:last-child { border-bottom:none; }
+  .et-row:hover { background:var(--surface2); }
+  .et-sym { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--accent); }
+  .et-name { color:var(--muted); font-size:12px; margin-top:2px; }
+  .et-date { font-size:13px; }
+  .et-time-badge { display:inline-block; font-size:10px; padding:2px 8px; border-radius:10px; margin-top:4px; }
+  .bmo { background:rgba(47,128,237,0.1); color:var(--accent); } /* Before Market Open */
+  .amc { background:rgba(255,77,106,0.1); color:var(--red); } /* After Market Close */
+  .et-est { font-size:13px; text-align:right; }
+  .et-actual { font-size:13px; font-weight:600; text-align:right; }
+  .et-surprise { font-size:12px; font-weight:600; text-align:right; }
+  .et-status { text-align:right; }
+  .status-badge { display:inline-block; font-size:10px; padding:3px 10px; border-radius:10px; }
+  .status-upcoming { background:rgba(47,128,237,0.1); color:var(--accent); }
+  .status-beat { background:rgba(0,200,120,0.1); color:var(--green); }
+  .status-miss { background:rgba(255,77,106,0.1); color:var(--red); }
+  .status-inline { background:rgba(245,200,74,0.1); color:#f5c84a; }
 
-  /* LOAD MORE */
-  .load-more-wrap { text-align:center; margin-top:32px; }
-  .load-more-btn {
-    background:var(--surface); border:1px solid var(--border);
-    color:var(--muted); font-family:'DM Mono',monospace;
-    font-size:13px; padding:12px 32px; border-radius:10px;
-    cursor:pointer; transition:all 0.2s;
-  }
-  .load-more-btn:hover { border-color:var(--accent); color:var(--accent); }
-
-  /* FOOTER */
-  footer {
-    border-top:1px solid var(--border); padding:32px 40px;
-    display:flex; align-items:center; justify-content:space-between;
-    color:var(--muted); font-size:12px; position:relative; z-index:1;
-    background:var(--surface);
-  }
+  footer { border-top:1px solid var(--border); padding:32px 40px; display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:12px; background:var(--surface); position:relative; z-index:1; }
   .footer-logo { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--text); }
   .footer-logo span { color:var(--accent); }
 
-  @media(max-width:900px){
-    .news-layout { grid-template-columns:1fr; }
-    .news-sidebar { display:none; }
-  }
   @media(max-width:768px){
-    nav { padding:12px 16px; }
-    .nav-links { display:none; }
-    .main { padding:24px 16px; }
-    .page-title { font-size:28px; }
-    .news-img { width:80px; height:60px; }
+    nav { padding:12px 16px; } .nav-links { display:none; }
+    .main { padding:24px 16px; } .page-title { font-size:28px; }
+    .calendar-grid { grid-template-columns:1fr; }
+    .et-header { grid-template-columns:1fr 1fr 100px; }
+    .et-header .eth:nth-child(4), .et-header .eth:nth-child(5) { display:none; }
+    .et-row { grid-template-columns:1fr 1fr 100px; }
+    .et-row > *:nth-child(4), .et-row > *:nth-child(5) { display:none; }
     footer { flex-direction:column; gap:12px; padding:20px 16px; }
   }
 </style>
@@ -259,249 +129,221 @@
   <div class="nav-links">
     <a href="/">Home</a>
     <a href="/markets.html">Markets</a>
-    <a href="/news.html" class="active">News</a>
+    <a href="/news.html">News</a>
     <a href="/compare.html">Compare</a>
     <a href="/crypto.html">Crypto</a>
-    <a href="/earnings.html">Earnings</a>
     <a href="/about.html">About</a>
   </div>
   <div class="nav-right">
     <button class="mode-toggle" onclick="toggleMode()" id="modeBtn">🌙</button>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
     <div class="nav-badge">Beta</div>
   </div>
 </nav>
 
-<div class="ticker-wrap">
-  <div class="ticker-track" id="tickerTrack">
-    <div class="ticker-item"><span class="ticker-sym">Loading markets...</span></div>
-  </div>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/markets.html">Markets</a>
+  <a href="/news.html">News</a>
+  <a href="/compare.html">Compare</a>
+  <a href="/crypto.html">Crypto</a>
+  <a href="/earnings.html">Earnings</a>
+  <a href="/about.html">About</a>
 </div>
 
 <div class="main">
 
   <div class="page-header">
-    <div class="page-title">Financial <span>News</span></div>
-    <div class="page-sub">Live headlines from Reuters, Bloomberg, CNBC, WSJ and more</div>
+    <div class="page-title">Earnings <span>Calendar</span></div>
+    <div class="page-sub">Upcoming and recent earnings reports for major stocks</div>
   </div>
 
-  <!-- CONTROLS -->
-  <div class="news-controls">
-    <div class="news-search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="news-search" id="newsSearch" placeholder="Search news (e.g. Apple, Fed, earnings...)" oninput="searchNews()"/>
+  <!-- WEEK VIEW -->
+  <div class="section-title">This Week</div>
+  <div class="calendar-grid" id="calendarGrid"></div>
+
+  <!-- UPCOMING EARNINGS TABLE -->
+  <div class="section-title">Upcoming Earnings</div>
+  <div class="earnings-table">
+    <div class="et-header">
+      <div class="eth">Company</div>
+      <div class="eth">Date</div>
+      <div class="eth right">Est. EPS</div>
+      <div class="eth right">Actual EPS</div>
+      <div class="eth right">Surprise</div>
+      <div class="eth right">Status</div>
     </div>
-    <div class="topic-filters">
-      <button class="topic-btn active" onclick="setTopic('business', this)">📊 Markets</button>
-      <button class="topic-btn" onclick="setTopic('technology', this)">💻 Tech</button>
-      <button class="topic-btn" onclick="setTopic('economy', this)">🏦 Economy</button>
-      <button class="topic-btn" onclick="setTopic('earnings', this)">📈 Earnings</button>
-      <button class="topic-btn" onclick="setTopic('crypto', this)">₿ Crypto</button>
-      <button class="topic-btn" onclick="setTopic('energy', this)">⚡ Energy</button>
-    </div>
-  </div>
-
-  <div class="news-layout">
-
-    <!-- MAIN FEED -->
-    <div>
-      <div class="news-feed" id="newsFeed">
-        <div class="news-loading-state">
-          <div class="news-skeleton"></div>
-          <div class="news-skeleton"></div>
-          <div class="news-skeleton"></div>
-          <div class="news-skeleton"></div>
-          <div class="news-skeleton"></div>
-        </div>
-      </div>
-      <div class="load-more-wrap">
-        <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()" style="display:none">Load More</button>
-      </div>
-    </div>
-
-    <!-- SIDEBAR -->
-    <div class="news-sidebar">
-
-      <div class="sidebar-card">
-        <div class="sidebar-header">🔥 Trending Stocks</div>
-        <div class="trending-list" id="trendingList">
-          <div style="padding:16px;color:var(--muted);font-size:13px;">Loading...</div>
-        </div>
-      </div>
-
-      <div class="sidebar-card">
-        <div class="sidebar-header">⚡ Quick Links</div>
-        <div class="quick-links">
-          <a href="/" class="quick-link"><span class="quick-link-icon">🔍</span>Stock Search</a>
-          <a href="/markets.html" class="quick-link"><span class="quick-link-icon">📊</span>Market Overview</a>
-          <a href="/#screenerSection" class="quick-link"><span class="quick-link-icon">🔎</span>Stock Screener</a>
-          <a href="/#portfolioSection" class="quick-link"><span class="quick-link-icon">💼</span>Portfolio Tracker</a>
-        </div>
-      </div>
-
-    </div>
+    <div id="earningsList"></div>
   </div>
 
 </div>
 
 <footer>
   <div class="footer-logo">Capital<span>Signal</span></div>
-  <span>© 2025 CapitalSignal — Financial news aggregator</span>
+  <span>© 2025 CapitalSignal — Earnings data is approximate</span>
 </footer>
 
 <script>
-let currentTopic = 'business';
-let currentPage = 1;
-let allArticles = [];
-let searchTimeout = null;
+// Earnings database
+// In a real app this would come from a financial data API
+// We store: sym, name, date (YYYY-MM-DD), time (BMO/AMC), estEPS, actualEPS (null if not yet reported)
+const earnings = [
+  // Recent (already reported)
+  {sym:'AAPL', name:'Apple Inc.', date:'2026-01-30', time:'AMC', estEPS:2.35, actualEPS:2.40},
+  {sym:'MSFT', name:'Microsoft', date:'2026-01-29', time:'AMC', estEPS:3.14, actualEPS:3.23},
+  {sym:'GOOGL', name:'Alphabet', date:'2026-02-04', time:'AMC', estEPS:2.15, actualEPS:2.15},
+  {sym:'META', name:'Meta Platforms', date:'2026-01-29', time:'AMC', estEPS:6.76, actualEPS:8.02},
+  {sym:'AMZN', name:'Amazon', date:'2026-02-06', time:'AMC', estEPS:1.49, actualEPS:1.86},
+  {sym:'TSLA', name:'Tesla', date:'2026-01-29', time:'AMC', estEPS:0.40, actualEPS:0.73},
+  {sym:'NVDA', name:'NVIDIA', date:'2026-02-26', time:'AMC', estEPS:0.84, actualEPS:0.89},
+  {sym:'JPM', name:'JPMorgan Chase', date:'2026-01-15', time:'BMO', estEPS:4.09, actualEPS:4.81},
+  {sym:'V', name:'Visa Inc.', date:'2026-01-28', time:'AMC', estEPS:2.65, actualEPS:2.75},
+  {sym:'JNJ', name:'Johnson & Johnson', date:'2026-01-22', time:'BMO', estEPS:2.04, actualEPS:2.04},
 
-async function fetchNews(query, page = 1){
-  const res = await fetch('/api/news?q=' + encodeURIComponent(query));
-  const data = await res.json();
-  return data.articles || [];
-}
+  // Upcoming (not yet reported — null actualEPS)
+  {sym:'COST', name:'Costco Wholesale', date:'2026-03-27', time:'AMC', estEPS:4.10, actualEPS:null},
+  {sym:'NKE', name:'Nike Inc.', date:'2026-03-25', time:'AMC', estEPS:0.29, actualEPS:null},
+  {sym:'WMT', name:'Walmart', date:'2026-05-15', time:'BMO', estEPS:0.58, actualEPS:null},
+  {sym:'NFLX', name:'Netflix', date:'2026-04-15', time:'AMC', estEPS:5.68, actualEPS:null},
+  {sym:'AMD', name:'Advanced Micro Devices', date:'2026-04-29', time:'AMC', estEPS:0.94, actualEPS:null},
+  {sym:'UBER', name:'Uber Technologies', date:'2026-05-07', time:'AMC', estEPS:0.50, actualEPS:null},
+  {sym:'ADBE', name:'Adobe Inc.', date:'2026-03-18', time:'AMC', estEPS:4.97, actualEPS:null},
+  {sym:'CRM', name:'Salesforce', date:'2026-05-28', time:'AMC', estEPS:2.61, actualEPS:null},
+  {sym:'ORCL', name:'Oracle', date:'2026-03-10', time:'AMC', estEPS:1.61, actualEPS:null},
+  {sym:'GS', name:'Goldman Sachs', date:'2026-04-14', time:'BMO', estEPS:11.50, actualEPS:null},
+  {sym:'BAC', name:'Bank of America', date:'2026-04-15', time:'BMO', estEPS:0.82, actualEPS:null},
+  {sym:'UNH', name:'UnitedHealth', date:'2026-04-17', time:'BMO', estEPS:7.25, actualEPS:null},
+  {sym:'MA', name:'Mastercard', date:'2026-04-29', time:'AMC', estEPS:3.58, actualEPS:null},
+  {sym:'PFE', name:'Pfizer', date:'2026-04-29', time:'BMO', estEPS:0.66, actualEPS:null},
+];
 
-function timeAgo(dateStr){
-  const now = new Date();
-  const date = new Date(dateStr);
-  const diff = Math.floor((now - date) / 1000);
-  if(diff < 60) return 'Just now';
-  if(diff < 3600) return Math.floor(diff/60) + 'm ago';
-  if(diff < 86400) return Math.floor(diff/3600) + 'h ago';
-  return Math.floor(diff/86400) + 'd ago';
-}
+function getWeekDays(){
+  // Get Monday-Friday of the current week
+  const today = new Date();
+  const day = today.getDay(); // 0=Sun, 1=Mon...
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
 
-function renderArticles(articles, append = false){
-  const feed = document.getElementById('newsFeed');
-  if(!append) feed.innerHTML = '';
-
-  if(articles.length === 0 && !append){
-    feed.innerHTML = '<div class="no-news">No news found. Try a different topic or search term.</div>';
-    document.getElementById('loadMoreBtn').style.display = 'none';
-    return;
+  const days = [];
+  for(let i = 0; i < 5; i++){
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    days.push(d);
   }
+  return days;
+}
 
-  const html = articles.map(a => `
-    <a class="news-card" href="${a.url}" target="_blank" rel="noopener">
-      <div class="news-content">
-        <div class="news-source-row">
-          <span class="news-source-badge">${a.source?.name || 'News'}</span>
-          <span class="news-time">${timeAgo(a.publishedAt)}</span>
+function formatDate(dateStr){
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
+
+function getSurprise(est, actual){
+  if(actual === null) return null;
+  const diff = ((actual - est) / Math.abs(est)) * 100;
+  return diff;
+}
+
+function renderCalendar(){
+  const days = getWeekDays();
+  const grid = document.getElementById('calendarGrid');
+  const today = new Date().toDateString();
+
+  grid.innerHTML = days.map(day => {
+    const dateStr = day.toISOString().split('T')[0];
+    const dayEarnings = earnings.filter(e => e.date === dateStr);
+    const isToday = day.toDateString() === today;
+
+    return `
+      <div class="day-column">
+        <div class="day-header ${isToday ? 'today' : ''}">
+          <div class="day-name">${day.toLocaleDateString('en-US', {weekday:'short'})}</div>
+          <div class="day-date">${day.toLocaleDateString('en-US', {month:'short', day:'numeric'})}</div>
         </div>
-        <div class="news-headline">${a.title}</div>
-        ${a.description ? `<div class="news-desc">${a.description.slice(0,120)}...</div>` : ''}
+        <div class="day-earnings">
+          ${dayEarnings.length === 0
+            ? '<div class="day-empty">No earnings</div>'
+            : dayEarnings.map(e => {
+                const surprise = getSurprise(e.estEPS, e.actualEPS);
+                return `
+                  <a class="earning-item" href="/?sym=${e.sym}" onclick="goTo('${e.sym}'); return false;">
+                    <div class="earning-sym">${e.sym}</div>
+                    <div class="earning-time">${e.time === 'BMO' ? '🌅 Before Open' : '🌆 After Close'}</div>
+                    ${surprise !== null
+                      ? `<div class="earning-eps ${surprise >= 0 ? 'beat' : 'miss'}">${surprise >= 0 ? '▲ Beat' : '▼ Miss'} ${Math.abs(surprise).toFixed(1)}%</div>`
+                      : `<div class="earning-eps pending">Est. $${e.estEPS}</div>`
+                    }
+                  </a>
+                `;
+              }).join('')
+          }
+        </div>
       </div>
-      ${a.urlToImage ? `<img class="news-img" src="${a.urlToImage}" alt="" onerror="this.style.display='none'"/>` : ''}
-    </a>
-  `).join('');
-
-  feed.innerHTML += html;
-  document.getElementById('loadMoreBtn').style.display = articles.length >= 5 ? 'inline-block' : 'none';
+    `;
+  }).join('');
 }
 
-async function loadNews(topic){
-  const feed = document.getElementById('newsFeed');
-  feed.innerHTML = `<div class="news-loading-state">
-    <div class="news-skeleton"></div>
-    <div class="news-skeleton"></div>
-    <div class="news-skeleton"></div>
-    <div class="news-skeleton"></div>
-  </div>`;
-  currentPage = 1;
-  try {
-    allArticles = await fetchNews(topic + ' stock market finance');
-    renderArticles(allArticles);
-  } catch(e){
-    feed.innerHTML = '<div class="no-news">Unable to load news right now. Please try again.</div>';
-  }
-}
+function renderEarningsList(){
+  const list = document.getElementById('earningsList');
+  const today = new Date();
 
-function setTopic(topic, btn){
-  currentTopic = topic;
-  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('newsSearch').value = '';
-  loadNews(topic);
-}
+  // Sort: upcoming first by date, then recent by date descending
+  const upcoming = earnings
+    .filter(e => e.actualEPS === null)
+    .sort((a,b) => new Date(a.date) - new Date(b.date));
 
-function searchNews(){
-  clearTimeout(searchTimeout);
-  const q = document.getElementById('newsSearch').value.trim();
-  if(!q){ loadNews(currentTopic); return; }
-  searchTimeout = setTimeout(async () => {
-    const feed = document.getElementById('newsFeed');
-    feed.innerHTML = `<div class="news-loading-state"><div class="news-skeleton"></div><div class="news-skeleton"></div></div>`;
-    try {
-      const articles = await fetchNews(q);
-      renderArticles(articles);
-    } catch(e){
-      feed.innerHTML = '<div class="no-news">Search failed. Please try again.</div>';
-    }
-  }, 600);
-}
+  const reported = earnings
+    .filter(e => e.actualEPS !== null)
+    .sort((a,b) => new Date(b.date) - new Date(a.date));
 
-async function loadMore(){
-  currentPage++;
-  try {
-    const more = await fetchNews(currentTopic + ' stock market finance');
-    renderArticles(more, true);
-  } catch(e){}
-}
+  const sorted = [...upcoming, ...reported];
 
-// TRENDING STOCKS
-const trendingSyms = ['AAPL','NVDA','TSLA','META','AMZN','MSFT','GOOGL','AMD'];
-async function loadTrending(){
-  const list = document.getElementById('trendingList');
-  try {
-    const data = await Promise.all(trendingSyms.map(async sym => {
-      const res = await fetch('/api/yahoo?url=' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=1d'));
-      const d = await res.json();
-      const meta = d.chart.result[0].meta;
-      const chg = ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose * 100).toFixed(2);
-      return { sym, price: meta.regularMarketPrice.toFixed(2), chg, up: parseFloat(chg) >= 0 };
-    }));
-    list.innerHTML = data.map(s => `
-      <a class="trending-item" href="/?sym=${s.sym}" onclick="goToStock('${s.sym}'); return false;">
-        <div class="trending-sym">${s.sym}</div>
-        <div class="trending-chg" style="color:${s.up?'#00c878':'var(--red)'}">
-          ${s.up?'+':''}${s.chg}%
+  list.innerHTML = sorted.map(e => {
+    const surprise = getSurprise(e.estEPS, e.actualEPS);
+    const isPending = e.actualEPS === null;
+    const isUpcoming = isPending && new Date(e.date) >= today;
+
+    let statusBadge = '';
+    if(isPending) statusBadge = '<span class="status-badge status-upcoming">Upcoming</span>';
+    else if(surprise >= 5) statusBadge = '<span class="status-badge status-beat">Strong Beat</span>';
+    else if(surprise >= 0) statusBadge = '<span class="status-badge status-beat">Beat</span>';
+    else if(surprise >= -5) statusBadge = '<span class="status-badge status-miss">Miss</span>';
+    else statusBadge = '<span class="status-badge status-miss">Strong Miss</span>';
+
+    return `
+      <a class="et-row" href="/?sym=${e.sym}" onclick="goTo('${e.sym}'); return false;">
+        <div>
+          <div class="et-sym">${e.sym}</div>
+          <div class="et-name">${e.name}</div>
         </div>
+        <div>
+          <div class="et-date">${formatDate(e.date)}</div>
+          <span class="et-time-badge ${e.time === 'BMO' ? 'bmo' : 'amc'}">${e.time === 'BMO' ? 'Before Open' : 'After Close'}</span>
+        </div>
+        <div class="et-est">$${e.estEPS.toFixed(2)}</div>
+        <div class="et-actual ${surprise !== null ? (surprise >= 0 ? 'beat' : 'miss') : 'pending'}">
+          ${e.actualEPS !== null ? '$' + e.actualEPS.toFixed(2) : '—'}
+        </div>
+        <div class="et-surprise ${surprise !== null ? (surprise >= 0 ? 'beat' : 'miss') : ''}">
+          ${surprise !== null ? (surprise >= 0 ? '+' : '') + surprise.toFixed(1) + '%' : '—'}
+        </div>
+        <div class="et-status">${statusBadge}</div>
       </a>
-    `).join('');
-  } catch(e){
-    list.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px;">Unable to load</div>';
-  }
+    `;
+  }).join('');
 }
 
-// TICKER
-async function loadTicker(){
-  const track = document.getElementById('tickerTrack');
-  const syms = ['AAPL','NVDA','MSFT','TSLA','AMZN','GOOGL','META','SPY'];
-  try {
-    const prices = await Promise.all(syms.map(async sym => {
-      try {
-        const res = await fetch('/api/yahoo?url=' + encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + sym + '?interval=1d&range=1d'));
-        const d = await res.json();
-        const meta = d.chart.result[0].meta;
-        const chg = ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose * 100).toFixed(2);
-        return { sym, price: meta.regularMarketPrice.toFixed(2), chg, up: parseFloat(chg) >= 0 };
-      } catch(e){ return null; }
-    }));
-    const valid = prices.filter(p => p);
-    if(valid.length > 0){
-      const html = valid.map(t =>
-        `<div class="ticker-item">
-          <span class="ticker-sym">${t.sym}</span>
-          <span class="ticker-price">$${t.price}</span>
-          <span class="${t.up?'up':'down'}">${t.up?'+':''}${t.chg}%</span>
-        </div>`).join('');
-      track.innerHTML = html + html;
-    }
-  } catch(e){}
+function goTo(sym){ window.location.href = '/?sym=' + sym; }
+
+
+function toggleMenu(){
+  document.getElementById('mobileMenu').classList.toggle('open');
+  document.getElementById('hamburger').classList.toggle('open');
 }
 
-function goToStock(sym){ window.location.href = '/?sym=' + sym; }
-
-// DARK MODE
 function toggleMode(){
   document.body.classList.toggle('light');
   document.getElementById('modeBtn').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
@@ -512,13 +354,8 @@ if(localStorage.getItem('cs_mode') === 'light'){
   document.getElementById('modeBtn').textContent = '🌙';
 }
 
-// INIT
-loadNews('business');
-loadTrending();
-loadTicker();
-
-// Auto refresh news every 5 minutes
-setInterval(() => loadNews(currentTopic), 300000);
+renderCalendar();
+renderEarningsList();
 </script>
 </body>
 </html>
