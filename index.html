@@ -439,6 +439,45 @@
   .holding-sym:hover { text-decoration:underline; }
   .holding-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
   .holding-value { font-size:14px; font-weight:500; }
+  .alerts-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:0;
+  }
+  .alerts-add {
+    display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; position:relative;
+  }
+  .alerts-list { display:flex; flex-direction:column; gap:10px; }
+  .alert-row {
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:10px; padding:14px 16px; gap:12px;
+  }
+  .alert-row.triggered {
+    border-color:var(--green);
+    background:rgba(0,200,120,0.06);
+    animation: alertPulse 1s ease;
+  }
+  @keyframes alertPulse {
+    0%{box-shadow:0 0 0 0 rgba(0,200,120,0.4)}
+    70%{box-shadow:0 0 0 10px rgba(0,200,120,0)}
+    100%{box-shadow:0 0 0 0 rgba(0,200,120,0)}
+  }
+  .alert-info { flex:1; display:flex; align-items:center; gap:16px; }
+  .alert-sym { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--accent); cursor:pointer; }
+  .alert-sym:hover { text-decoration:underline; }
+  .alert-condition { font-size:13px; color:var(--muted); }
+  .alert-target { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .alert-current { font-size:12px; color:var(--muted); }
+  .alert-status { font-size:11px; padding:3px 10px; border-radius:10px; }
+  .alert-status.watching { background:rgba(47,128,237,0.1); color:var(--accent); }
+  .alert-status.triggered { background:rgba(0,200,120,0.1); color:var(--green); }
+  .alert-remove { background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:18px; transition:color 0.2s; }
+  .alert-remove:hover { color:var(--red); }
+  .alerts-triggered {
+    background:rgba(0,200,120,0.08); border:1px solid rgba(0,200,120,0.3);
+    border-radius:10px; padding:14px 18px; margin-bottom:16px;
+    font-size:14px; color:var(--green);
+  }
   .holding-remove {
     background:transparent; border:none; color:var(--muted);
     cursor:pointer; font-size:18px; transition: color 0.2s;
@@ -854,6 +893,30 @@
 
     <div class="portfolio-holdings" id="portfolioHoldings">
       <div class="portfolio-empty">No holdings yet. Add your first stock above!</div>
+    </div>
+  </div>
+
+  <!-- PRICE ALERTS -->
+  <div id="alertsSection" style="margin-bottom:48px;">
+    <div class="section-label">Price Alerts</div>
+    <div class="alerts-card">
+      <div class="alerts-triggered" id="alertsTriggered" style="display:none;"></div>
+      <div class="alerts-add">
+        <div style="flex:1;position:relative;">
+          <input class="portfolio-input" id="alertTicker" placeholder="Ticker (e.g. AAPL)"
+            oninput="showAlertSuggestions()" autocomplete="off"/>
+          <div class="suggestions-dropdown" id="alertSuggestions"></div>
+        </div>
+        <select class="portfolio-input" id="alertCondition" style="flex:0.5;cursor:pointer;">
+          <option value="above">Above ↑</option>
+          <option value="below">Below ↓</option>
+        </select>
+        <input class="portfolio-input" id="alertPrice" placeholder="Target price ($)" type="number" min="0" step="any"/>
+        <button class="portfolio-btn" onclick="addAlert()">+ Add Alert</button>
+      </div>
+      <div class="alerts-list" id="alertsList">
+        <div class="portfolio-empty">No alerts set. Add your first price alert above!</div>
+      </div>
     </div>
   </div>
 
@@ -1447,6 +1510,111 @@ async function drawSparkline(sym, isUp, range){
   ctx.fill();
 }
 
+// PRICE ALERTS
+let alerts = JSON.parse(localStorage.getItem('cs_alerts') || '[]');
+
+function saveAlerts(){ localStorage.setItem('cs_alerts', JSON.stringify(alerts)); }
+
+function showAlertSuggestions(){
+  const input = document.getElementById('alertTicker').value.trim().toUpperCase();
+  const dropdown = document.getElementById('alertSuggestions');
+  if(input.length < 1){ dropdown.classList.remove('visible'); return; }
+  const matches = allStocks.filter(s =>
+    s.sym.startsWith(input) || s.name.toUpperCase().includes(input)
+  ).slice(0, 5);
+  if(!matches.length){ dropdown.classList.remove('visible'); return; }
+  dropdown.innerHTML = matches.map(s => `
+    <div class="suggestion-item" onclick="document.getElementById('alertTicker').value='${s.sym}'; document.getElementById('alertSuggestions').classList.remove('visible');">
+      <span class="suggestion-sym">${s.sym}</span>
+      <span class="suggestion-name">${s.name}</span>
+    </div>
+  `).join('');
+  dropdown.classList.add('visible');
+}
+
+async function addAlert(){
+  const ticker = document.getElementById('alertTicker').value.trim().toUpperCase();
+  const condition = document.getElementById('alertCondition').value;
+  const price = parseFloat(document.getElementById('alertPrice').value);
+
+  if(!ticker || !price || isNaN(price)){
+    alert('Please fill in a ticker and target price!');
+    return;
+  }
+
+  alerts.push({ sym: ticker, condition, targetPrice: price, createdAt: new Date().toISOString() });
+  saveAlerts();
+
+  document.getElementById('alertTicker').value = '';
+  document.getElementById('alertPrice').value = '';
+
+  await renderAlerts();
+}
+
+function removeAlert(index){
+  alerts.splice(index, 1);
+  saveAlerts();
+  renderAlerts();
+}
+
+async function renderAlerts(){
+  const list = document.getElementById('alertsList');
+  const triggeredEl = document.getElementById('alertsTriggered');
+
+  if(alerts.length === 0){
+    list.innerHTML = '<div class="portfolio-empty">No alerts set. Add your first price alert above!</div>';
+    triggeredEl.style.display = 'none';
+    return;
+  }
+
+  list.innerHTML = '<div class="portfolio-empty">Checking prices...</div>';
+  const triggered = [];
+
+  // Check each alert against current price
+  const rows = await Promise.all(alerts.map(async (alert, i) => {
+    let currentPrice = null;
+    try {
+      const res = await fetchWithProxy(YAHOO + alert.sym + '?interval=1d&range=1d');
+      const data = await res.json();
+      currentPrice = data.chart.result[0].meta.regularMarketPrice;
+    } catch(e){}
+
+    // Check if alert condition is met
+    const isTriggered = currentPrice !== null && (
+      (alert.condition === 'above' && currentPrice >= alert.targetPrice) ||
+      (alert.condition === 'below' && currentPrice <= alert.targetPrice)
+    );
+
+    if(isTriggered) triggered.push(alert.sym);
+
+    const arrow = alert.condition === 'above' ? '↑' : '↓';
+    const conditionText = alert.condition === 'above' ? 'rises above' : 'drops below';
+
+    return `
+      <div class="alert-row ${isTriggered ? 'triggered' : ''}">
+        <div class="alert-info">
+          <div class="alert-sym" onclick="quickSearch('${alert.sym}')">${alert.sym}</div>
+          <div class="alert-condition">when price ${conditionText}</div>
+          <div class="alert-target">${arrow} $${alert.targetPrice.toFixed(2)}</div>
+          ${currentPrice ? `<div class="alert-current">Current: $${currentPrice.toFixed(2)}</div>` : ''}
+        </div>
+        <span class="alert-status ${isTriggered ? 'triggered' : 'watching'}">${isTriggered ? '🔔 Triggered!' : '👁 Watching'}</span>
+        <button class="alert-remove" onclick="removeAlert(${i})">×</button>
+      </div>
+    `;
+  }));
+
+  list.innerHTML = rows.join('');
+
+  // Show triggered banner
+  if(triggered.length > 0){
+    triggeredEl.style.display = 'block';
+    triggeredEl.textContent = `🔔 Alert triggered for: ${triggered.join(', ')}! Your target price has been reached.`;
+  } else {
+    triggeredEl.style.display = 'none';
+  }
+}
+
 // PORTFOLIO TRACKER
 let portfolio = JSON.parse(localStorage.getItem('cs_portfolio') || '[]');
 
@@ -1638,6 +1806,7 @@ async function fetchWatchlistPrice(sym){
 document.addEventListener('DOMContentLoaded', () => {
   renderWatchlist();
   renderPortfolio();
+  renderAlerts();
   renderScreener();
   loadLiveTicker();
 });
