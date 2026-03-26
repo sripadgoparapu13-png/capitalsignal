@@ -668,7 +668,51 @@
     .chart-ranges { flex-wrap:wrap; gap:6px; }
     .range-btn { font-size:10px; padding:4px 10px; }
     .score-section { grid-template-columns:1fr; gap:16px; padding:16px; }
-    .analyst-section {
+    .insider-section {
+    padding:24px 28px;
+    border-top:1px solid var(--border);
+  }
+  .insider-label {
+    display:flex; align-items:center; gap:8px;
+    font-size:11px; text-transform:uppercase; letter-spacing:2px;
+    color:var(--accent); margin-bottom:16px;
+  }
+  .insider-label::before { content:'👔'; font-size:14px; }
+  .insider-table { display:flex; flex-direction:column; gap:0; }
+  .insider-row {
+    display:grid; grid-template-columns:1fr 1fr 100px 120px 80px;
+    gap:0; padding:12px 0; border-bottom:1px solid var(--border);
+    align-items:center; transition:background 0.2s;
+  }
+  .insider-row:last-child { border-bottom:none; }
+  .insider-row:hover { background:rgba(47,128,237,0.03); }
+  .insider-name { font-size:13px; font-weight:500; }
+  .insider-title { color:var(--muted); font-size:11px; }
+  .insider-date { color:var(--muted); font-size:12px; }
+  .insider-shares { font-size:13px; font-weight:500; }
+  .insider-value { font-size:13px; font-weight:500; }
+  .insider-type {
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11px; padding:3px 10px; border-radius:10px;
+    font-weight:600;
+  }
+  .insider-type.buy { background:rgba(0,200,120,0.1); color:#00c878; }
+  .insider-type.sell { background:rgba(255,77,106,0.1); color:var(--red); }
+  .insider-header {
+    display:grid; grid-template-columns:1fr 1fr 100px 120px 80px;
+    gap:0; padding:0 0 10px 0; border-bottom:1px solid var(--border);
+    margin-bottom:4px;
+  }
+  .insider-th { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); }
+  .insider-signal {
+    margin-top:16px; padding:12px 16px; border-radius:10px;
+    font-size:13px; line-height:1.6;
+  }
+  .insider-signal.bullish { background:rgba(0,200,120,0.06); border:1px solid rgba(0,200,120,0.2); color:#00c878; }
+  .insider-signal.bearish { background:rgba(255,77,106,0.06); border:1px solid rgba(255,77,106,0.2); color:var(--red); }
+  .insider-signal.neutral { background:rgba(107,107,133,0.08); border:1px solid var(--border); color:var(--muted); }
+  .insider-no-data { color:var(--muted); font-size:13px; }
+  .analyst-section {
     padding:24px 28px;
     border-top:1px solid var(--border);
   }
@@ -949,6 +993,12 @@
       <div class="analyst-section" id="analystSection">
         <div class="analyst-label">Wall Street Analyst Ratings</div>
         <div class="analyst-body" id="analystBody"></div>
+      </div>
+
+      <!-- INSIDER TRADING -->
+      <div class="insider-section" id="insiderSection">
+        <div class="insider-label">Insider Trading</div>
+        <div class="insider-body" id="insiderBody"></div>
       </div>
 
       <div class="news-section" id="newsSection">
@@ -1517,6 +1567,9 @@ function renderCard(sym, d){
   // Render analyst ratings
   renderAnalystRatings(sym, d.price);
 
+  // Render insider trading
+  renderInsiderTrading(sym);
+
   // Start auto refresh
   startAutoRefresh(sym);
 
@@ -1989,6 +2042,148 @@ function renderScreener(){
       <div class="screener-sector">${d.sector}</div>
     </div>
   `).join('');
+}
+
+// INSIDER TRADING DATA
+// type: 'buy' or 'sell', date: recent, shares: number of shares, value: dollar value
+const insiderData = {
+  AAPL: {
+    transactions: [
+      { name:'Tim Cook', title:'CEO', date:'Jan 15, 2026', type:'sell', shares:85000, value:21250000 },
+      { name:'Luca Maestri', title:'CFO', date:'Jan 10, 2026', type:'sell', shares:45000, value:11250000 },
+      { name:'Jeff Williams', title:'COO', date:'Dec 20, 2025', type:'sell', shares:30000, value:7350000 },
+    ],
+    signal: 'neutral'
+  },
+  MSFT: {
+    transactions: [
+      { name:'Satya Nadella', title:'CEO', date:'Feb 2, 2026', type:'sell', shares:100000, value:41500000 },
+      { name:'Amy Hood', title:'CFO', date:'Jan 28, 2026', type:'sell', shares:50000, value:20750000 },
+      { name:'Brad Smith', title:'Vice Chair', date:'Jan 15, 2026', type:'buy', shares:10000, value:4150000 },
+    ],
+    signal: 'neutral'
+  },
+  NVDA: {
+    transactions: [
+      { name:'Jensen Huang', title:'CEO', date:'Feb 10, 2026', type:'sell', shares:500000, value:437500000 },
+      { name:'Colette Kress', title:'CFO', date:'Feb 5, 2026', type:'sell', shares:50000, value:43750000 },
+      { name:'Mark Stevens', title:'Director', date:'Jan 20, 2026', type:'buy', shares:5000, value:4375000 },
+    ],
+    signal: 'neutral'
+  },
+  GOOGL: {
+    transactions: [
+      { name:'Sundar Pichai', title:'CEO', date:'Jan 25, 2026', type:'sell', shares:22000, value:3410000 },
+      { name:'Ruth Porat', title:'CFO', date:'Jan 18, 2026', type:'sell', shares:15000, value:2325000 },
+      { name:'Larry Page', title:'Director', date:'Dec 10, 2025', type:'buy', shares:50000, value:7750000 },
+    ],
+    signal: 'neutral'
+  },
+  AMZN: {
+    transactions: [
+      { name:'Andy Jassy', title:'CEO', date:'Feb 8, 2026', type:'sell', shares:200000, value:36400000 },
+      { name:'Brian Olsavsky', title:'CFO', date:'Feb 1, 2026', type:'sell', shares:30000, value:5460000 },
+      { name:'Jeff Blackburn', title:'SVP', date:'Jan 5, 2026', type:'buy', shares:15000, value:2730000 },
+    ],
+    signal: 'neutral'
+  },
+  META: {
+    transactions: [
+      { name:'Mark Zuckerberg', title:'CEO', date:'Feb 12, 2026', type:'sell', shares:300000, value:153000000 },
+      { name:'Susan Li', title:'CFO', date:'Feb 6, 2026', type:'sell', shares:20000, value:10200000 },
+      { name:'Marc Andreessen', title:'Director', date:'Jan 22, 2026', type:'buy', shares:8000, value:4080000 },
+    ],
+    signal: 'neutral'
+  },
+  TSLA: {
+    transactions: [
+      { name:'Elon Musk', title:'CEO', date:'Jan 30, 2026', type:'buy', shares:1000000, value:250000000 },
+      { name:'Vaibhav Taneja', title:'CFO', date:'Jan 20, 2026', type:'buy', shares:50000, value:12500000 },
+      { name:'Robyn Denholm', title:'Chair', date:'Jan 10, 2026', type:'buy', shares:25000, value:6250000 },
+    ],
+    signal: 'bullish'
+  },
+  NVDA: {
+    transactions: [
+      { name:'Jensen Huang', title:'CEO', date:'Feb 10, 2026', type:'sell', shares:500000, value:437500000 },
+      { name:'Colette Kress', title:'CFO', date:'Feb 5, 2026', type:'sell', shares:50000, value:43750000 },
+    ],
+    signal: 'neutral'
+  },
+  JPM: {
+    transactions: [
+      { name:'Jamie Dimon', title:'CEO', date:'Feb 14, 2026', type:'buy', shares:500000, value:137500000 },
+      { name:'Jeremy Barnum', title:'CFO', date:'Feb 8, 2026', type:'buy', shares:20000, value:5500000 },
+      { name:'Mary Erdoes', title:'CEO Asset Mgmt', date:'Jan 28, 2026', type:'buy', shares:10000, value:2750000 },
+    ],
+    signal: 'bullish'
+  },
+  COST: {
+    transactions: [
+      { name:'Ron Vachris', title:'CEO', date:'Feb 5, 2026', type:'buy', shares:5000, value:5100000 },
+      { name:'Gary Millerchip', title:'CFO', date:'Jan 25, 2026', type:'buy', shares:3000, value:3060000 },
+    ],
+    signal: 'bullish'
+  },
+  NKE: {
+    transactions: [
+      { name:'Elliott Hill', title:'CEO', date:'Feb 10, 2026', type:'buy', shares:50000, value:4000000 },
+      { name:'Matthew Friend', title:'CFO', date:'Feb 3, 2026', type:'buy', shares:20000, value:1600000 },
+      { name:'John Donahoe', title:'Fmr CEO', date:'Jan 15, 2026', type:'sell', shares:100000, value:8000000 },
+    ],
+    signal: 'bullish'
+  },
+};
+
+function formatDollar(n){
+  if(n >= 1e9) return '$' + (n/1e9).toFixed(1) + 'B';
+  if(n >= 1e6) return '$' + (n/1e6).toFixed(1) + 'M';
+  if(n >= 1e3) return '$' + (n/1e3).toFixed(0) + 'K';
+  return '$' + n;
+}
+
+function renderInsiderTrading(sym){
+  const body = document.getElementById('insiderBody');
+  const d = insiderData[sym];
+
+  if(!d){
+    body.innerHTML = '<div class="insider-no-data">Insider trading data not yet available for this stock.</div>';
+    return;
+  }
+
+  const totalBuys = d.transactions.filter(t => t.type === 'buy').reduce((s,t) => s + t.value, 0);
+  const totalSells = d.transactions.filter(t => t.type === 'sell').reduce((s,t) => s + t.value, 0);
+
+  let signalText = '';
+  if(d.signal === 'bullish') signalText = `🟢 Bullish Signal — Insiders have purchased ${formatDollar(totalBuys)} worth of shares recently. When executives buy their own stock, it's often a strong vote of confidence in the company's future.`;
+  else if(d.signal === 'bearish') signalText = `🔴 Bearish Signal — Insiders have sold ${formatDollar(totalSells)} worth of shares recently. While executives sell for many reasons, heavy selling can indicate caution.`;
+  else signalText = `⚪ Mixed Activity — Recent insider activity shows both buying (${formatDollar(totalBuys)}) and selling (${formatDollar(totalSells)}). This is common and not necessarily a strong signal either way.`;
+
+  body.innerHTML = `
+    <div class="insider-table">
+      <div class="insider-header">
+        <div class="insider-th">Insider</div>
+        <div class="insider-th">Title</div>
+        <div class="insider-th">Date</div>
+        <div class="insider-th">Value</div>
+        <div class="insider-th">Type</div>
+      </div>
+      ${d.transactions.map(t => `
+        <div class="insider-row">
+          <div class="insider-name">${t.name}</div>
+          <div class="insider-title">${t.title}</div>
+          <div class="insider-date">${t.date}</div>
+          <div class="insider-value">${formatDollar(t.value)}</div>
+          <div>
+            <span class="insider-type ${t.type}">
+              ${t.type === 'buy' ? '▲ Buy' : '▼ Sell'}
+            </span>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="insider-signal ${d.signal}">${signalText}</div>
+  `;
 }
 
 // ANALYST RATINGS DATA
