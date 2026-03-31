@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crypto — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#0a0a0f; --surface:#12121a; --surface2:#1a1a26;
+    --border:#2a2a3a; --accent:#2F80ED; --accent2:#56CCF2;
+    --text:#f0f0f5; --muted:#6b6b85; --red:#ff4d6a; --green:#00c878;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'DM Mono',monospace; min-height:100vh;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(47,128,237,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,128,237,0.03) 1px, transparent 1px);
+    background-size:40px 40px; pointer-events:none; z-index:0;
+  }
+  body.light {
+    --bg:#f5f7fa; --surface:#ffffff; --surface2:#f0f2f5;
+    --border:#e0e4ea; --text:#0d1117; --muted:#6b7280;
+  }
+
+  nav {
+    position:sticky; top:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 40px;
+    background:rgba(10,10,15,0.85); backdrop-filter:blur(20px);
+    border-bottom:1px solid var(--border);
+  }
+  .logo { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; text-decoration:none; color:var(--text); }
+  .logo span { color:var(--accent); }
+  .nav-links { display:flex; gap:32px; }
+  .nav-links a { color:var(--muted); text-decoration:none; font-size:12px; letter-spacing:1px; text-transform:uppercase; transition:color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color:var(--accent); }
+  .hamburger { display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:4px; }
+  .hamburger span { display:block; width:22px; height:2px; background:var(--text); border-radius:2px; transition:all 0.3s ease; }
+  .hamburger.open span:nth-child(1) { transform:rotate(45deg) translate(5px,5px); }
+  .hamburger.open span:nth-child(2) { opacity:0; }
+  .hamburger.open span:nth-child(3) { transform:rotate(-45deg) translate(5px,-5px); }
+  .mobile-menu { display:none; flex-direction:column; background:var(--surface); border-bottom:1px solid var(--border); padding:8px 0; position:relative; z-index:99; }
+  .mobile-menu.open { display:flex; }
+  .mobile-menu a { color:var(--muted); text-decoration:none; font-size:13px; letter-spacing:1px; text-transform:uppercase; padding:12px 24px; transition:all 0.2s; border-bottom:1px solid var(--border); }
+  .mobile-menu a:last-child { border-bottom:none; }
+  .mobile-menu a:hover, .mobile-menu a.active { color:var(--accent); background:rgba(47,128,237,0.05); }
+  .nav-right { display:flex; align-items:center; gap:10px; }
+  .mode-toggle { background:var(--surface2); border:1px solid var(--border); color:var(--muted); font-size:16px; width:36px; height:36px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .mode-toggle:hover { border-color:var(--accent); color:var(--accent); }
+  .nav-badge { background:var(--accent); color:#fff; font-size:11px; padding:6px 14px; border-radius:20px; font-family:'Syne',sans-serif; }
+
+  .main { max-width:1200px; margin:0 auto; padding:48px 40px; position:relative; z-index:1; }
+
+  .page-header { margin-bottom:40px; }
+  .page-title { font-family:'Syne',sans-serif; font-size:42px; font-weight:800; letter-spacing:-1.5px; margin-bottom:8px; }
+  .page-title span { color:var(--accent); }
+  .page-sub { color:var(--muted); font-size:14px; }
+
+  /* CRYPTO STATS */
+  .crypto-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:40px; }
+  .crypto-stat { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+  .cs-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:8px; }
+  .cs-value { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; }
+
+  /* FILTERS */
+  .crypto-filters { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; }
+  .cf-btn { background:var(--surface); border:1px solid var(--border); color:var(--muted); font-family:'DM Mono',monospace; font-size:11px; padding:7px 16px; border-radius:20px; cursor:pointer; transition:all 0.2s; }
+  .cf-btn:hover, .cf-btn.active { border-color:var(--accent); color:var(--accent); background:rgba(47,128,237,0.08); }
+
+  /* CRYPTO TABLE */
+  .crypto-table { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; margin-bottom:40px; }
+  .table-header { display:grid; grid-template-columns:40px 2fr 1fr 1fr 1fr 1fr 120px; gap:0; padding:12px 20px; border-bottom:1px solid var(--border); background:var(--surface2); }
+  .th { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); }
+  .th.right { text-align:right; }
+  .crypto-row { display:grid; grid-template-columns:40px 2fr 1fr 1fr 1fr 1fr 120px; gap:0; padding:16px 20px; border-bottom:1px solid var(--border); transition:background 0.2s; cursor:pointer; align-items:center; }
+  .crypto-row:last-child { border-bottom:none; }
+  .crypto-row:hover { background:var(--surface2); }
+  .rank { color:var(--muted); font-size:13px; }
+  .coin-info { display:flex; align-items:center; gap:12px; }
+  .coin-icon { width:36px; height:36px; border-radius:50%; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .coin-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; }
+  .coin-sym { color:var(--muted); font-size:11px; text-transform:uppercase; }
+  .coin-price { font-family:'Syne',sans-serif; font-size:15px; font-weight:600; text-align:right; }
+  .coin-chg { font-size:13px; font-weight:500; text-align:right; }
+  .coin-cap { color:var(--muted); font-size:13px; text-align:right; }
+  .coin-vol { color:var(--muted); font-size:13px; text-align:right; }
+  .up { color:var(--green); }
+  .down { color:var(--red); }
+
+  /* MINI CHART IN TABLE */
+  .coin-chart { display:flex; align-items:center; justify-content:flex-end; }
+  canvas.mini-chart { width:120px; height:40px; }
+
+  /* TOP COINS GRID */
+  .section-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:var(--muted); margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* LOADING */
+  .loading-state { text-align:center; padding:60px; color:var(--muted); }
+  .big-spin { width:40px; height:40px; margin:0 auto 16px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* CRYPTO NEWS */
+  .crypto-news { display:flex; flex-direction:column; gap:0; }
+  .cnews-item { display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--border); text-decoration:none; color:var(--text); transition:all 0.2s; }
+  .cnews-item:hover { background:rgba(47,128,237,0.03); padding:16px; margin:0 -16px; border-radius:10px; border-bottom-color:transparent; }
+  .cnews-item:last-child { border-bottom:none; }
+  .cnews-content { flex:1; }
+  .cnews-source { color:var(--accent); font-size:10px; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+  .cnews-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; line-height:1.4; margin-bottom:4px; }
+  .cnews-time { color:var(--muted); font-size:11px; }
+
+  footer { border-top:1px solid var(--border); padding:32px 40px; display:flex; align-items:center; justify-content:space-between; color:var(--muted); font-size:12px; background:var(--surface); position:relative; z-index:1; }
+  .footer-logo { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--text); }
+  .footer-logo span { color:var(--accent); }
+
+  @media(max-width:768px){
+    nav { padding:12px 16px; } .nav-links { display:none; }
+    .main { padding:24px 16px; } .page-title { font-size:28px; }
+    .crypto-stats { grid-template-columns:repeat(2,1fr); }
+    .table-header { grid-template-columns:30px 1fr 1fr 1fr; }
+    .table-header .th:nth-child(5), .table-header .th:nth-child(6), .table-header .th:nth-child(7) { display:none; }
+    .crypto-row { grid-template-columns:30px 1fr 1fr 1fr; }
+    .crypto-row > *:nth-child(5), .crypto-row > *:nth-child(6), .crypto-row > *:nth-child(7) { display:none; }
+    footer { flex-direction:column; gap:12px; padding:20px 16px; }
+  }
+
+  /* DROPDOWN NAV */
+  .nav-dropdown { position:relative; }
+  .nav-dropdown-btn {
+    background:none; border:none; cursor:pointer;
+    color:var(--muted); font-family:'DM Mono',monospace;
+    font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    transition:color 0.2s; display:flex; align-items:center; gap:4px;
+    padding:0;
+  }
+  .nav-dropdown-btn:hover { color:var(--accent); }
+  .nav-dropdown-btn.active { color:var(--accent); }
+  .dropdown-arrow { font-size:8px; transition:transform 0.2s; }
+  .nav-dropdown:hover .dropdown-arrow { transform:rotate(180deg); }
+  .dropdown-menu {
+    position:absolute; top:calc(100% + 12px); left:50%;
+    transform:translateX(-50%);
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:8px 0; min-width:200px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.4);
+    opacity:0; pointer-events:none;
+    transition:opacity 0.2s, transform 0.2s;
+    transform:translateX(-50%) translateY(-4px);
+    z-index:200;
+  }
+  .nav-dropdown:hover .dropdown-menu {
+    opacity:1; pointer-events:all;
+    transform:translateX(-50%) translateY(0);
+  }
+  .dropdown-menu a {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 16px; color:var(--muted); text-decoration:none;
+    font-size:12px; letter-spacing:0.5px; transition:all 0.15s;
+    white-space:nowrap;
+  }
+  .dropdown-menu a:hover { color:var(--accent); background:rgba(47,128,237,0.06); }
+  .dropdown-menu a.active { color:var(--accent); }
+  .dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
+  .dropdown-icon { font-size:14px; width:20px; text-align:center; }
+
+
+  /* DROPDOWN NAV */
+  .nav-links { display:flex; gap:4px; align-items:center; }
+  .nav-item { position:relative; }
+  .nav-item > a, .nav-btn {
+    color:var(--muted); text-decoration:none;
+    font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    transition:color 0.2s; padding:8px 12px; border-radius:6px;
+    display:flex; align-items:center; gap:4px;
+    background:none; border:none; cursor:pointer; font-family:'DM Mono',monospace;
+  }
+  .nav-item > a:hover, .nav-btn:hover,
+  .nav-item:hover > a, .nav-item:hover > .nav-btn { color:var(--accent); background:rgba(47,128,237,0.06); }
+  .nav-item > a.active, .nav-btn.active { color:var(--accent); }
+  .nav-arrow { font-size:9px; opacity:0.6; transition:transform 0.2s; }
+  .nav-item:hover .nav-arrow { transform:rotate(180deg); }
+  .dropdown {
+    position:absolute; top:calc(100% + 6px); left:0;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden; min-width:200px;
+    opacity:0; visibility:hidden; transform:translateY(-8px);
+    transition:all 0.2s ease; z-index:200;
+    box-shadow:0 16px 40px rgba(0,0,0,0.4);
+  }
+  .nav-item:hover .dropdown { opacity:1; visibility:visible; transform:translateY(0); }
+  .dropdown a {
+    display:flex; align-items:center; gap:10px;
+    padding:12px 16px; color:var(--muted); text-decoration:none;
+    font-size:12px; transition:all 0.2s; border-bottom:1px solid var(--border);
+  }
+  .dropdown a:last-child { border-bottom:none; }
+  .dropdown a:hover { color:var(--accent); background:rgba(47,128,237,0.06); }
+  .dropdown a.active { color:var(--accent); }
+  .dd-icon { font-size:14px; width:20px; text-align:center; }
+  .dd-label { font-size:12px; letter-spacing:0.5px; }
+  .dd-sub { font-size:10px; color:var(--muted); display:block; margin-top:1px; }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">Capital<span>Signal</span></a>
+  <div class="nav-links">
+    <a href="/" class="">Home</a>
+
+    <div class="nav-item">
+      <button class="nav-btn active">Markets <span class="nav-arrow">▼</span></button>
+      <div class="dropdown">
+        <a href="/markets.html" class=""><span class="dd-icon">📊</span><div><div class="dd-label">Markets</div><div class="dd-sub">Indices & movers</div></div></a>
+        <a href="/heatmap.html" class=""><span class="dd-icon">🗺️</span><div><div class="dd-label">Heat Map</div><div class="dd-sub">Visual market overview</div></div></a>
+        <a href="/crypto.html" class="active"><span class="dd-icon">₿</span><div><div class="dd-label">Crypto</div><div class="dd-sub">Top cryptocurrencies</div></div></a>
+        <a href="/economic-calendar.html" class=""><span class="dd-icon">🏦</span><div><div class="dd-label">Economy</div><div class="dd-sub">Fed, CPI, GDP events</div></div></a>
+      </div>
+    </div>
+
+    <div class="nav-item">
+      <button class="nav-btn ">Tools <span class="nav-arrow">▼</span></button>
+      <div class="dropdown">
+        <a href="/compare.html" class=""><span class="dd-icon">⚖️</span><div><div class="dd-label">Compare</div><div class="dd-sub">Side by side analysis</div></div></a>
+        <a href="/earnings.html" class=""><span class="dd-icon">📅</span><div><div class="dd-label">Earnings</div><div class="dd-sub">Beat & miss tracker</div></div></a>
+        <a href="/#screenerSection"><span class="dd-icon">🔎</span><div><div class="dd-label">Screener</div><div class="dd-sub">Filter stocks by metrics</div></div></a>
+        <a href="/#portfolioSection"><span class="dd-icon">💼</span><div><div class="dd-label">Portfolio</div><div class="dd-sub">Track your holdings</div></div></a>
+      </div>
+    </div>
+
+    <div class="nav-item">
+      <button class="nav-btn ">Data <span class="nav-arrow">▼</span></button>
+      <div class="dropdown">
+        <a href="/news.html" class=""><span class="dd-icon">📰</span><div><div class="dd-label">News</div><div class="dd-sub">Financial headlines</div></div></a>
+        <a href="/#watchlistSection"><span class="dd-icon">⭐</span><div><div class="dd-label">Watchlist</div><div class="dd-sub">Your saved stocks</div></div></a>
+        <a href="/#alertsSection"><span class="dd-icon">🔔</span><div><div class="dd-label">Price Alerts</div><div class="dd-sub">Get notified on price moves</div></div></a>
+      </div>
+    </div>
+
+    <a href="/about.html" class="">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="mode-toggle" onclick="toggleMode()" id="modeBtn">🌙</button>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-badge">Beta</div>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/">🏠 Home</a>
+  <a href="/markets.html">📊 Markets</a>
+  <a href="/heatmap.html">🗺️ Heat Map</a>
+  <a href="/crypto.html">₿ Crypto</a>
+  <a href="/economic-calendar.html">🏦 Economy</a>
+  <a href="/news.html">📰 News</a>
+  <a href="/compare.html">⚖️ Compare</a>
+  <a href="/earnings.html">📅 Earnings</a>
+  <a href="/#screenerSection">🔎 Screener</a>
+  <a href="/#portfolioSection">💼 Portfolio</a>
+  <a href="/#watchlistSection">⭐ Watchlist</a>
+  <a href="/about.html">👤 About</a>
+</div>
+
+<div class="main">
+
+  <div class="page-header">
+    <div class="page-title">Crypto <span>Markets</span></div>
+    <div class="page-sub">Real-time cryptocurrency prices, market caps, and trends</div>
+  </div>
+
+  <!-- GLOBAL STATS -->
+  <div class="crypto-stats" id="cryptoStats">
+    <div class="crypto-stat"><div class="cs-label">Total Market Cap</div><div class="cs-value" id="totalMktCap">Loading...</div></div>
+    <div class="crypto-stat"><div class="cs-label">24h Volume</div><div class="cs-value" id="totalVol">Loading...</div></div>
+    <div class="crypto-stat"><div class="cs-label">BTC Dominance</div><div class="cs-value" id="btcDom">Loading...</div></div>
+    <div class="crypto-stat"><div class="cs-label">Active Cryptos</div><div class="cs-value" id="activeCryptos">Loading...</div></div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="crypto-filters">
+    <button class="cf-btn active" onclick="setSort('market_cap_desc', this)">📊 Market Cap</button>
+    <button class="cf-btn" onclick="setSort('gecko_desc', this)">🔥 Trending</button>
+    <button class="cf-btn" onclick="setSort('volume_desc', this)">📈 Volume</button>
+    <button class="cf-btn" onclick="setSort('price_change_desc', this)">🚀 Gainers</button>
+  </div>
+
+  <!-- CRYPTO TABLE -->
+  <div class="section-title">Top Cryptocurrencies</div>
+  <div class="crypto-table">
+    <div class="table-header">
+      <div class="th">#</div>
+      <div class="th">Coin</div>
+      <div class="th right">Price</div>
+      <div class="th right">24h %</div>
+      <div class="th right">Market Cap</div>
+      <div class="th right">Volume</div>
+      <div class="th right">7D Chart</div>
+    </div>
+    <div id="cryptoList">
+      <div class="loading-state">
+        <div class="big-spin"></div>
+        Loading crypto data...
+      </div>
+    </div>
+  </div>
+
+  <!-- CRYPTO NEWS -->
+  <div class="section-title">Crypto News</div>
+  <div class="crypto-news" id="cryptoNews">
+    <div class="loading-state" style="padding:20px 0;">
+      <div class="big-spin"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-logo">Capital<span>Signal</span></div>
+  <span>© 2025 CapitalSignal — Crypto data via CoinGecko</span>
+</footer>
+
+<script>
+// CoinGecko API — completely free, no API key needed!
+// This is a great example of a public API
+const COINGECKO = 'https://api.coingecko.com/api/v3';
+
+// Emoji icons for top coins
+const coinIcons = {
+  bitcoin:'₿', ethereum:'Ξ', tether:'₮', binancecoin:'B',
+  ripple:'✕', solana:'◎', 'usd-coin':'$', cardano:'₳',
+  dogecoin:'Ð', avalanche:'A', polkadot:'●', chainlink:'⬡',
+  litecoin:'Ł', 'shiba-inu':'🐕', polygon:'M', default:'●'
+};
+
+let currentSort = 'market_cap_desc';
+let cryptoData = [];
+
+function formatLargeNum(n){
+  if(n >= 1e12) return '$' + (n/1e12).toFixed(2) + 'T';
+  if(n >= 1e9) return '$' + (n/1e9).toFixed(2) + 'B';
+  if(n >= 1e6) return '$' + (n/1e6).toFixed(2) + 'M';
+  return '$' + n.toLocaleString();
+}
+
+function formatPrice(p){
+  if(p >= 1) return '$' + p.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  if(p >= 0.01) return '$' + p.toFixed(4);
+  return '$' + p.toFixed(8);
+}
+
+// Load global crypto market stats
+async function loadGlobalStats(){
+  try {
+    const res = await fetch(COINGECKO + '/global');
+    const data = await res.json();
+    const g = data.data;
+    document.getElementById('totalMktCap').textContent = formatLargeNum(g.total_market_cap.usd);
+    document.getElementById('totalVol').textContent = formatLargeNum(g.total_volume.usd);
+    document.getElementById('btcDom').textContent = g.market_cap_percentage.btc.toFixed(1) + '%';
+    document.getElementById('activeCryptos').textContent = g.active_cryptocurrencies.toLocaleString();
+  } catch(e){}
+}
+
+// Load top coins
+async function loadCryptos(sort = 'market_cap_desc'){
+  const list = document.getElementById('cryptoList');
+  list.innerHTML = '<div class="loading-state"><div class="big-spin"></div>Loading...</div>';
+
+  try {
+    // CoinGecko API — fetch top 20 coins with 7 day sparkline data
+    const url = COINGECKO + '/coins/markets?vs_currency=usd&order=' + sort + '&per_page=20&page=1&sparkline=true&price_change_percentage=24h,7d';
+    const res = await fetch(url);
+    cryptoData = await res.json();
+    renderCryptos(cryptoData);
+  } catch(e){
+    list.innerHTML = '<div class="loading-state">Unable to load crypto data. CoinGecko API may be rate limited. Please try again in a moment.</div>';
+  }
+}
+
+function renderCryptos(coins){
+  const list = document.getElementById('cryptoList');
+  list.innerHTML = coins.map((coin, i) => {
+    const chg24 = coin.price_change_percentage_24h || 0;
+    const up = chg24 >= 0;
+    const icon = coinIcons[coin.id] || coinIcons.default;
+    return `
+      <div class="crypto-row" onclick="window.open('https://www.coingecko.com/en/coins/${coin.id}', '_blank')">
+        <div class="rank">${i+1}</div>
+        <div class="coin-info">
+          <div class="coin-icon">${icon}</div>
+          <div>
+            <div class="coin-name">${coin.name}</div>
+            <div class="coin-sym">${coin.symbol.toUpperCase()}</div>
+          </div>
+        </div>
+        <div class="coin-price">${formatPrice(coin.current_price)}</div>
+        <div class="coin-chg ${up?'up':'down'}">${up?'+':''}${chg24.toFixed(2)}%</div>
+        <div class="coin-cap">${formatLargeNum(coin.market_cap)}</div>
+        <div class="coin-vol">${formatLargeNum(coin.total_volume)}</div>
+        <div class="coin-chart">
+          <canvas class="mini-chart" id="chart-${coin.id}"></canvas>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Draw mini sparkline charts for each coin
+  // sparkline_in_7d.price contains 7 days of hourly prices
+  setTimeout(() => {
+    coins.forEach(coin => {
+      const prices = coin.sparkline_in_7d?.price;
+      if(prices && prices.length > 1){
+        drawMiniChart('chart-' + coin.id, prices, coin.price_change_percentage_24h >= 0);
+      }
+    });
+  }, 100);
+}
+
+// Draw a tiny sparkline chart inside each row
+function drawMiniChart(canvasId, prices, isUp){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = 240; canvas.height = 80;
+  const W = 120, H = 40;
+
+  // Sample every 4th price to keep it clean
+  const sampled = prices.filter((_, i) => i % 4 === 0);
+  const min = Math.min(...sampled);
+  const max = Math.max(...sampled);
+  const range = max - min || 1;
+  const xs = sampled.map((_, i) => i / (sampled.length-1) * W);
+  const ys = sampled.map(v => H - ((v-min)/range) * (H-4) - 2);
+
+  ctx.beginPath();
+  ctx.moveTo(xs[0], ys[0]);
+  for(let i=1;i<xs.length;i++){
+    const cpx = (xs[i-1]+xs[i])/2;
+    ctx.bezierCurveTo(cpx, ys[i-1], cpx, ys[i], xs[i], ys[i]);
+  }
+  ctx.strokeStyle = isUp ? '#00c878' : '#ff4d6a';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function setSort(sort, btn){
+  currentSort = sort;
+  document.querySelectorAll('.cf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadCryptos(sort);
+}
+
+// Load crypto news
+async function loadCryptoNews(){
+  const newsEl = document.getElementById('cryptoNews');
+  try {
+    const res = await fetch('/api/news?q=cryptocurrency+bitcoin+crypto');
+    const data = await res.json();
+    const articles = data.articles || [];
+    if(articles.length === 0){
+      newsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px 0;">No crypto news available right now.</div>';
+      return;
+    }
+    newsEl.innerHTML = articles.map(a => `
+      <a class="cnews-item" href="${a.url}" target="_blank" rel="noopener">
+        <div class="cnews-content">
+          <div class="cnews-source">${a.source?.name || 'News'}</div>
+          <div class="cnews-title">${a.title}</div>
+          <div class="cnews-time">${new Date(a.publishedAt).toLocaleDateString()}</div>
+        </div>
+      </a>
+    `).join('');
+  } catch(e){
+    newsEl.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:16px 0;">Unable to load news.</div>';
+  }
+}
+
+
+function toggleMenu(){
+  document.getElementById('mobileMenu').classList.toggle('open');
+  document.getElementById('hamburger').classList.toggle('open');
+}
+
+function toggleMode(){
+  document.body.classList.toggle('light');
+  document.getElementById('modeBtn').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+  localStorage.setItem('cs_mode', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+if(localStorage.getItem('cs_mode') === 'light'){
+  document.body.classList.add('light');
+  document.getElementById('modeBtn').textContent = '🌙';
+}
+
+// Load everything
+loadGlobalStats();
+loadCryptos('market_cap_desc');
+loadCryptoNews();
+
+// Refresh prices every 60 seconds
+setInterval(() => {
+  loadGlobalStats();
+  loadCryptos(currentSort);
+}, 60000);
+</script>
+</body>
+</html>
