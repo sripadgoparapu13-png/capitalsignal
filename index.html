@@ -895,6 +895,83 @@
     opacity:0.9; transform:translateY(-2px);
     box-shadow: 0 8px 28px rgba(47,128,237,0.45);
   }
+
+  /* DROPDOWN NAV */
+  .nav-dropdown { position:relative; }
+  .nav-dropdown-btn {
+    background:none; border:none; cursor:pointer;
+    color:var(--muted); font-family:'DM Mono',monospace;
+    font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    transition:color 0.2s; display:flex; align-items:center; gap:4px;
+    padding:0;
+  }
+  .nav-dropdown-btn:hover { color:var(--accent); }
+  .nav-dropdown-btn.active { color:var(--accent); }
+  .dropdown-arrow { font-size:8px; transition:transform 0.2s; }
+  .nav-dropdown:hover .dropdown-arrow { transform:rotate(180deg); }
+  .dropdown-menu {
+    position:absolute; top:calc(100% + 12px); left:50%;
+    transform:translateX(-50%);
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:8px 0; min-width:200px;
+    box-shadow:0 16px 40px rgba(0,0,0,0.4);
+    opacity:0; pointer-events:none;
+    transition:opacity 0.2s, transform 0.2s;
+    transform:translateX(-50%) translateY(-4px);
+    z-index:200;
+  }
+  .nav-dropdown:hover .dropdown-menu {
+    opacity:1; pointer-events:all;
+    transform:translateX(-50%) translateY(0);
+  }
+  .dropdown-menu a {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 16px; color:var(--muted); text-decoration:none;
+    font-size:12px; letter-spacing:0.5px; transition:all 0.15s;
+    white-space:nowrap;
+  }
+  .dropdown-menu a:hover { color:var(--accent); background:rgba(47,128,237,0.06); }
+  .dropdown-menu a.active { color:var(--accent); }
+  .dropdown-divider { height:1px; background:var(--border); margin:4px 0; }
+  .dropdown-icon { font-size:14px; width:20px; text-align:center; }
+
+
+  /* DROPDOWN NAV */
+  .nav-links { display:flex; gap:4px; align-items:center; }
+  .nav-item { position:relative; }
+  .nav-item > a, .nav-btn {
+    color:var(--muted); text-decoration:none;
+    font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    transition:color 0.2s; padding:8px 12px; border-radius:6px;
+    display:flex; align-items:center; gap:4px;
+    background:none; border:none; cursor:pointer; font-family:'DM Mono',monospace;
+  }
+  .nav-item > a:hover, .nav-btn:hover,
+  .nav-item:hover > a, .nav-item:hover > .nav-btn { color:var(--accent); background:rgba(47,128,237,0.06); }
+  .nav-item > a.active, .nav-btn.active { color:var(--accent); }
+  .nav-arrow { font-size:9px; opacity:0.6; transition:transform 0.2s; }
+  .nav-item:hover .nav-arrow { transform:rotate(180deg); }
+  .dropdown {
+    position:absolute; top:calc(100% + 6px); left:0;
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; overflow:hidden; min-width:200px;
+    opacity:0; visibility:hidden; transform:translateY(-8px);
+    transition:all 0.2s ease; z-index:200;
+    box-shadow:0 16px 40px rgba(0,0,0,0.4);
+  }
+  .nav-item:hover .dropdown { opacity:1; visibility:visible; transform:translateY(0); }
+  .dropdown a {
+    display:flex; align-items:center; gap:10px;
+    padding:12px 16px; color:var(--muted); text-decoration:none;
+    font-size:12px; transition:all 0.2s; border-bottom:1px solid var(--border);
+  }
+  .dropdown a:last-child { border-bottom:none; }
+  .dropdown a:hover { color:var(--accent); background:rgba(47,128,237,0.06); }
+  .dropdown a.active { color:var(--accent); }
+  .dd-icon { font-size:14px; width:20px; text-align:center; }
+  .dd-label { font-size:12px; letter-spacing:0.5px; }
+  .dd-sub { font-size:10px; color:var(--muted); display:block; margin-top:1px; }
+
 </style>
 </head>
 <body>
@@ -909,21 +986,44 @@
 </div>
 
 <nav>
-  <div class="logo">Capital<span>Signal</span></div>
+  <a href="/" class="logo">Capital<span>Signal</span></a>
   <div class="nav-links">
-    <a href="#screenerSection">Screener</a>
-    <a href="/markets.html">Markets</a>
-    <a href="/news.html">News</a>
-    <a href="/compare.html">Compare</a>
-    <a href="/crypto.html">Crypto</a>
-    <a href="/earnings.html">Earnings</a>
-    <a href="/economic-calendar.html">Economy</a>
-    <a href="/heatmap.html">Heat Map</a>
-    <a href="/about.html">About</a>
+    <a href="/" class="active">Home</a>
+
+    <div class="nav-item">
+      <button class="nav-btn ">Markets <span class="nav-arrow">▼</span></button>
+      <div class="dropdown">
+        <a href="/markets.html" class=""><span class="dd-icon">📊</span><div><div class="dd-label">Markets</div><div class="dd-sub">Indices & movers</div></div></a>
+        <a href="/heatmap.html" class=""><span class="dd-icon">🗺️</span><div><div class="dd-label">Heat Map</div><div class="dd-sub">Visual market overview</div></div></a>
+        <a href="/crypto.html" class=""><span class="dd-icon">₿</span><div><div class="dd-label">Crypto</div><div class="dd-sub">Top cryptocurrencies</div></div></a>
+        <a href="/economic-calendar.html" class=""><span class="dd-icon">🏦</span><div><div class="dd-label">Economy</div><div class="dd-sub">Fed, CPI, GDP events</div></div></a>
+      </div>
+    </div>
+
+    <div class="nav-item">
+      <button class="nav-btn ">Tools <span class="nav-arrow">▼</span></button>
+      <div class="dropdown">
+        <a href="/compare.html" class=""><span class="dd-icon">⚖️</span><div><div class="dd-label">Compare</div><div class="dd-sub">Side by side analysis</div></div></a>
+        <a href="/earnings.html" class=""><span class="dd-icon">📅</span><div><div class="dd-label">Earnings</div><div class="dd-sub">Beat & miss tracker</div></div></a>
+        <a href="/#screenerSection"><span class="dd-icon">🔎</span><div><div class="dd-label">Screener</div><div class="dd-sub">Filter stocks by metrics</div></div></a>
+        <a href="/#portfolioSection"><span class="dd-icon">💼</span><div><div class="dd-label">Portfolio</div><div class="dd-sub">Track your holdings</div></div></a>
+      </div>
+    </div>
+
+    <div class="nav-item">
+      <button class="nav-btn ">Data <span class="nav-arrow">▼</span></button>
+      <div class="dropdown">
+        <a href="/news.html" class=""><span class="dd-icon">📰</span><div><div class="dd-label">News</div><div class="dd-sub">Financial headlines</div></div></a>
+        <a href="/#watchlistSection"><span class="dd-icon">⭐</span><div><div class="dd-label">Watchlist</div><div class="dd-sub">Your saved stocks</div></div></a>
+        <a href="/#alertsSection"><span class="dd-icon">🔔</span><div><div class="dd-label">Price Alerts</div><div class="dd-sub">Get notified on price moves</div></div></a>
+      </div>
+    </div>
+
+    <a href="/about.html" class="">About</a>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;">
+  <div class="nav-right">
     <button class="mode-toggle" onclick="toggleMode()" id="modeBtn">🌙</button>
-    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
       <span></span><span></span><span></span>
     </button>
     <div class="nav-badge">Beta</div>
@@ -932,15 +1032,18 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#screenerSection" onclick="toggleMenu()">Screener</a>
-  <a href="/markets.html">Markets</a>
-  <a href="/news.html">News</a>
-  <a href="/compare.html">Compare</a>
-  <a href="/crypto.html">Crypto</a>
-  <a href="/earnings.html">Earnings</a>
-  <a href="/economic-calendar.html">Economy</a>
-  <a href="/heatmap.html">Heat Map</a>
-  <a href="/about.html">About</a>
+  <a href="/">🏠 Home</a>
+  <a href="/markets.html">📊 Markets</a>
+  <a href="/heatmap.html">🗺️ Heat Map</a>
+  <a href="/crypto.html">₿ Crypto</a>
+  <a href="/economic-calendar.html">🏦 Economy</a>
+  <a href="/news.html">📰 News</a>
+  <a href="/compare.html">⚖️ Compare</a>
+  <a href="/earnings.html">📅 Earnings</a>
+  <a href="/#screenerSection">🔎 Screener</a>
+  <a href="/#portfolioSection">💼 Portfolio</a>
+  <a href="/#watchlistSection">⭐ Watchlist</a>
+  <a href="/about.html">👤 About</a>
 </div>
 
 <div class="ticker-wrap">
