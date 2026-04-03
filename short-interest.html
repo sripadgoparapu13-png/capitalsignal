@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Short Interest Tracker — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.explainer-banner{background:linear-gradient(135deg,rgba(255,77,106,.08),rgba(255,77,106,.03));border:1px solid rgba(255,77,106,.2);border-radius:12px;padding:16px 20px;margin-bottom:28px;font-size:.85rem;color:var(--muted);line-height:1.6}
+.explainer-banner strong{color:var(--text)}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.filter-btn.red{border-color:rgba(255,77,106,.3);color:var(--red)}
+.filter-btn.red.active{background:rgba(255,77,106,.1)}
+.search-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:180px}
+.search-input:focus{border-color:var(--accent)}
+.main-table{width:100%;border-collapse:collapse}
+.main-table th{color:var(--muted);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase;letter-spacing:.3px;cursor:pointer;user-select:none}
+.main-table th:hover{color:var(--text)}
+.main-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem}
+.main-table tr:hover td{background:var(--surface2)}
+.main-table tr:last-child td{border:none}
+.sym-cell{font-family:'DM Mono',monospace;color:var(--accent);font-weight:700;cursor:pointer}
+.sym-cell:hover{text-decoration:underline}
+.si-bar-wrap{display:flex;align-items:center;gap:8px}
+.si-bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;max-width:80px}
+.si-bar-fill{height:100%;border-radius:3px}
+.si-pct{font-family:'DM Mono',monospace;font-size:.82rem}
+.risk-badge{font-size:.68rem;padding:2px 8px;border-radius:4px;font-weight:600}
+.risk-extreme{background:rgba(255,77,106,.2);color:var(--red)}
+.risk-high{background:rgba(242,201,76,.15);color:var(--yellow)}
+.risk-moderate{background:rgba(47,128,237,.15);color:var(--accent)}
+.risk-low{background:rgba(39,174,96,.15);color:var(--green)}
+.dtc{font-family:'DM Mono',monospace;font-size:.85rem}
+.squeeze-score{display:flex;align-items:center;gap:6px}
+.sq-dots{display:flex;gap:2px}
+.sq-dot{width:8px;height:8px;border-radius:50%}
+.sq-dot.filled{background:var(--red)}
+.sq-dot.empty{background:var(--surface2)}
+.trend-up{color:var(--red);font-size:.8rem}
+.trend-down{color:var(--green);font-size:.8rem}
+.most-shorted{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:32px}
+.ms-title{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}
+.ms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.ms-card{background:var(--surface2);border-radius:10px;padding:14px;cursor:pointer;transition:.2s}
+.ms-card:hover{background:var(--border)}
+.ms-sym{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:700;color:var(--red);margin-bottom:4px}
+.ms-name{font-size:.72rem;color:var(--muted);margin-bottom:8px}
+.ms-si{font-size:1.1rem;font-weight:600;font-family:'DM Mono',monospace}
+.ms-dtc{font-size:.72rem;color:var(--muted);margin-top:2px}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html" style="color:var(--accent)">📉 Short Interest</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="dcf.html">🧮 DCF</a><a href="options.html">💰 Options</a>
+  <a href="short-interest.html">📉 Short Interest</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>📉 Short Interest Tracker</h1>
+  <p>Track short interest, days-to-cover, and short squeeze potential across major stocks</p>
+</div>
+
+<main>
+  <div class="explainer-banner">
+    <strong>What is short interest?</strong> When investors "short" a stock, they borrow shares and sell them, hoping to buy back cheaper later. High short interest (% of float shorted) means many investors are betting the stock will fall — but it also creates <strong>short squeeze potential</strong>, where rising prices force shorts to buy, pushing prices even higher (like GameStop in 2021). <strong>Days to Cover</strong> = how many trading days it would take all shorts to buy back their shares at average volume.
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All Stocks</button>
+    <button class="filter-btn red" onclick="setFilter('extreme',this)">🔴 Extreme (>20%)</button>
+    <button class="filter-btn" onclick="setFilter('high',this)">🟡 High (10–20%)</button>
+    <button class="filter-btn" onclick="setFilter('squeeze',this)">⚡ Squeeze Risk</button>
+    <input class="search-input" type="text" placeholder="Search ticker..." oninput="searchFilter(this.value)">
+  </div>
+  <table class="main-table">
+    <thead>
+      <tr>
+        <th onclick="sortBy('sym')">Symbol ↕</th>
+        <th>Company</th>
+        <th onclick="sortBy('si')">Short Interest % ↕</th>
+        <th onclick="sortBy('dtc')">Days to Cover ↕</th>
+        <th>Short Shares</th>
+        <th>Trend</th>
+        <th>Squeeze Score</th>
+        <th>Risk Level</th>
+      </tr>
+    </thead>
+    <tbody id="siTable"></tbody>
+  </table>
+
+  <div class="most-shorted">
+    <div class="ms-title">⚡ Most Shorted — Quick View</div>
+    <div class="ms-grid" id="msGrid"></div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Short interest data is bi-monthly · For informational purposes only</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const stocks = [
+  {sym:'TSLA',name:'Tesla Inc.',si:17.2,dtc:1.8,shares:'543M',trend:'up',squeeze:4,sector:'Auto'},
+  {sym:'NVDA',name:'NVIDIA Corp.',si:2.4,dtc:0.4,shares:'59M',trend:'down',squeeze:1,sector:'Chips'},
+  {sym:'PLTR',name:'Palantir Tech.',si:12.8,dtc:2.1,shares:'215M',trend:'up',squeeze:3,sector:'Tech'},
+  {sym:'RIVN',name:'Rivian Automotive',si:28.4,dtc:3.2,shares:'492M',trend:'up',squeeze:5,sector:'Auto'},
+  {sym:'COIN',name:'Coinbase Global',si:21.6,dtc:2.8,shares:'48M',trend:'down',squeeze:4,sector:'Crypto'},
+  {sym:'HOOD',name:'Robinhood Markets',si:18.3,dtc:2.4,shares:'162M',trend:'up',squeeze:4,sector:'Finance'},
+  {sym:'BYND',name:'Beyond Meat',si:42.1,dtc:5.1,shares:'28M',trend:'up',squeeze:5,sector:'Consumer'},
+  {sym:'GME',name:'GameStop Corp.',si:24.8,dtc:3.8,shares:'74M',trend:'down',squeeze:5,sector:'Consumer'},
+  {sym:'AMC',name:'AMC Entertainment',si:22.4,dtc:2.9,shares:'195M',trend:'down',squeeze:4,sector:'Media'},
+  {sym:'INTC',name:'Intel Corp.',si:5.8,dtc:0.9,shares:'248M',trend:'up',squeeze:2,sector:'Chips'},
+  {sym:'AAPL',name:'Apple Inc.',si:0.8,dtc:0.2,shares:'125M',trend:'down',squeeze:1,sector:'Tech'},
+  {sym:'MSFT',name:'Microsoft Corp.',si:0.7,dtc:0.1,shares:'52M',trend:'down',squeeze:1,sector:'Tech'},
+  {sym:'META',name:'Meta Platforms',si:1.2,dtc:0.2,shares:'31M',trend:'down',squeeze:1,sector:'Tech'},
+  {sym:'AMZN',name:'Amazon.com',si:1.0,dtc:0.2,shares:'105M',trend:'down',squeeze:1,sector:'Tech'},
+  {sym:'NFLX',name:'Netflix Inc.',si:2.1,dtc:0.4,shares:'9M',trend:'down',squeeze:1,sector:'Media'},
+  {sym:'NKE',name:'Nike Inc.',si:8.4,dtc:1.2,shares:'105M',trend:'up',squeeze:2,sector:'Consumer'},
+  {sym:'PFE',name:'Pfizer Inc.',si:3.2,dtc:0.5,shares:'181M',trend:'up',squeeze:1,sector:'Healthcare'},
+  {sym:'F',name:'Ford Motor Co.',si:9.8,dtc:1.1,shares:'390M',trend:'up',squeeze:2,sector:'Auto'},
+  {sym:'GM',name:'General Motors',si:6.4,dtc:0.8,shares:'185M',trend:'down',squeeze:2,sector:'Auto'},
+  {sym:'BA',name:'Boeing Co.',si:11.2,dtc:1.6,shares:'69M',trend:'up',squeeze:3,sector:'Industrial'},
+  {sym:'SNAP',name:'Snap Inc.',si:16.4,dtc:2.2,shares:'268M',trend:'up',squeeze:3,sector:'Social'},
+  {sym:'UBER',name:'Uber Technologies',si:3.8,dtc:0.5,shares:'68M',trend:'down',squeeze:1,sector:'Tech'},
+  {sym:'PYPL',name:'PayPal Holdings',si:9.2,dtc:1.3,shares:'98M',trend:'up',squeeze:2,sector:'Finance'},
+  {sym:'SPOT',name:'Spotify Technology',si:7.8,dtc:1.1,shares:'15M',trend:'down',squeeze:2,sector:'Media'},
+  {sym:'ABNB',name:'Airbnb Inc.',si:5.4,dtc:0.8,shares:'34M',trend:'down',squeeze:1,sector:'Consumer'},
+];
+
+function getRisk(si) {
+  if (si >= 20) return {cls:'risk-extreme',label:'Extreme'};
+  if (si >= 10) return {cls:'risk-high',label:'High'};
+  if (si >= 5) return {cls:'risk-moderate',label:'Moderate'};
+  return {cls:'risk-low',label:'Low'};
+}
+
+function getSIColor(si) {
+  if (si >= 20) return '#ff4d6a';
+  if (si >= 10) return '#f2c94c';
+  if (si >= 5) return '#2F80ED';
+  return '#27ae60';
+}
+
+function mkSqueezeScore(n) {
+  return `<div class="squeeze-score"><div class="sq-dots">${[1,2,3,4,5].map(i=>`<div class="sq-dot ${i<=n?'filled':'empty'}"></div>`).join('')}</div><span style="font-size:.75rem;color:var(--muted)">${n}/5</span></div>`;
+}
+
+let currentFilter = 'all';
+let currentSearch = '';
+let sortKey = 'si';
+let sortDir = -1;
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function searchFilter(v) { currentSearch = v.toUpperCase(); render(); }
+function sortBy(k) { if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=-1; } render(); }
+
+function render() {
+  let data = [...stocks];
+  if (currentFilter === 'extreme') data = data.filter(s => s.si >= 20);
+  else if (currentFilter === 'high') data = data.filter(s => s.si >= 10 && s.si < 20);
+  else if (currentFilter === 'squeeze') data = data.filter(s => s.squeeze >= 4);
+  if (currentSearch) data = data.filter(s => s.sym.includes(currentSearch) || s.name.toUpperCase().includes(currentSearch));
+  data.sort((a,b) => {
+    const av = sortKey==='sym'?a.sym:sortKey==='dtc'?a.dtc:a.si;
+    const bv = sortKey==='sym'?b.sym:sortKey==='dtc'?b.dtc:b.si;
+    return sortDir * (av > bv ? 1 : -1);
+  });
+
+  const risk = s => getRisk(s.si);
+  document.getElementById('siTable').innerHTML = data.map(s => `
+    <tr>
+      <td class="sym-cell" onclick="window.location='index.html?q=${s.sym}'">${s.sym}</td>
+      <td style="color:var(--muted);font-size:.82rem">${s.name}</td>
+      <td>
+        <div class="si-bar-wrap">
+          <div class="si-bar-bg"><div class="si-bar-fill" style="width:${Math.min(s.si,50)*2}%;background:${getSIColor(s.si)}"></div></div>
+          <span class="si-pct" style="color:${getSIColor(s.si)}">${s.si}%</span>
+        </div>
+      </td>
+      <td class="dtc">${s.dtc} days</td>
+      <td style="color:var(--muted);font-size:.82rem">${s.shares}</td>
+      <td class="${s.trend==='up'?'trend-up':'trend-down'}">${s.trend==='up'?'▲ Increasing':'▼ Decreasing'}</td>
+      <td>${mkSqueezeScore(s.squeeze)}</td>
+      <td><span class="risk-badge ${risk(s).cls}">${risk(s).label}</span></td>
+    </tr>`).join('');
+
+  // Top 8 most shorted
+  const top8 = [...stocks].sort((a,b)=>b.si-a.si).slice(0,8);
+  document.getElementById('msGrid').innerHTML = top8.map(s=>`
+    <div class="ms-card" onclick="window.location='index.html?q=${s.sym}'">
+      <div class="ms-sym">${s.sym}</div>
+      <div class="ms-name">${s.name}</div>
+      <div class="ms-si" style="color:${getSIColor(s.si)}">${s.si}% Short</div>
+      <div class="ms-dtc">${s.dtc}d to cover · Squeeze: ${'🔥'.repeat(Math.min(Math.floor(s.squeeze/2)+1,3))}</div>
+    </div>`).join('');
+}
+render();
+</script>
+</body>
+</html>

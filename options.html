@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Options Calculator — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:960px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:960px;margin:0 auto;padding:0 24px 64px}
+.type-toggle{display:flex;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:28px}
+.type-btn{padding:8px 24px;border-radius:7px;border:none;background:none;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:500;transition:.2s}
+.type-btn.active{background:var(--accent);color:#fff}
+.type-btn.call.active{background:var(--green)}
+.type-btn.put.active{background:var(--red)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px}
+.input-card h3{font-size:.8rem;font-weight:600;margin-bottom:18px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;outline:none;transition:.2s}
+.field input:focus{border-color:var(--accent)}
+.field .hint{font-size:.7rem;color:var(--muted);margin-top:3px}
+.calc-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+.calc-btn:hover{background:#1a6bc7}
+.result-section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px;display:none}
+.result-section.show{display:block}
+.pnl-hero{text-align:center;padding:20px 0 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+.pnl-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.pnl-value{font-size:2.8rem;font-weight:700;font-family:'DM Mono',monospace}
+.pnl-value.profit{color:var(--green)}
+.pnl-value.loss{color:var(--red)}
+.pnl-sub{font-size:.85rem;color:var(--muted);margin-top:6px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:600px){.stats-row{grid-template-columns:1fr 1fr}}
+.stat-box{background:var(--surface2);border-radius:10px;padding:14px;text-align:center}
+.stat-box .sl{font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.stat-box .sv{font-size:.9rem;font-weight:600;font-family:'DM Mono',monospace}
+.scenarios-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.scenarios-table th{color:var(--muted);font-weight:500;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);font-size:.72rem;text-transform:uppercase}
+.scenarios-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace}
+.scenarios-table tr:hover td{background:var(--surface2)}
+.profit-cell{color:var(--green);font-weight:600}
+.loss-cell{color:var(--red)}
+.be-cell{color:var(--yellow)}
+.greeks-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:20px}
+@media(max-width:600px){.greeks-grid{grid-template-columns:1fr 1fr}}
+.greek-card{background:var(--surface2);border-radius:10px;padding:14px;text-align:center}
+.greek-sym{font-size:1.3rem;margin-bottom:4px}
+.greek-name{font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.greek-val{font-size:.95rem;font-weight:600;font-family:'DM Mono',monospace}
+.disclaimer{background:rgba(242,201,76,.08);border:1px solid rgba(242,201,76,.2);border-radius:10px;padding:14px;font-size:.78rem;color:var(--yellow);line-height:1.6;margin-top:16px}
+.explainer{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+.exp-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.exp-card h4{font-size:.85rem;font-weight:600;margin-bottom:6px}
+.exp-card p{font-size:.78rem;color:var(--muted);line-height:1.5}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html" style="color:var(--accent)">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="dcf.html">🧮 DCF</a><a href="options.html">💰 Options</a>
+  <a href="short-interest.html">📉 Short Interest</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>💰 Options Profit Calculator</h1>
+  <p>Calculate profit, loss, and break-even for calls and puts. Includes Greeks and scenario analysis.</p>
+</div>
+
+<main>
+  <div class="explainer">
+    <div class="exp-card"><h4>📈 Call Option</h4><p>Gives you the right to <strong>buy</strong> 100 shares at the strike price. Profits when the stock goes <strong>up</strong>. Maximum loss = premium paid.</p></div>
+    <div class="exp-card"><h4>📉 Put Option</h4><p>Gives you the right to <strong>sell</strong> 100 shares at the strike price. Profits when the stock goes <strong>down</strong>. Maximum loss = premium paid.</p></div>
+  </div>
+
+  <div class="type-toggle">
+    <button class="type-btn call active" id="callBtn" onclick="setType('call')">📈 Call Option</button>
+    <button class="type-btn put" id="putBtn" onclick="setType('put')">📉 Put Option</button>
+  </div>
+
+  <div class="two-col">
+    <div class="input-card">
+      <h3>Option Details</h3>
+      <div class="field"><label>Stock Ticker</label><input type="text" id="o-ticker" placeholder="AAPL" style="text-transform:uppercase"></div>
+      <div class="field"><label>Current Stock Price ($)</label><input type="number" id="o-stock" placeholder="195.00" step="0.01" oninput="calculate()"></div>
+      <div class="field"><label>Strike Price ($)</label><input type="number" id="o-strike" placeholder="200.00" step="0.01" oninput="calculate()"></div>
+      <div class="field"><label>Premium Paid Per Share ($)</label><input type="number" id="o-premium" placeholder="5.50" step="0.01" oninput="calculate()"><div class="hint">Cost of one contract = premium × 100</div></div>
+      <div class="field"><label>Number of Contracts</label><input type="number" id="o-contracts" placeholder="1" step="1" value="1" oninput="calculate()"><div class="hint">Each contract = 100 shares</div></div>
+    </div>
+    <div class="input-card">
+      <h3>Expiration & Volatility</h3>
+      <div class="field"><label>Days Until Expiration</label><input type="number" id="o-dte" placeholder="30" step="1" oninput="calculate()"></div>
+      <div class="field"><label>Implied Volatility (%)</label><input type="number" id="o-iv" placeholder="30" step="1" oninput="calculate()"><div class="hint">Higher IV = more expensive options</div></div>
+      <div class="field"><label>Risk-Free Rate (%)</label><input type="number" id="o-rate" placeholder="5.0" step="0.1" value="5.0" oninput="calculate()"></div>
+      <div class="field"><label>Target Stock Price ($) — Scenario</label><input type="number" id="o-target" placeholder="210.00" step="0.01" oninput="calculate()"></div>
+      <button class="calc-btn" onclick="calculate()">Calculate P&L →</button>
+    </div>
+  </div>
+
+  <div class="result-section" id="resultSection">
+    <div class="pnl-hero">
+      <div class="pnl-label">P&L at Target Price</div>
+      <div class="pnl-value" id="res-pnl">—</div>
+      <div class="pnl-sub" id="res-pnl-sub">—</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="sl">Total Cost</div><div class="sv" id="res-cost">—</div></div>
+      <div class="stat-box"><div class="sl">Break-Even</div><div class="sv" id="res-be">—</div></div>
+      <div class="stat-box"><div class="sl">Max Profit</div><div class="sv" id="res-maxp">—</div></div>
+      <div class="stat-box"><div class="sl">Max Loss</div><div class="sv" id="res-maxl">—</div></div>
+    </div>
+    <h3 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Profit/Loss at Various Stock Prices</h3>
+    <table class="scenarios-table" id="scenariosTable"></table>
+    <div class="greeks-grid" id="greeksGrid"></div>
+    <div class="disclaimer">⚠️ Options involve significant risk and are not suitable for all investors. This calculator uses Black-Scholes approximations. Always understand the risks before trading options.</div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Not financial advice · Options trading involves substantial risk</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+let optionType = 'call';
+function setType(t) {
+  optionType = t;
+  document.getElementById('callBtn').classList.toggle('active', t==='call');
+  document.getElementById('putBtn').classList.toggle('active', t==='put');
+  calculate();
+}
+
+// Standard normal CDF approximation
+function normCDF(x) {
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const sign = x<0?-1:1;
+  x=Math.abs(x)/Math.sqrt(2);
+  const t=1/(1+p*x);
+  const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return 0.5*(1+sign*y);
+}
+
+function blackScholes(S,K,T,r,sigma,type){
+  if(T<=0)return type==='call'?Math.max(S-K,0):Math.max(K-S,0);
+  const d1=(Math.log(S/K)+(r+sigma*sigma/2)*T)/(sigma*Math.sqrt(T));
+  const d2=d1-sigma*Math.sqrt(T);
+  if(type==='call') return S*normCDF(d1)-K*Math.exp(-r*T)*normCDF(d2);
+  return K*Math.exp(-r*T)*normCDF(-d2)-S*normCDF(-d1);
+}
+
+function calculate() {
+  const S = parseFloat(document.getElementById('o-stock').value);
+  const K = parseFloat(document.getElementById('o-strike').value);
+  const prem = parseFloat(document.getElementById('o-premium').value);
+  const contracts = parseInt(document.getElementById('o-contracts').value) || 1;
+  const dte = parseFloat(document.getElementById('o-dte').value) || 30;
+  const iv = parseFloat(document.getElementById('o-iv').value) / 100 || 0.3;
+  const r = parseFloat(document.getElementById('o-rate').value) / 100 || 0.05;
+  const target = parseFloat(document.getElementById('o-target').value) || S * 1.05;
+
+  if (!S || !K || !prem) return;
+
+  const T = dte / 365;
+  const totalCost = prem * 100 * contracts;
+  const breakEven = optionType === 'call' ? K + prem : K - prem;
+
+  // P&L at target
+  let intrinsic;
+  if (optionType === 'call') intrinsic = Math.max(target - K, 0);
+  else intrinsic = Math.max(K - target, 0);
+  const pnlPerShare = intrinsic - prem;
+  const totalPnl = pnlPerShare * 100 * contracts;
+  const pnlPct = (totalPnl / totalCost * 100).toFixed(1);
+
+  const pnlEl = document.getElementById('res-pnl');
+  pnlEl.textContent = (totalPnl >= 0 ? '+' : '') + '$' + totalPnl.toFixed(2);
+  pnlEl.className = 'pnl-value ' + (totalPnl >= 0 ? 'profit' : 'loss');
+  document.getElementById('res-pnl-sub').textContent = `${contracts} contract${contracts>1?'s':''} · ${pnlPct}% return on investment`;
+  document.getElementById('res-cost').textContent = '$' + totalCost.toFixed(2);
+  document.getElementById('res-be').textContent = '$' + breakEven.toFixed(2);
+  document.getElementById('res-maxp').textContent = optionType === 'call' ? 'Unlimited' : '$' + ((K - prem) * 100 * contracts).toFixed(0);
+  document.getElementById('res-maxl').textContent = '-$' + totalCost.toFixed(2);
+
+  // Scenarios table
+  const prices = [];
+  const step = S * 0.05;
+  for (let p = S * 0.70; p <= S * 1.40; p += step) prices.push(parseFloat(p.toFixed(2)));
+  document.getElementById('scenariosTable').innerHTML = `
+    <thead><tr><th>Stock Price</th><th>Intrinsic Value</th><th>P&L Per Share</th><th>Total P&L (${contracts} contract${contracts>1?'s':''})</th><th>Return %</th></tr></thead>
+    <tbody>${prices.map(p => {
+      const iv2 = optionType==='call' ? Math.max(p-K,0) : Math.max(K-p,0);
+      const ppl = iv2 - prem;
+      const tpnl = ppl * 100 * contracts;
+      const ret = (tpnl/totalCost*100).toFixed(1);
+      const isTarget = Math.abs(p - target) < step/2;
+      const cls = tpnl > 0 ? 'profit-cell' : tpnl < 0 ? 'loss-cell' : 'be-cell';
+      return `<tr style="${isTarget?'background:rgba(47,128,237,.1);':''}">
+        <td>${isTarget?'👉 ':''}<strong>$${p.toFixed(2)}</strong>${p===breakEven?' ← BE':''}</td>
+        <td>$${iv2.toFixed(2)}</td>
+        <td class="${cls}">${ppl>=0?'+':''}$${ppl.toFixed(2)}</td>
+        <td class="${cls}">${tpnl>=0?'+':''}$${tpnl.toFixed(2)}</td>
+        <td class="${cls}">${ret}%</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+
+  // Greeks (Black-Scholes)
+  const d1=(Math.log(S/K)+(r+iv*iv/2)*T)/(iv*Math.sqrt(T));
+  const d2=d1-iv*Math.sqrt(T);
+  const delta = optionType==='call' ? normCDF(d1) : normCDF(d1)-1;
+  const gamma = Math.exp(-d1*d1/2)/(S*iv*Math.sqrt(T)*Math.sqrt(2*Math.PI));
+  const theta = (optionType==='call'
+    ? (-S*Math.exp(-d1*d1/2)*iv/(2*Math.sqrt(T)*Math.sqrt(2*Math.PI))) - r*K*Math.exp(-r*T)*normCDF(d2)
+    : (-S*Math.exp(-d1*d1/2)*iv/(2*Math.sqrt(T)*Math.sqrt(2*Math.PI))) + r*K*Math.exp(-r*T)*normCDF(-d2)
+  ) / 365;
+  const vega = S*Math.exp(-d1*d1/2)*Math.sqrt(T)/(100*Math.sqrt(2*Math.PI));
+  const rho = (optionType==='call' ? K*T*Math.exp(-r*T)*normCDF(d2) : -K*T*Math.exp(-r*T)*normCDF(-d2))/100;
+
+  document.getElementById('greeksGrid').innerHTML = [
+    {sym:'Δ',name:'Delta',val:delta.toFixed(3),desc:'Price change per $1 stock move'},
+    {sym:'Γ',name:'Gamma',val:gamma.toFixed(4),desc:'Delta change per $1 stock move'},
+    {sym:'Θ',name:'Theta',val:'$'+theta.toFixed(3)+'/day',desc:'Value lost per day'},
+    {sym:'Vega',name:'Vega',val:'$'+vega.toFixed(3),desc:'Value change per 1% IV change'},
+    {sym:'ρ',name:'Rho',val:rho.toFixed(4),desc:'Value change per 1% rate change'},
+  ].map(g=>`<div class="greek-card"><div class="greek-sym">${g.sym}</div><div class="greek-name">${g.name}</div><div class="greek-val">${g.val}</div></div>`).join('');
+
+  document.getElementById('resultSection').classList.add('show');
+}
+</script>
+</body>
+</html>

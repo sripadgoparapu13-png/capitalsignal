@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DCF Calculator — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:960px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:960px;margin:0 auto;padding:0 24px 64px}
+.quick-load{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.ql-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;transition:.2s}
+.ql-btn:hover{border-color:var(--accent);color:var(--accent)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+@media(max-width:700px){.calc-grid{grid-template-columns:1fr}}
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px}
+.input-card h3{font-size:.85rem;font-weight:600;margin-bottom:20px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;outline:none;transition:.2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select option{background:var(--surface)}
+.field .hint{font-size:.7rem;color:var(--muted);margin-top:4px}
+.calc-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:14px;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s;margin-top:8px}
+.calc-btn:hover{background:#1a6bc7}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:24px;display:none}
+.result-card.show{display:block}
+.result-hero{text-align:center;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.result-label{font-size:.8rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.intrinsic-value{font-size:3rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:8px}
+.intrinsic-value.undervalued{color:var(--green)}
+.intrinsic-value.overvalued{color:var(--red)}
+.margin-badge{display:inline-block;padding:6px 18px;border-radius:20px;font-size:.85rem;font-weight:600}
+.margin-badge.undervalued{background:rgba(39,174,96,.15);color:var(--green)}
+.margin-badge.overvalued{background:rgba(255,77,106,.15);color:var(--red)}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:600px){.result-grid{grid-template-columns:1fr 1fr}}
+.res-stat{background:var(--surface2);border-radius:10px;padding:14px}
+.res-stat-label{font-size:.72rem;color:var(--muted);margin-bottom:4px}
+.res-stat-value{font-size:.95rem;font-weight:600;font-family:'DM Mono',monospace}
+.cashflow-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:20px}
+.cashflow-table th{color:var(--muted);font-weight:500;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.72rem;text-transform:uppercase}
+.cashflow-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace}
+.cashflow-table tr:last-child td{border:none;font-weight:700}
+.sensitivity-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:16px}
+.sens-cell{padding:8px 4px;text-align:center;border-radius:6px;font-size:.72rem;font-family:'DM Mono',monospace}
+.sens-header{background:var(--surface2);color:var(--muted);font-weight:600}
+.sens-val{cursor:default}
+.disclaimer{background:rgba(242,201,76,.08);border:1px solid rgba(242,201,76,.2);border-radius:10px;padding:14px 16px;font-size:.78rem;color:var(--yellow);line-height:1.6;margin-top:16px}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="dcf.html" style="color:var(--accent)">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="dcf.html">🧮 DCF</a><a href="options.html">💰 Options</a>
+  <a href="short-interest.html">📉 Short Interest</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🧮 DCF Intrinsic Value Calculator</h1>
+  <p>Estimate a stock's fair value using Discounted Cash Flow analysis — the method Warren Buffett uses</p>
+</div>
+
+<main>
+  <div class="quick-load">
+    <span style="font-size:.78rem;color:var(--muted);padding:6px 0">Quick load:</span>
+    <button class="ql-btn" onclick="loadPreset('AAPL')">AAPL</button>
+    <button class="ql-btn" onclick="loadPreset('MSFT')">MSFT</button>
+    <button class="ql-btn" onclick="loadPreset('NVDA')">NVDA</button>
+    <button class="ql-btn" onclick="loadPreset('GOOGL')">GOOGL</button>
+    <button class="ql-btn" onclick="loadPreset('AMZN')">AMZN</button>
+    <button class="ql-btn" onclick="loadPreset('TSLA')">TSLA</button>
+    <button class="ql-btn" onclick="loadPreset('META')">META</button>
+    <button class="ql-btn" onclick="loadPreset('JPM')">JPM</button>
+  </div>
+
+  <div class="calc-grid">
+    <div class="input-card">
+      <h3>Company Inputs</h3>
+      <div class="field"><label>Stock Ticker</label><input type="text" id="inp-ticker" placeholder="AAPL" style="text-transform:uppercase"></div>
+      <div class="field"><label>Current Stock Price ($)</label><input type="number" id="inp-price" placeholder="195.00" step="0.01"></div>
+      <div class="field"><label>Free Cash Flow - TTM ($B)</label><input type="number" id="inp-fcf" placeholder="100.0" step="0.1"><div class="hint">Trailing twelve months free cash flow in billions</div></div>
+      <div class="field"><label>Shares Outstanding (B)</label><input type="number" id="inp-shares" placeholder="15.4" step="0.1"><div class="hint">Total shares outstanding in billions</div></div>
+      <div class="field"><label>Cash & Equivalents ($B)</label><input type="number" id="inp-cash" placeholder="60.0" step="0.1"></div>
+      <div class="field"><label>Total Debt ($B)</label><input type="number" id="inp-debt" placeholder="110.0" step="0.1"></div>
+    </div>
+    <div class="input-card">
+      <h3>Growth Assumptions</h3>
+      <div class="field"><label>Growth Rate — Years 1–5 (%)</label><input type="number" id="inp-g1" placeholder="12" step="0.5"><div class="hint">Expected annual FCF growth for next 5 years</div></div>
+      <div class="field"><label>Growth Rate — Years 6–10 (%)</label><input type="number" id="inp-g2" placeholder="8" step="0.5"><div class="hint">Slower growth as company matures</div></div>
+      <div class="field"><label>Terminal Growth Rate (%)</label><input type="number" id="inp-tg" placeholder="3" step="0.5"><div class="hint">Long-term growth rate in perpetuity (≈ GDP growth)</div></div>
+      <div class="field"><label>Discount Rate / WACC (%)</label><input type="number" id="inp-wacc" placeholder="10" step="0.5"><div class="hint">Required rate of return. 8–12% is typical.</div></div>
+      <div class="field"><label>Margin of Safety (%)</label>
+        <select id="inp-mos">
+          <option value="10">10% — Low risk</option>
+          <option value="25" selected>25% — Moderate (Buffett standard)</option>
+          <option value="33">33% — High conviction needed</option>
+          <option value="50">50% — Deep value only</option>
+        </select>
+      </div>
+      <button class="calc-btn" onclick="calculate()">Calculate Intrinsic Value →</button>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-hero">
+      <div class="result-label">Intrinsic Value Per Share</div>
+      <div class="intrinsic-value" id="res-iv">—</div>
+      <div id="res-badge"></div>
+      <div style="margin-top:12px;font-size:.85rem;color:var(--muted)" id="res-summary"></div>
+    </div>
+    <div class="result-grid" id="res-grid"></div>
+    <h3 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Projected Cash Flows</h3>
+    <table class="cashflow-table" id="cfTable"></table>
+    <h3 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:20px 0 8px">Sensitivity Analysis — Intrinsic Value by Growth & Discount Rate</h3>
+    <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px">Rows = Growth Rate Y1–5 · Columns = Discount Rate (WACC)</div>
+    <div class="sensitivity-grid" id="sensGrid"></div>
+    <div class="disclaimer">⚠️ DCF analysis involves estimates and assumptions. Small changes in growth rate or discount rate produce very different results. This tool is for educational purposes only and is not financial advice. Always do your own research.</div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Not financial advice · DCF is one of many valuation methods</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const presets = {
+  AAPL: {price:195,fcf:107,shares:15.4,cash:67,debt:111,g1:12,g2:8,tg:3,wacc:9},
+  MSFT: {price:415,fcf:74,shares:7.44,cash:80,debt:79,g1:14,g2:10,tg:3,wacc:9},
+  NVDA: {price:870,fcf:27,shares:24.6,cash:26,debt:9,g1:35,g2:20,tg:4,wacc:10},
+  GOOGL: {price:175,fcf:72,shares:12.3,cash:108,debt:29,g1:14,g2:10,tg:3,wacc:9},
+  AMZN: {price:200,fcf:52,shares:10.5,cash:88,debt:59,g1:20,g2:14,tg:3,wacc:10},
+  TSLA: {price:250,fcf:3.5,shares:3.19,cash:29,debt:7,g1:25,g2:18,tg:4,wacc:11},
+  META: {price:550,fcf:53,shares:2.54,cash:65,debt:29,g1:18,g2:12,tg:3,wacc:10},
+  JPM:  {price:215,fcf:42,shares:2.87,cash:500,debt:900,g1:8,g2:5,tg:2.5,wacc:8},
+};
+
+function loadPreset(sym) {
+  const p = presets[sym];
+  if (!p) return;
+  document.getElementById('inp-ticker').value = sym;
+  document.getElementById('inp-price').value = p.price;
+  document.getElementById('inp-fcf').value = p.fcf;
+  document.getElementById('inp-shares').value = p.shares;
+  document.getElementById('inp-cash').value = p.cash;
+  document.getElementById('inp-debt').value = p.debt;
+  document.getElementById('inp-g1').value = p.g1;
+  document.getElementById('inp-g2').value = p.g2;
+  document.getElementById('inp-tg').value = p.tg;
+  document.getElementById('inp-wacc').value = p.wacc;
+  calculate();
+}
+
+function calculate() {
+  const ticker = document.getElementById('inp-ticker').value || 'STOCK';
+  const currentPrice = parseFloat(document.getElementById('inp-price').value);
+  const fcfB = parseFloat(document.getElementById('inp-fcf').value);
+  const sharesB = parseFloat(document.getElementById('inp-shares').value);
+  const cashB = parseFloat(document.getElementById('inp-cash').value) || 0;
+  const debtB = parseFloat(document.getElementById('inp-debt').value) || 0;
+  const g1 = parseFloat(document.getElementById('inp-g1').value) / 100;
+  const g2 = parseFloat(document.getElementById('inp-g2').value) / 100;
+  const tg = parseFloat(document.getElementById('inp-tg').value) / 100;
+  const wacc = parseFloat(document.getElementById('inp-wacc').value) / 100;
+  const mos = parseFloat(document.getElementById('inp-mos').value) / 100;
+
+  if (!currentPrice || !fcfB || !sharesB || !wacc) return;
+
+  const fcf = fcfB * 1e9;
+  const shares = sharesB * 1e9;
+  const cash = cashB * 1e9;
+  const debt = debtB * 1e9;
+
+  // Project cash flows
+  let pv = 0;
+  let cf = fcf;
+  const rows = [];
+  for (let y = 1; y <= 10; y++) {
+    cf = cf * (1 + (y <= 5 ? g1 : g2));
+    const discounted = cf / Math.pow(1 + wacc, y);
+    pv += discounted;
+    rows.push({ year: y, cf, discounted });
+  }
+
+  // Terminal value
+  const terminalFCF = rows[9].cf * (1 + tg);
+  const terminalValue = terminalFCF / (wacc - tg);
+  const pvTerminal = terminalValue / Math.pow(1 + wacc, 10);
+  pv += pvTerminal;
+
+  // Equity value
+  const equityValue = pv + cash - debt;
+  const intrinsicValue = equityValue / shares;
+  const buyPrice = intrinsicValue * (1 - mos);
+  const upside = ((intrinsicValue - currentPrice) / currentPrice * 100).toFixed(1);
+  const isUnder = intrinsicValue > currentPrice;
+
+  // Render
+  const ivEl = document.getElementById('res-iv');
+  ivEl.textContent = '$' + intrinsicValue.toFixed(2);
+  ivEl.className = 'intrinsic-value ' + (isUnder ? 'undervalued' : 'overvalued');
+
+  const badge = document.getElementById('res-badge');
+  badge.innerHTML = `<span class="margin-badge ${isUnder?'undervalued':'overvalued'}">${isUnder ? '✅ Undervalued' : '⚠️ Overvalued'} by ${Math.abs(upside)}%</span>`;
+
+  document.getElementById('res-summary').textContent =
+    `${ticker} appears ${isUnder?'undervalued':'overvalued'} at $${currentPrice}. With a ${(mos*100).toFixed(0)}% margin of safety, buy below $${buyPrice.toFixed(2)}.`;
+
+  const fmt = n => '$' + (n/1e9).toFixed(2) + 'B';
+  document.getElementById('res-grid').innerHTML = [
+    {l:'Intrinsic Value',v:'$'+intrinsicValue.toFixed(2)},
+    {l:'Current Price',v:'$'+currentPrice.toFixed(2)},
+    {l:'Margin of Safety Buy',v:'$'+buyPrice.toFixed(2)},
+    {l:'PV of Cash Flows',v:fmt(pv-pvTerminal)},
+    {l:'PV of Terminal Value',v:fmt(pvTerminal)},
+    {l:'Net Cash (Cash–Debt)',v:fmt(cash-debt)},
+  ].map(s=>`<div class="res-stat"><div class="res-stat-label">${s.l}</div><div class="res-stat-value">${s.v}</div></div>`).join('');
+
+  document.getElementById('cfTable').innerHTML = `
+    <thead><tr><th>Year</th><th>Projected FCF</th><th>Discounted FCF</th></tr></thead>
+    <tbody>
+      ${rows.map(r=>`<tr><td>${r.year}</td><td>${fmt(r.cf)}</td><td>${fmt(r.discounted)}</td></tr>`).join('')}
+      <tr><td>Terminal</td><td>${fmt(terminalValue)}</td><td>${fmt(pvTerminal)}</td></tr>
+      <tr style="border-top:1px solid var(--border)"><td colspan="2"><strong>Total Equity Value</strong></td><td><strong>${fmt(equityValue)}</strong></td></tr>
+    </tbody>`;
+
+  // Sensitivity: 5 growth rates x 5 discount rates
+  const growthRates = [g1*100-4, g1*100-2, g1*100, g1*100+2, g1*100+4].map(v => Math.max(0, v));
+  const discountRates = [wacc*100-2, wacc*100-1, wacc*100, wacc*100+1, wacc*100+2];
+  let sensHTML = `<div class="sens-cell sens-header"></div>` +
+    discountRates.map(d=>`<div class="sens-cell sens-header">${d.toFixed(1)}%</div>`).join('');
+  growthRates.forEach(g => {
+    sensHTML += `<div class="sens-cell sens-header">${g.toFixed(1)}%</div>`;
+    discountRates.forEach(d => {
+      let spv = 0, scf = fcf;
+      for (let y = 1; y <= 10; y++) {
+        scf = scf * (1 + (y <= 5 ? g/100 : g2));
+        spv += scf / Math.pow(1 + d/100, y);
+      }
+      const stv = (rows[9].cf*(1+g/100)*(1+tg)) / (d/100 - tg) / Math.pow(1+d/100, 10);
+      const siv = (spv + stv + cash - debt) / shares;
+      const isU = siv > currentPrice;
+      const bg = isU ? `rgba(39,174,96,${Math.min(0.4, Math.abs(siv-currentPrice)/currentPrice)})` : `rgba(255,77,106,${Math.min(0.4, Math.abs(siv-currentPrice)/currentPrice)})`;
+      sensHTML += `<div class="sens-cell sens-val" style="background:${bg}" title="${isU?'Undervalued':'Overvalued'} at this scenario">$${siv.toFixed(0)}</div>`;
+    });
+  });
+  document.getElementById('sensGrid').innerHTML = sensHTML;
+  document.getElementById('resultCard').classList.add('show');
+}
+</script>
+</body>
+</html>
