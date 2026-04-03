@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Market Heat Map — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 24px;max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px}
+.page-header-text h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header-text p{color:var(--muted)}
+.legend{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--muted)}
+.legend-bar{width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#d32f2f,#1b5e20)}
+main{max-width:1200px;margin:0 auto;padding:0 24px 64px}
+.controls{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.ctl-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:.78rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.ctl-btn:hover,.ctl-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.sector-group{margin-bottom:28px}
+.sector-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.heatmap-grid{display:flex;flex-wrap:wrap;gap:4px}
+.hm-cell{border-radius:6px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;transition:.15s;overflow:hidden;position:relative}
+.hm-cell:hover{filter:brightness(1.2);transform:scale(1.02);z-index:10}
+.hm-sym{font-family:'DM Mono',monospace;font-weight:700;color:#fff;line-height:1}
+.hm-chg{color:rgba(255,255,255,.85);line-height:1;margin-top:3px}
+.tooltip{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:.82rem;pointer-events:none;z-index:1000;box-shadow:0 8px 24px rgba(0,0,0,.5);min-width:160px;display:none}
+.tooltip-sym{font-family:'DM Mono',monospace;color:var(--accent);font-weight:700;font-size:1rem;margin-bottom:4px}
+.tooltip-name{color:var(--muted);font-size:.78rem;margin-bottom:8px}
+.tooltip-price{font-family:'DM Mono',monospace;font-size:1rem;margin-bottom:4px}
+.spinner-wrap{text-align:center;padding:80px;color:var(--muted)}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html" style="color:var(--accent)">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="heatmap.html">🗺️ Heat Map</a>
+  <a href="crypto.html">₿ Crypto</a><a href="economic-calendar.html">🏦 Economy</a>
+  <a href="compare.html">⚖️ Compare</a><a href="earnings.html">📅 Earnings</a>
+  <a href="news.html">📰 News</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1>Market Heat Map</h1>
+    <p>Color = % change today · Size = market cap weighting</p>
+  </div>
+  <div class="legend">
+    <span>-5%</span>
+    <div class="legend-bar"></div>
+    <span>+5%</span>
+  </div>
+</div>
+
+<main>
+  <div class="controls">
+    <button class="ctl-btn active" onclick="setView('all',this)">All Sectors</button>
+    <button class="ctl-btn" onclick="setView('tech',this)">Tech</button>
+    <button class="ctl-btn" onclick="setView('finance',this)">Finance</button>
+    <button class="ctl-btn" onclick="setView('healthcare',this)">Healthcare</button>
+    <button class="ctl-btn" onclick="setView('consumer',this)">Consumer</button>
+    <button class="ctl-btn" onclick="setView('energy',this)">Energy</button>
+    <span style="font-size:.75rem;color:var(--muted);margin-left:8px" id="updateTag"></span>
+  </div>
+  <div id="heatmapEl"><div class="spinner-wrap"><div class="spinner"></div>Loading live data...</div></div>
+</main>
+
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-sym" id="tt-sym">—</div>
+  <div class="tooltip-name" id="tt-name">—</div>
+  <div class="tooltip-price" id="tt-price">—</div>
+  <div id="tt-chg" style="font-family:'DM Mono',monospace;font-size:.88rem">—</div>
+</div>
+
+<footer>© 2025 CapitalSignal · Built for the next generation of investors</footer>
+
+<script>
+const PROXY='/api/yahoo?url=';
+const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+async function fw(url){const r=await fetch(PROXY+encodeURIComponent(url));return r.json();}
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const sectors={
+  tech:{label:'Technology',stocks:[
+    {sym:'AAPL',name:'Apple Inc.',cap:3000},{sym:'MSFT',name:'Microsoft',cap:2800},{sym:'NVDA',name:'NVIDIA',cap:1800},
+    {sym:'GOOGL',name:'Alphabet',cap:2000},{sym:'META',name:'Meta',cap:1300},{sym:'AMZN',name:'Amazon',cap:1900},
+    {sym:'NFLX',name:'Netflix',cap:280},{sym:'ORCL',name:'Oracle',cap:400},{sym:'CRM',name:'Salesforce',cap:300},
+    {sym:'ADBE',name:'Adobe',cap:250},{sym:'AMD',name:'AMD',cap:260},{sym:'UBER',name:'Uber',cap:180}
+  ]},
+  finance:{label:'Financials',stocks:[
+    {sym:'JPM',name:'JPMorgan',cap:580},{sym:'BAC',name:'BofA',cap:330},{sym:'V',name:'Visa',cap:560},
+    {sym:'MA',name:'Mastercard',cap:440},{sym:'GS',name:'Goldman Sachs',cap:160},{sym:'WFC',name:'Wells Fargo',cap:220},
+    {sym:'MS',name:'Morgan Stanley',cap:200},{sym:'BLK',name:'BlackRock',cap:130}
+  ]},
+  healthcare:{label:'Healthcare',stocks:[
+    {sym:'UNH',name:'UnitedHealth',cap:480},{sym:'JNJ',name:'J&J',cap:380},{sym:'LLY',name:'Eli Lilly',cap:720},
+    {sym:'ABBV',name:'AbbVie',cap:300},{sym:'MRK',name:'Merck',cap:290},{sym:'PFE',name:'Pfizer',cap:160},
+    {sym:'TMO',name:'Thermo Fisher',cap:210}
+  ]},
+  consumer:{label:'Consumer',stocks:[
+    {sym:'COST',name:'Costco',cap:370},{sym:'WMT',name:'Walmart',cap:700},{sym:'MCD',name:"McDonald's",cap:210},
+    {sym:'NKE',name:'Nike',cap:130},{sym:'SBUX',name:'Starbucks',cap:100},{sym:'TGT',name:'Target',cap:70}
+  ]},
+  energy:{label:'Energy',stocks:[
+    {sym:'XOM',name:'ExxonMobil',cap:450},{sym:'CVX',name:'Chevron',cap:280},{sym:'COP',name:'ConocoPhillips',cap:140},
+    {sym:'SLB',name:'Schlumberger',cap:60},{sym:'EOG',name:'EOG Resources',cap:75}
+  ]}
+};
+
+let liveData={};
+let currentView='all';
+
+function getColor(chg){
+  const v=Math.max(-5,Math.min(5,chg));
+  if(v>0){const i=v/5;return`rgb(${Math.round(40-40*i)},${Math.round(130+50*i)},${Math.round(40-40*i)})`;}
+  else if(v<0){const i=Math.abs(v)/5;return`rgb(${Math.round(180+75*i)},${Math.round(40-40*i)},${Math.round(40-40*i)})`;}
+  return'#444';
+}
+
+function getCellSize(cap,maxCap){const base=60;const max=140;return base+(max-base)*(cap/maxCap);}
+
+function showTooltip(e,sym,name,price,chg){
+  const tt=document.getElementById('tooltip');
+  tt.style.display='block';
+  document.getElementById('tt-sym').textContent=sym;
+  document.getElementById('tt-name').textContent=name;
+  document.getElementById('tt-price').textContent=price?'$'+price.toFixed(2):'—';
+  const ce=document.getElementById('tt-chg');
+  ce.textContent=chg!==null?(chg>=0?'+':'')+chg.toFixed(2)+'%':'—';
+  ce.style.color=chg>=0?'#27ae60':'#ff4d6a';
+  tt.style.left=(e.clientX+16)+'px';
+  tt.style.top=(e.clientY-8)+'px';
+}
+function hideTooltip(){document.getElementById('tooltip').style.display='none';}
+
+function setView(v,btn){
+  currentView=v;
+  document.querySelectorAll('.ctl-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render(){
+  const el=document.getElementById('heatmapEl');
+  const toRender=currentView==='all'?Object.values(sectors):[sectors[currentView]].filter(Boolean);
+  if(!toRender.length){el.innerHTML='';return;}
+
+  el.innerHTML=toRender.map(sec=>{
+    const maxCap=Math.max(...sec.stocks.map(s=>s.cap));
+    const cells=sec.stocks.map(s=>{
+      const d=liveData[s.sym];
+      const chg=d?d.chg:null;
+      const price=d?d.price:null;
+      const color=chg!==null?getColor(chg):'#2a2a3a';
+      const size=getCellSize(s.cap,maxCap);
+      const fontSize=size>100?'14px':size>80?'12px':'10px';
+      const chgFontSize=size>100?'12px':size>80?'10px':'9px';
+      return`<div class="hm-cell" style="width:${size}px;height:${size}px;background:${color}" 
+        onclick="window.location='index.html?q=${s.sym}'"
+        onmousemove="showTooltip(event,'${s.sym}','${s.name}',${price||'null'},${chg!==null?chg:'null'})"
+        onmouseleave="hideTooltip()">
+        <div class="hm-sym" style="font-size:${fontSize}">${s.sym}</div>
+        <div class="hm-chg" style="font-size:${chgFontSize}">${chg!==null?(chg>=0?'+':'')+chg.toFixed(1)+'%':'—'}</div>
+      </div>`;
+    }).join('');
+    return`<div class="sector-group"><div class="sector-label">${sec.label}</div><div class="heatmap-grid">${cells}</div></div>`;
+  }).join('');
+}
+
+async function loadData(){
+  const allStocks=[...new Set(Object.values(sectors).flatMap(s=>s.stocks.map(st=>st.sym)))];
+  document.getElementById('updateTag').textContent='Loading...';
+  for(const sym of allStocks){
+    try{
+      const d=await fw(YAHOO+sym+'?interval=1d&range=5d');
+      const m=d.chart.result[0].meta;
+      const price=m.regularMarketPrice, prev=m.chartPreviousClose;
+      liveData[sym]={price,chg:parseFloat(((price-prev)/prev*100).toFixed(2))};
+    }catch(e){liveData[sym]=null;}
+    render();
+  }
+  document.getElementById('updateTag').textContent='Updated '+new Date().toLocaleTimeString();
+}
+
+loadData();
+setInterval(loadData,60000);
+</script>
+</body>
+</html>

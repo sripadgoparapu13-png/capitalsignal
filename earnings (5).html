@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Earnings Calendar — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.week-section{margin-bottom:40px}
+.week-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.earnings-table{width:100%;border-collapse:collapse}
+.earnings-table th{color:var(--muted);font-weight:500;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase}
+.earnings-table td{padding:12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem}
+.earnings-table tr:hover td{background:var(--surface2)}
+.earnings-table tr:last-child td{border:none}
+.e-sym{font-family:'DM Mono',monospace;color:var(--accent);font-weight:600}
+.beat{color:var(--green);font-size:.75rem;background:rgba(39,174,96,.12);padding:2px 8px;border-radius:4px}
+.miss{color:var(--red);font-size:.75rem;background:rgba(255,77,106,.12);padding:2px 8px;border-radius:4px}
+.in-line{color:var(--yellow);font-size:.75rem;background:rgba(242,201,76,.12);padding:2px 8px;border-radius:4px}
+.upcoming-badge{color:var(--muted);font-size:.75rem;background:var(--surface2);padding:2px 8px;border-radius:4px}
+.countdown{font-size:.75rem;color:var(--accent);font-family:'DM Mono',monospace}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html" style="color:var(--accent)">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="heatmap.html">🗺️ Heat Map</a>
+  <a href="crypto.html">₿ Crypto</a><a href="economic-calendar.html">🏦 Economy</a>
+  <a href="compare.html">⚖️ Compare</a><a href="earnings.html">📅 Earnings</a>
+  <a href="news.html">📰 News</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>Earnings Calendar</h1>
+  <p>Upcoming and recent earnings reports with beat/miss tracker</p>
+</div>
+<main id="earningsMain">Loading earnings data...</main>
+<footer>© 2025 CapitalSignal · Built for the next generation of investors</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const allEarnings=[
+  // Past earnings with results
+  {sym:'AAPL',name:'Apple Inc.',date:'2024-11-01',time:'AMC',est:1.56,actual:1.64,rev:'$94.9B',revEst:'$94.5B'},
+  {sym:'MSFT',name:'Microsoft Corp.',date:'2024-10-30',time:'AMC',est:3.10,actual:3.30,rev:'$65.6B',revEst:'$64.5B'},
+  {sym:'NVDA',name:'NVIDIA Corp.',date:'2024-11-20',time:'AMC',est:0.74,actual:0.81,rev:'$35.1B',revEst:'$33.2B'},
+  {sym:'GOOGL',name:'Alphabet Inc.',date:'2024-10-29',time:'AMC',est:1.84,actual:2.12,rev:'$88.3B',revEst:'$86.3B'},
+  {sym:'AMZN',name:'Amazon.com',date:'2024-10-31',time:'AMC',est:1.14,actual:1.43,rev:'$159.0B',revEst:'$157.3B'},
+  {sym:'META',name:'Meta Platforms',date:'2024-10-30',time:'AMC',est:5.28,actual:6.03,rev:'$40.6B',revEst:'$40.3B'},
+  {sym:'TSLA',name:'Tesla Inc.',date:'2024-10-23',time:'AMC',est:0.58,actual:0.72,rev:'$25.2B',revEst:'$25.4B'},
+  {sym:'JPM',name:'JPMorgan Chase',date:'2024-10-11',time:'BMO',est:4.02,actual:4.37,rev:'$43.3B',revEst:'$41.8B'},
+  // Upcoming
+  {sym:'NFLX',name:'Netflix Inc.',date:'2025-01-21',time:'AMC',est:4.20,actual:null},
+  {sym:'GS',name:'Goldman Sachs',date:'2025-01-15',time:'BMO',est:8.22,actual:null},
+  {sym:'BAC',name:'Bank of America',date:'2025-01-15',time:'BMO',est:0.77,actual:null},
+  {sym:'UNH',name:'UnitedHealth',date:'2025-01-16',time:'BMO',est:6.72,actual:null},
+  {sym:'AAPL',name:'Apple Inc.',date:'2025-01-30',time:'AMC',est:2.36,actual:null},
+  {sym:'MSFT',name:'Microsoft Corp.',date:'2025-01-29',time:'AMC',est:3.22,actual:null},
+  {sym:'NVDA',name:'NVIDIA Corp.',date:'2025-02-26',time:'AMC',est:0.84,actual:null},
+  {sym:'AMZN',name:'Amazon.com',date:'2025-02-06',time:'AMC',est:1.49,actual:null},
+  {sym:'META',name:'Meta Platforms',date:'2025-01-29',time:'AMC',est:6.76,actual:null},
+  {sym:'GOOGL',name:'Alphabet Inc.',date:'2025-02-04',time:'AMC',est:2.13,actual:null},
+];
+
+function getSurprise(est,actual){
+  if(!actual||!est)return null;
+  return ((actual-est)/Math.abs(est)*100).toFixed(1);
+}
+
+function getDaysUntil(dateStr){
+  const diff=new Date(dateStr).getTime()-Date.now();
+  return Math.ceil(diff/86400000);
+}
+
+function render(){
+  const today=new Date();
+  const past=allEarnings.filter(e=>e.actual!==null).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const upcoming=allEarnings.filter(e=>!e.actual).sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  const mkRow=e=>{
+    const days=getDaysUntil(e.date);
+    const surprise=getSurprise(e.est,e.actual);
+    let badge='';
+    if(e.actual===null){
+      badge=days<=0?'<span class="upcoming-badge">Today</span>':days===1?'<span class="countdown">Tomorrow</span>':`<span class="countdown">In ${days} days</span>`;
+    } else {
+      const s=parseFloat(surprise);
+      if(s>2)badge=`<span class="beat">Beat +${surprise}%</span>`;
+      else if(s<-2)badge=`<span class="miss">Miss ${surprise}%</span>`;
+      else badge=`<span class="in-line">In Line</span>`;
+    }
+    return `<tr>
+      <td><span class="e-sym">${e.sym}</span></td>
+      <td>${e.name}</td>
+      <td>${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</td>
+      <td style="color:var(--muted);font-size:.8rem">${e.time==='AMC'?'After Close':'Before Open'}</td>
+      <td style="font-family:'DM Mono',monospace">$${e.est}</td>
+      <td style="font-family:'DM Mono',monospace">${e.actual?'$'+e.actual:'—'}</td>
+      <td>${badge}</td>
+    </tr>`;
+  };
+
+  document.getElementById('earningsMain').innerHTML=`
+    <div class="week-section">
+      <div class="week-title">Upcoming Earnings</div>
+      <table class="earnings-table"><thead><tr><th>Symbol</th><th>Company</th><th>Date</th><th>Time</th><th>Est. EPS</th><th>Actual</th><th>Result</th></tr></thead>
+      <tbody>${upcoming.map(mkRow).join('')}</tbody></table>
+    </div>
+    <div class="week-section">
+      <div class="week-title">Recent Results</div>
+      <table class="earnings-table"><thead><tr><th>Symbol</th><th>Company</th><th>Date</th><th>Time</th><th>Est. EPS</th><th>Actual</th><th>Result</th></tr></thead>
+      <tbody>${past.map(mkRow).join('')}</tbody></table>
+    </div>`;
+}
+render();
+</script>
+</body>
+</html>

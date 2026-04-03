@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>News — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:900px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:900px;margin:0 auto;padding:0 24px 64px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.search-bar{display:flex;gap:8px;margin-bottom:28px}
+.search-bar input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none}
+.search-bar input:focus{border-color:var(--accent)}
+.search-bar button{background:var(--accent);border:none;color:#fff;padding:0 20px;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem}
+.news-grid{display:grid;gap:16px}
+.news-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-decoration:none;display:block;transition:.2s}
+.news-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.news-card-source{font-size:.72rem;font-family:'DM Mono',monospace;color:var(--accent);margin-bottom:8px;text-transform:uppercase}
+.news-card-title{font-size:.95rem;color:var(--text);line-height:1.5;margin-bottom:10px;font-weight:500}
+.news-card-desc{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:12px}
+.news-card-meta{display:flex;gap:12px;font-size:.75rem;color:var(--muted)}
+.loading-msg{text-align:center;padding:48px;color:var(--muted)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html" style="color:var(--accent)">📰 News</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="heatmap.html">🗺️ Heat Map</a>
+  <a href="crypto.html">₿ Crypto</a><a href="economic-calendar.html">🏦 Economy</a>
+  <a href="compare.html">⚖️ Compare</a><a href="earnings.html">📅 Earnings</a>
+  <a href="news.html">📰 News</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>Financial News</h1>
+  <p>Latest headlines from Reuters, Bloomberg, CNBC, WSJ, and MarketWatch</p>
+</div>
+<main>
+  <div class="filters" id="filters">
+    <button class="filter-btn active" onclick="setTopic('finance',this)">All Markets</button>
+    <button class="filter-btn" onclick="setTopic('technology stocks',this)">Tech</button>
+    <button class="filter-btn" onclick="setTopic('economy inflation',this)">Economy</button>
+    <button class="filter-btn" onclick="setTopic('earnings revenue',this)">Earnings</button>
+    <button class="filter-btn" onclick="setTopic('cryptocurrency bitcoin',this)">Crypto</button>
+    <button class="filter-btn" onclick="setTopic('energy oil',this)">Energy</button>
+    <button class="filter-btn" onclick="setTopic('federal reserve interest rates',this)">Fed</button>
+  </div>
+  <div class="search-bar">
+    <input type="text" id="newsSearch" placeholder="Search any company or topic..." onkeydown="if(event.key==='Enter')searchNews()">
+    <button onclick="searchNews()">Search</button>
+  </div>
+  <div id="newsGrid" class="news-grid"><div class="loading-msg"><div class="spinner"></div>Loading latest news...</div></div>
+</main>
+<footer>© 2025 CapitalSignal · Built for the next generation of investors</footer>
+<script>
+function toggleTheme(){ document.body.classList.toggle('light'); document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️'; }
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){ document.getElementById('mobileMenu').classList.toggle('open'); document.getElementById('hamburger').classList.toggle('open'); }
+let currentTopic='finance';
+function setTopic(t,btn){ currentTopic=t; document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); loadNews(t); }
+function searchNews(){ const v=document.getElementById('newsSearch').value.trim(); if(v) loadNews(v); }
+function timeAgo(dateStr){ const diff=Date.now()-new Date(dateStr).getTime(); const h=Math.floor(diff/3600000); return h<1?'Just now':h<24?h+'h ago':Math.floor(h/24)+'d ago'; }
+async function loadNews(topic){
+  const grid=document.getElementById('newsGrid');
+  grid.innerHTML='<div class="loading-msg"><div class="spinner"></div>Loading...</div>';
+  try{
+    const r=await fetch('/api/news?q='+encodeURIComponent(topic));
+    const data=await r.json();
+    if(data.articles&&data.articles.length){
+      grid.innerHTML=data.articles.map(a=>`<a class="news-card" href="${a.url}" target="_blank" rel="noopener"><div class="news-card-source">${a.source.name}</div><div class="news-card-title">${a.title}</div><div class="news-card-desc">${a.description||''}</div><div class="news-card-meta"><span>${timeAgo(a.publishedAt)}</span></div></a>`).join('');
+    } else { grid.innerHTML='<div class="loading-msg">No news found for this topic.</div>'; }
+  }catch(e){ grid.innerHTML='<div class="loading-msg">Unable to load news right now.</div>'; }
+}
+loadNews('finance');
+</script>
+</body>
+</html>

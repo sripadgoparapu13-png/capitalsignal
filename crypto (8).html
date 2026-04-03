@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Crypto — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.global-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:32px}
+.gs-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.gs-label{font-size:.75rem;color:var(--muted);margin-bottom:6px}
+.gs-value{font-size:1.1rem;font-weight:600;font-family:'DM Mono',monospace}
+.crypto-table{width:100%;border-collapse:collapse}
+.crypto-table th{color:var(--muted);font-weight:500;text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+.crypto-table td{padding:14px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
+.crypto-table tr:hover td{background:var(--surface2)}
+.crypto-table tr:last-child td{border:none}
+.coin-info{display:flex;align-items:center;gap:10px}
+.coin-icon{width:32px;height:32px;border-radius:50%;font-size:1rem;display:flex;align-items:center;justify-content:center;background:var(--surface2)}
+.coin-name{font-weight:500}
+.coin-sym{font-size:.78rem;color:var(--muted);font-family:'DM Mono',monospace}
+.pos{color:var(--green)}
+.neg{color:var(--red)}
+td.num{font-family:'DM Mono',monospace;font-size:.88rem}
+.spark{width:80px;height:28px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-msg{text-align:center;padding:48px;color:var(--muted)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+@media(max-width:700px){.hide-mobile{display:none}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html" style="color:var(--accent)">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="heatmap.html">🗺️ Heat Map</a>
+  <a href="crypto.html">₿ Crypto</a><a href="economic-calendar.html">🏦 Economy</a>
+  <a href="compare.html">⚖️ Compare</a><a href="earnings.html">📅 Earnings</a>
+  <a href="news.html">📰 News</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>Crypto Markets</h1>
+  <p>Live prices, market caps, and 7-day sparklines for top cryptocurrencies</p>
+</div>
+<main>
+  <div class="global-stats" id="globalStats">
+    <div class="gs-card"><div class="gs-label">Total Market Cap</div><div class="gs-value" id="gs-mc">—</div></div>
+    <div class="gs-card"><div class="gs-label">24h Volume</div><div class="gs-value" id="gs-vol">—</div></div>
+    <div class="gs-card"><div class="gs-label">Bitcoin Dominance</div><div class="gs-value" id="gs-btc">—</div></div>
+    <div class="gs-card"><div class="gs-label">Active Cryptocurrencies</div><div class="gs-value" id="gs-count">—</div></div>
+  </div>
+  <div id="cryptoTable"><div class="loading-msg"><div class="spinner"></div>Loading crypto data...</div></div>
+</main>
+<footer>© 2025 CapitalSignal · Data from CoinGecko</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+function fmtNum(n){if(!n)return'—';if(n>=1e12)return'$'+(n/1e12).toFixed(2)+'T';if(n>=1e9)return'$'+(n/1e9).toFixed(2)+'B';if(n>=1e6)return'$'+(n/1e6).toFixed(2)+'M';return'$'+n.toLocaleString();}
+function fmtPrice(n){if(!n)return'—';if(n>1000)return'$'+n.toLocaleString('en-US',{maximumFractionDigits:0});if(n>1)return'$'+n.toFixed(2);return'$'+n.toFixed(6);}
+const icons={'bitcoin':'₿','ethereum':'Ξ','binancecoin':'BNB','solana':'◎','ripple':'XRP','cardano':'ADA','dogecoin':'Ð','polkadot':'DOT','avalanche-2':'AVAX','chainlink':'LINK','litecoin':'Ł','uniswap':'UNI','cosmos':'ATOM','stellar':'XLM','monero':'XMR','tron':'TRX','toncoin':'TON','shiba-inu':'SHIB','polygon':'MATIC','internet-computer':'ICP'};
+
+function drawSparkline(canvas, prices, isUp){
+  if(!canvas||!prices||!prices.length)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width=80, H=canvas.height=28;
+  const valid=prices.filter(p=>p!==null);
+  if(!valid.length)return;
+  const min=Math.min(...valid), max=Math.max(...valid), range=max-min||1;
+  const xs=valid.map((_,i)=>i/(valid.length-1)*W);
+  const ys=valid.map(v=>H-((v-min)/range)*(H-4)-2);
+  ctx.beginPath(); ctx.moveTo(xs[0],ys[0]);
+  for(let i=1;i<xs.length;i++){const cpx=(xs[i-1]+xs[i])/2;ctx.bezierCurveTo(cpx,ys[i-1],cpx,ys[i],xs[i],ys[i]);}
+  ctx.strokeStyle=isUp?'#27ae60':'#ff4d6a'; ctx.lineWidth=1.5; ctx.stroke();
+}
+
+async function loadGlobal(){
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/global');
+    const d=await r.json();
+    const data=d.data;
+    document.getElementById('gs-mc').textContent=fmtNum(data.total_market_cap?.usd);
+    document.getElementById('gs-vol').textContent=fmtNum(data.total_volume?.usd);
+    document.getElementById('gs-btc').textContent=(data.market_cap_percentage?.btc||0).toFixed(1)+'%';
+    document.getElementById('gs-count').textContent=(data.active_cryptocurrencies||0).toLocaleString();
+  }catch(e){}
+}
+
+async function loadCryptos(){
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=true&price_change_percentage=1h,24h,7d');
+    const coins=await r.json();
+    const rows=coins.map((c,i)=>{
+      const chg24=c.price_change_percentage_24h||0;
+      const chg7d=c.price_change_percentage_7d_in_currency||0;
+      const chg1h=c.price_change_percentage_1h_in_currency||0;
+      const isUp=chg24>=0;
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:8px"><span style="color:var(--muted);font-size:.78rem;width:20px">${i+1}</span></div></td>
+        <td><div class="coin-info"><div class="coin-icon">${icons[c.id]||c.symbol.toUpperCase().slice(0,2)}</div><div><div class="coin-name">${c.name}</div><div class="coin-sym">${c.symbol.toUpperCase()}</div></div></div></td>
+        <td class="num">$${fmtPrice(c.current_price).replace('$','')}</td>
+        <td class="num ${chg1h>=0?'pos':'neg'} hide-mobile">${chg1h>=0?'+':''}${chg1h.toFixed(2)}%</td>
+        <td class="num ${chg24>=0?'pos':'neg'}">${chg24>=0?'+':''}${chg24.toFixed(2)}%</td>
+        <td class="num ${chg7d>=0?'pos':'neg'} hide-mobile">${chg7d>=0?'+':''}${chg7d.toFixed(2)}%</td>
+        <td class="num hide-mobile">${fmtNum(c.market_cap)}</td>
+        <td class="num hide-mobile">${fmtNum(c.total_volume)}</td>
+        <td><canvas class="spark" id="spark-${c.id}"></canvas></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('cryptoTable').innerHTML=`<table class="crypto-table"><thead><tr><th>#</th><th>Coin</th><th>Price</th><th class="hide-mobile">1h</th><th>24h</th><th class="hide-mobile">7d</th><th class="hide-mobile">Market Cap</th><th class="hide-mobile">Volume</th><th>7d Chart</th></tr></thead><tbody>${rows}</tbody></table>`;
+    coins.forEach(c=>{
+      const canvas=document.getElementById('spark-'+c.id);
+      if(canvas&&c.sparkline_in_7d?.price){
+        const prices=c.sparkline_in_7d.price.filter((_,i)=>i%4===0);
+        drawSparkline(canvas,prices,(c.price_change_percentage_7d_in_currency||0)>=0);
+      }
+    });
+  }catch(e){document.getElementById('cryptoTable').innerHTML='<div class="loading-msg">Unable to load crypto data right now.</div>';}
+}
+
+loadGlobal(); loadCryptos();
+setInterval(()=>{loadGlobal();loadCryptos();},60000);
+</script>
+</body>
+</html>

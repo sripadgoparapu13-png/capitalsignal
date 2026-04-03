@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Economic Calendar — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.impact-filters{display:flex;gap:8px;margin-bottom:24px}
+.impact-btn{background:var(--surface);border:1px solid var(--border);padding:6px 16px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.impact-btn.high{color:var(--red);border-color:rgba(255,77,106,.3)}
+.impact-btn.med{color:var(--yellow);border-color:rgba(242,201,76,.3)}
+.impact-btn.low{color:var(--muted)}
+.impact-btn.active{opacity:1;background:var(--surface2)} .impact-btn{opacity:.7}
+.event-table{width:100%;border-collapse:collapse}
+.event-table th{color:var(--muted);font-weight:500;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase}
+.event-table td{padding:12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.88rem}
+.event-table tr:hover td{background:var(--surface2)}
+.impact-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.impact-dot.high{background:var(--red)}
+.impact-dot.med{background:var(--yellow)}
+.impact-dot.low{background:var(--muted)}
+.countdown-cell{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--accent)}
+.past-cell{color:var(--muted);font-size:.8rem}
+.section-divider{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:16px 0 8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html" style="color:var(--accent)">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="heatmap.html">🗺️ Heat Map</a>
+  <a href="crypto.html">₿ Crypto</a><a href="economic-calendar.html">🏦 Economy</a>
+  <a href="compare.html">⚖️ Compare</a><a href="earnings.html">📅 Earnings</a>
+  <a href="news.html">📰 News</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>Economic Calendar</h1>
+  <p>Key economic events that move the market — Fed, CPI, GDP, Jobs, and more</p>
+</div>
+<main>
+  <div class="impact-filters">
+    <button class="impact-btn high active" onclick="setFilter('all',this)">All Events</button>
+    <button class="impact-btn high" onclick="setFilter('high',this)">🔴 High Impact</button>
+    <button class="impact-btn med" onclick="setFilter('med',this)">🟡 Medium</button>
+    <button class="impact-btn low" onclick="setFilter('low',this)">⚪ Low</button>
+  </div>
+  <div id="calendarEl"></div>
+</main>
+<footer>© 2025 CapitalSignal · Built for the next generation of investors</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const events=[
+  {name:'FOMC Meeting (Interest Rate Decision)',date:'2025-01-29',impact:'high',prev:'4.25-4.50%',forecast:'4.25-4.50%',desc:'Federal Reserve decides on interest rates. Highest market impact of any event.'},
+  {name:'CPI Inflation Report',date:'2025-01-15',impact:'high',prev:'2.7%',forecast:'2.9%',desc:'Consumer Price Index — key measure of inflation.'},
+  {name:'Non-Farm Payrolls (Jobs Report)',date:'2025-02-07',impact:'high',prev:'256K',forecast:'180K',desc:'Monthly jobs report. Major indicator of economic health.'},
+  {name:'GDP Growth Rate (Q4 2024)',date:'2025-01-30',impact:'high',prev:'3.1%',forecast:'2.7%',desc:'Quarterly Gross Domestic Product growth rate.'},
+  {name:'PPI (Producer Price Index)',date:'2025-01-14',impact:'med',prev:'0.4%',forecast:'0.3%',desc:'Wholesale inflation — often a leading indicator of CPI.'},
+  {name:'Retail Sales',date:'2025-01-16',impact:'med',prev:'-0.1%',forecast:'0.5%',desc:'Monthly consumer spending at retail stores.'},
+  {name:'PCE Price Index',date:'2025-01-31',impact:'high',prev:'2.4%',forecast:'2.5%',desc:"The Fed's preferred inflation measure."},
+  {name:'FOMC Meeting Minutes',date:'2025-01-08',impact:'med',prev:'—',forecast:'—',desc:'Detailed notes from the last Fed meeting.'},
+  {name:'ISM Manufacturing PMI',date:'2025-02-03',impact:'med',prev:'49.3',forecast:'49.5',desc:'Manufacturing sector activity. Above 50 = expansion.'},
+  {name:'Consumer Confidence',date:'2025-01-28',impact:'med',prev:'104.7',forecast:'106.0',desc:'Survey of household spending intentions.'},
+  {name:'Initial Jobless Claims',date:'2025-01-16',impact:'low',prev:'201K',forecast:'215K',desc:'Weekly first-time unemployment filings.'},
+  {name:'Housing Starts',date:'2025-01-17',impact:'low',prev:'1.29M',forecast:'1.32M',desc:'New residential construction projects.'},
+  {name:'CPI Inflation Report',date:'2025-02-12',impact:'high',prev:'2.9%',forecast:'3.0%',desc:'February CPI report.'},
+  {name:'FOMC Meeting (Interest Rate Decision)',date:'2025-03-19',impact:'high',prev:'4.25-4.50%',forecast:'4.00-4.25%',desc:'March Fed meeting — potential rate cut.'},
+];
+
+let currentFilter='all';
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.impact-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function getDaysUntil(dateStr){
+  return Math.ceil((new Date(dateStr).getTime()-Date.now())/86400000);
+}
+
+function render(){
+  const today=new Date().toISOString().split('T')[0];
+  let filtered=events;
+  if(currentFilter!=='all') filtered=events.filter(e=>e.impact===currentFilter);
+  filtered.sort((a,b)=>new Date(a.date)-new Date(b.date));
+
+  const upcoming=filtered.filter(e=>e.date>=today);
+  const past=filtered.filter(e=>e.date<today).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
+
+  const mkRow=e=>{
+    const days=getDaysUntil(e.date);
+    const isPast=e.date<today;
+    const dateEl=isPast?`<span class="past-cell">${new Date(e.date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`
+      :days===0?'<span style="color:var(--red);font-weight:600;font-size:.8rem">TODAY</span>'
+      :days===1?'<span style="color:var(--yellow);font-size:.8rem">Tomorrow</span>'
+      :`<span class="countdown-cell">In ${days}d</span>`;
+    return `<tr>
+      <td>${dateEl}</td>
+      <td><span class="impact-dot ${e.impact}"></span>${e.name}<div style="font-size:.75rem;color:var(--muted);margin-top:2px">${e.desc}</div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:.82rem">${e.prev}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--accent)">${e.forecast}</td>
+    </tr>`;
+  };
+
+  document.getElementById('calendarEl').innerHTML=`
+    <div class="section-divider">Upcoming Events (${upcoming.length})</div>
+    <table class="event-table"><thead><tr><th>Date</th><th>Event</th><th>Previous</th><th>Forecast</th></tr></thead><tbody>${upcoming.map(mkRow).join('')||'<tr><td colspan="4" style="color:var(--muted);padding:20px">No upcoming events match your filter.</td></tr>'}</tbody></table>
+    <div class="section-divider" style="margin-top:40px">Recent Events</div>
+    <table class="event-table"><thead><tr><th>Date</th><th>Event</th><th>Previous</th><th>Forecast</th></tr></thead><tbody>${past.map(mkRow).join('')}</tbody></table>`;
+}
+render();
+</script>
+</body>
+</html>
