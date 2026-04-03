@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>IPO Calendar — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted);font-size:.95rem}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.stat-label{font-size:.75rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:1.3rem;font-weight:600;font-family:'DM Mono',monospace}
+.stat-sub{font-size:.75rem;color:var(--muted);margin-top:4px}
+.section-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.ipo-grid{display:grid;gap:12px;margin-bottom:40px}
+.ipo-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;transition:.2s}
+.ipo-card:hover{border-color:var(--accent)}
+.ipo-card.hot{border-left:3px solid var(--red)}
+.ipo-card.warm{border-left:3px solid var(--yellow)}
+.ipo-card.cool{border-left:3px solid var(--accent)}
+.ipo-left{}
+.ipo-name{font-size:1rem;font-weight:600;margin-bottom:4px}
+.ipo-ticker{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--accent);margin-bottom:6px}
+.ipo-desc{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:10px}
+.ipo-tags{display:flex;gap:6px;flex-wrap:wrap}
+.ipo-tag{font-size:.7rem;padding:3px 8px;border-radius:4px;background:var(--surface2);color:var(--muted)}
+.ipo-tag.sector{background:rgba(47,128,237,.1);color:var(--accent)}
+.ipo-right{text-align:right;flex-shrink:0}
+.ipo-date{font-size:.82rem;color:var(--muted);margin-bottom:6px}
+.ipo-price{font-size:1.1rem;font-weight:600;font-family:'DM Mono',monospace;margin-bottom:4px}
+.ipo-range{font-size:.78rem;color:var(--muted)}
+.ipo-status{display:inline-block;font-size:.72rem;padding:4px 10px;border-radius:6px;font-weight:600;margin-top:8px}
+.ipo-status.upcoming{background:rgba(47,128,237,.15);color:var(--accent)}
+.ipo-status.priced{background:rgba(39,174,96,.15);color:var(--green)}
+.ipo-status.filed{background:rgba(242,201,76,.15);color:var(--yellow)}
+.ipo-status.withdrawn{background:rgba(255,77,106,.15);color:var(--red)}
+.hype-bar{margin-top:8px}
+.hype-label{font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.hype-bg{height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.hype-fill{height:100%;border-radius:2px;transition:width 1s ease}
+.recent-grid{display:grid;gap:10px}
+.recent-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:grid;grid-template-columns:1fr auto auto auto;gap:16px;align-items:center}
+.rc-name{font-weight:500;font-size:.9rem}
+.rc-ticker{font-family:'DM Mono',monospace;font-size:.78rem;color:var(--accent)}
+.rc-ipo-price{font-family:'DM Mono',monospace;font-size:.85rem;color:var(--muted)}
+.rc-current{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:600}
+.rc-return{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:600}
+.rc-return.pos{color:var(--green)}
+.rc-return.neg{color:var(--red)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+@media(max-width:600px){.ipo-card{grid-template-columns:1fr}.ipo-right{text-align:left}.recent-card{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html" style="color:var(--accent)">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="crypto.html">₿ Crypto</a>
+  <a href="compare.html">⚖️ Compare</a><a href="earnings.html">📅 Earnings</a>
+  <a href="news.html">📰 News</a><a href="ipo.html">🚀 IPOs</a>
+  <a href="upgrades.html">⬆️ Upgrades</a><a href="sec-filings.html">📋 SEC</a><a href="forex.html">💱 Forex</a>
+  <a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🚀 IPO Calendar</h1>
+  <p>Upcoming IPOs, recent listings, and post-IPO performance tracking</p>
+</div>
+
+<main>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Upcoming IPOs</div><div class="stat-value">12</div><div class="stat-sub">Next 90 days</div></div>
+    <div class="stat-card"><div class="stat-label">Total Raised (2025)</div><div class="stat-value">$18.4B</div><div class="stat-sub">YTD across all IPOs</div></div>
+    <div class="stat-card"><div class="stat-label">Avg First-Day Pop</div><div class="stat-value">+14.2%</div><div class="stat-sub">2025 average</div></div>
+    <div class="stat-card"><div class="stat-label">Hot Deals</div><div class="stat-value">3</div><div class="stat-sub">Oversubscribed</div></div>
+  </div>
+
+  <div class="section-title">Upcoming IPOs</div>
+  <div class="ipo-grid" id="upcomingIPOs"></div>
+
+  <div class="section-title">Recent IPOs — Performance</div>
+  <div class="recent-grid" id="recentIPOs"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · IPO data is for informational purposes only · Not financial advice</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const upcoming = [
+  {name:'Klarna',ticker:'KLAR',desc:'Swedish buy-now-pay-later giant with 150M+ consumers across 45 countries. One of the most anticipated fintech IPOs in years.',sector:'Fintech',date:'2025-Q2',priceRange:'$15–$18',valuation:'$15B',hype:95,temp:'hot',status:'filed',underwriter:'Goldman Sachs, Morgan Stanley'},
+  {name:'Chime Financial',ticker:'CHYM',desc:'US neobank with 22M customers. Commission-free banking targeting millennials and Gen Z.',sector:'Fintech',date:'2025-Q2',priceRange:'$18–$22',valuation:'$8B',hype:80,temp:'hot',status:'filed',underwriter:'JPMorgan, Barclays'},
+  {name:'Medline Industries',ticker:'MDLN',desc:'One of the largest privately-held medical supply companies in the US. Strong recurring revenue from hospital contracts.',sector:'Healthcare',date:'2025-Q3',priceRange:'$20–$24',valuation:'$10B',hype:65,temp:'warm',status:'filed',underwriter:'Goldman Sachs'},
+  {name:'Cerebras Systems',ticker:'CBRS',desc:'AI chip startup building wafer-scale processors for LLM training. Direct NVIDIA competitor in the AI infrastructure space.',sector:'AI/Chips',date:'2025-Q2',priceRange:'$16–$20',valuation:'$4B',hype:88,temp:'hot',status:'upcoming',underwriter:'Citigroup'},
+  {name:'Discord',ticker:'DSCD',desc:'Gaming and community communication platform with 500M+ registered users. Exploring premium subscription revenue.',sector:'Social/Tech',date:'2025-Q3',priceRange:'$22–$28',valuation:'$12B',hype:75,temp:'warm',status:'upcoming',underwriter:'Morgan Stanley'},
+  {name:'Canva',ticker:'CANV',desc:'Australian design platform used by 170M+ people worldwide. Profitable with $2.3B ARR.',sector:'SaaS',date:'2025-Q4',priceRange:'$25–$30',valuation:'$26B',hype:70,temp:'warm',status:'upcoming',underwriter:'TBD'},
+  {name:'Impossible Foods',ticker:'IMPF',desc:'Plant-based meat pioneer competing with Beyond Meat. Expanding into new protein categories.',sector:'Consumer/FoodTech',date:'2025-Q3',priceRange:'$10–$14',valuation:'$3B',hype:50,temp:'cool',status:'upcoming',underwriter:'TBD'},
+  {name:'Panera Brands',ticker:'PNRA',desc:'Restaurant group including Panera Bread, Caribou Coffee, and Einstein Bros. Backed by JAB Holding.',sector:'Consumer',date:'2025-Q2',priceRange:'$14–$18',valuation:'$10B',hype:45,temp:'cool',status:'filed',underwriter:'BofA, Citi'},
+];
+
+const recent = [
+  {name:'Reddit',ticker:'RDDT',sector:'Social',ipoDate:'Mar 2024',ipoPrice:34,current:128.5,desc:'Social media platform'},
+  {name:'Astera Labs',ticker:'ALAB',sector:'Chips',ipoDate:'Mar 2024',ipoPrice:36,current:89.2,desc:'AI connectivity chips'},
+  {name:'Rubrik',ticker:'RBRK',sector:'Cybersecurity',ipoDate:'Apr 2024',ipoPrice:32,current:58.4,desc:'Cloud data security'},
+  {name:'Lineage',ticker:'LINE',sector:'REIT',ipoDate:'Jul 2024',ipoPrice:78,current:61.2,desc:'Cold storage REIT'},
+  {name:'Waystar',ticker:'WAY',sector:'HealthTech',ipoDate:'Jun 2024',ipoPrice:21.5,current:26.8,desc:'Healthcare payments'},
+  {name:'OneStream',ticker:'OS',sector:'SaaS',ipoDate:'Jul 2024',ipoPrice:20,current:31.4,desc:'Financial planning software'},
+  {name:'ServiceTitan',ticker:'TTAN',sector:'SaaS',ipoDate:'Dec 2024',ipoPrice:71,current:94.2,desc:'Trades business software'},
+  {name:'Venture Global',ticker:'VG',sector:'Energy',ipoDate:'Jan 2025',ipoPrice:25,current:18.3,desc:'LNG exporter'},
+];
+
+function getHypeColor(hype){
+  if(hype>=80)return'linear-gradient(90deg,#ff4d6a,#f2994a)';
+  if(hype>=60)return'linear-gradient(90deg,#f2c94c,#27ae60)';
+  return'linear-gradient(90deg,#2F80ED,#56CCF2)';
+}
+
+function getDaysUntil(dateStr){
+  if(dateStr.includes('Q')){
+    const [year,q]=dateStr.split('-Q');
+    const month=(parseInt(q)-1)*3;
+    const d=new Date(parseInt(year),month,1);
+    return Math.ceil((d-Date.now())/86400000);
+  }
+  return Math.ceil((new Date(dateStr)-Date.now())/86400000);
+}
+
+document.getElementById('upcomingIPOs').innerHTML = upcoming.map(ipo=>{
+  const days = getDaysUntil(ipo.date);
+  const daysText = days > 0 ? `In ~${days} days` : 'Soon';
+  return `<div class="ipo-card ${ipo.temp}">
+    <div class="ipo-left">
+      <div class="ipo-ticker">${ipo.ticker}</div>
+      <div class="ipo-name">${ipo.name}</div>
+      <div class="ipo-desc">${ipo.desc}</div>
+      <div class="ipo-tags">
+        <span class="ipo-tag sector">${ipo.sector}</span>
+        <span class="ipo-tag">Lead: ${ipo.underwriter}</span>
+      </div>
+      <div class="hype-bar" style="max-width:200px;margin-top:12px">
+        <div class="hype-label">Investor Hype: ${ipo.hype}/100</div>
+        <div class="hype-bg"><div class="hype-fill" style="width:${ipo.hype}%;background:${getHypeColor(ipo.hype)}"></div></div>
+      </div>
+    </div>
+    <div class="ipo-right">
+      <div class="ipo-date">📅 ${ipo.date} · ${daysText}</div>
+      <div class="ipo-price">${ipo.priceRange}</div>
+      <div class="ipo-range">Est. Valuation: ${ipo.valuation}</div>
+      <div><span class="ipo-status ${ipo.status}">${ipo.status.toUpperCase()}</span></div>
+    </div>
+  </div>`;
+}).join('');
+
+document.getElementById('recentIPOs').innerHTML = recent.map(r=>{
+  const ret = ((r.current - r.ipoPrice)/r.ipoPrice*100).toFixed(1);
+  const isPos = ret >= 0;
+  return `<div class="recent-card">
+    <div><div class="rc-name">${r.name}</div><div class="rc-ticker">${r.ticker} · ${r.sector}</div></div>
+    <div><div style="font-size:.7rem;color:var(--muted)">IPO Price</div><div class="rc-ipo-price">$${r.ipoPrice}</div></div>
+    <div><div style="font-size:.7rem;color:var(--muted)">Current</div><div class="rc-current">$${r.current}</div></div>
+    <div><div style="font-size:.7rem;color:var(--muted)">Return</div><div class="rc-return ${isPos?'pos':'neg'}">${isPos?'+':''}${ret}%</div></div>
+  </div>`;
+}).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SEC Filings — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.explainer{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:32px}
+.exp-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.exp-type{font-family:'DM Mono',monospace;font-size:.85rem;font-weight:700;color:var(--accent);margin-bottom:6px}
+.exp-name{font-size:.82rem;font-weight:600;margin-bottom:4px}
+.exp-desc{font-size:.75rem;color:var(--muted);line-height:1.5}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.search-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:180px}
+.search-input:focus{border-color:var(--accent)}
+.filings-list{display:grid;gap:8px}
+.filing-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;transition:.2s;text-decoration:none;cursor:pointer}
+.filing-card:hover{border-color:var(--accent);background:var(--surface2)}
+.filing-type-badge{font-family:'DM Mono',monospace;font-size:.75rem;font-weight:700;padding:5px 10px;border-radius:6px;text-align:center;min-width:52px}
+.type-10k{background:rgba(47,128,237,.15);color:var(--accent)}
+.type-10q{background:rgba(86,204,242,.15);color:#56CCF2}
+.type-8k{background:rgba(242,201,76,.15);color:var(--yellow)}
+.type-13f{background:rgba(39,174,96,.15);color:var(--green)}
+.type-4{background:rgba(255,77,106,.15);color:var(--red)}
+.type-s1{background:rgba(155,89,182,.15);color:#9b59b6}
+.type-def14a{background:rgba(52,73,94,.5);color:var(--muted)}
+.fc-main{}
+.fc-company{font-weight:600;font-size:.9rem;margin-bottom:2px}
+.fc-sym{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--accent);margin-bottom:4px}
+.fc-desc{font-size:.8rem;color:var(--muted);line-height:1.4}
+.fc-right{text-align:right;flex-shrink:0}
+.fc-date{font-size:.75rem;color:var(--muted);margin-bottom:6px}
+.fc-link{font-size:.75rem;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:4px;justify-content:flex-end}
+.important-badge{font-size:.65rem;padding:2px 7px;border-radius:4px;background:rgba(255,77,106,.15);color:var(--red);font-weight:600;display:inline-block;margin-left:6px}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+@media(max-width:600px){.filing-card{grid-template-columns:auto 1fr}.fc-right{display:none}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html" style="color:var(--accent)">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="news.html">📰 News</a>
+  <a href="ipo.html">🚀 IPOs</a><a href="upgrades.html">⬆️ Upgrades</a>
+  <a href="sec-filings.html">📋 SEC</a><a href="forex.html">💱 Forex</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>📋 SEC Filings</h1>
+  <p>Recent 10-K, 10-Q, 8-K, 13F, Form 4, and S-1 filings from major companies</p>
+</div>
+
+<main>
+  <div class="explainer">
+    <div class="exp-card"><div class="exp-type">10-K</div><div class="exp-name">Annual Report</div><div class="exp-desc">Full-year financial statements. Most important filing — read this first.</div></div>
+    <div class="exp-card"><div class="exp-type">10-Q</div><div class="exp-name">Quarterly Report</div><div class="exp-desc">Three-month financial update. Filed 3x per year between 10-Ks.</div></div>
+    <div class="exp-card"><div class="exp-type">8-K</div><div class="exp-name">Current Report</div><div class="exp-desc">Major events: earnings, M&A, CEO changes, bankruptcy. Time-sensitive.</div></div>
+    <div class="exp-card"><div class="exp-type">13F</div><div class="exp-name">Institutional Holdings</div><div class="exp-desc">What hedge funds and institutions own. Filed quarterly. Huge signal.</div></div>
+    <div class="exp-card"><div class="exp-type">Form 4</div><div class="exp-name">Insider Transactions</div><div class="exp-desc">When executives buy or sell their own company stock. Watch closely.</div></div>
+    <div class="exp-card"><div class="exp-type">S-1</div><div class="exp-name">IPO Registration</div><div class="exp-desc">Filed before going public. Contains all financial history and risk factors.</div></div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('10-K',this)">10-K</button>
+    <button class="filter-btn" onclick="setFilter('10-Q',this)">10-Q</button>
+    <button class="filter-btn" onclick="setFilter('8-K',this)">8-K</button>
+    <button class="filter-btn" onclick="setFilter('13F',this)">13F</button>
+    <button class="filter-btn" onclick="setFilter('Form 4',this)">Form 4</button>
+    <button class="filter-btn" onclick="setFilter('S-1',this)">S-1</button>
+    <input class="search-input" type="text" placeholder="Search ticker..." oninput="searchFilter(this.value)">
+  </div>
+  <div class="filings-list" id="filingsList"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · SEC filings sourced from EDGAR · For informational purposes only</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const filings = [
+  {sym:'NVDA',name:'NVIDIA Corporation',type:'10-K',date:'Feb 26, 2025',desc:'Annual report for fiscal year 2025. Data center revenue surged 409% YoY to $47.5B. Net income of $29.8B. First $100B+ revenue year in company history.',important:true,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=NVDA&type=10-K'},
+  {sym:'AAPL',name:'Apple Inc.',type:'10-Q',date:'Feb 1, 2025',desc:'Q1 FY2025 quarterly report. Revenue of $124.3B, up 4% YoY. Services hit record $26.3B. iPhone revenue $69.1B driven by iPhone 16 cycle.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AAPL&type=10-Q'},
+  {sym:'TSLA',name:'Tesla Inc.',type:'8-K',date:'Apr 2, 2025',desc:'Q1 2025 vehicle delivery and production report. Delivered 336,681 vehicles, missing analyst estimates of 377,592. Shares fell 5% on the news.',important:true,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=TSLA&type=8-K'},
+  {sym:'BRK.B',name:'Berkshire Hathaway',type:'13F',desc:'Q4 2024 portfolio holdings. Added Occidental Petroleum stake to 28.2%. Reduced Apple position by 25%. New positions in Domino\'s and Pool Corp.',important:true,date:'Feb 14, 2025',url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=BRK-B&type=13F'},
+  {sym:'MSFT',name:'Microsoft Corp.',type:'10-Q',date:'Jan 29, 2025',desc:'Q2 FY2025 quarterly filing. Azure grew 31% YoY. Total revenue $69.6B, up 12%. AI services contributing meaningfully to cloud growth.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=MSFT&type=10-Q'},
+  {sym:'META',name:'Meta Platforms',type:'8-K',date:'Jan 29, 2025',desc:'Q4 2024 earnings release. Revenue $48.4B up 21%. Announced $65B capex plan for 2025 AI infrastructure. Monthly active users hit 3.35B.',important:true,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=META&type=8-K'},
+  {sym:'JPM',name:'JPMorgan Chase',type:'Form 4',date:'Mar 15, 2025',desc:'CEO Jamie Dimon acquired 150,000 shares at $205.14 per share ($30.77M total). First insider purchase in 4 years — strong bullish signal.',important:true,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=JPM&type=4'},
+  {sym:'KLARNA',name:'Klarna Bank AB',type:'S-1',date:'Mar 14, 2025',desc:'IPO registration statement. $2.8B in revenue for 2024. First profitable year. Plans to list on NYSE under ticker KLAR. Goldman Sachs lead underwriter.',important:true,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=KLARNA&type=S-1'},
+  {sym:'GOOGL',name:'Alphabet Inc.',type:'10-K',date:'Feb 4, 2025',desc:'Annual report for fiscal 2024. Total revenue $350.0B up 14% YoY. Google Cloud surpassed $43B. YouTube advertising $36.1B. Operating margin expanded to 32%.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=GOOGL&type=10-K'},
+  {sym:'AMZN',name:'Amazon.com Inc.',type:'8-K',date:'Feb 6, 2025',desc:'Q4 2024 earnings release 8-K. AWS revenue $28.8B up 19%. Advertising $17.3B up 18%. Operating income $21.2B. 2025 guidance above estimates.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=AMZN&type=8-K'},
+  {sym:'BRKSHFT',name:'Bridgewater Associates',type:'13F',date:'Feb 14, 2025',desc:'Q4 2024 13F filing. Ray Dalio\'s fund added significant positions in emerging market ETFs. Reduced US equity exposure by 18%. Increased gold ETF holdings.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001350694&type=13F'},
+  {sym:'PLTR',name:'Palantir Technologies',type:'Form 4',date:'Mar 20, 2025',desc:'CEO Alex Karp sold 1.2M shares at $78.40 per share ($94.1M) via pre-planned 10b5-1 trading plan. Part of ongoing systematic selling program.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=PLTR&type=4'},
+  {sym:'NFLX',name:'Netflix Inc.',type:'10-K',date:'Jan 28, 2025',desc:'Annual filing for FY2024. Paid memberships reached 301.6M globally. Revenue $39.0B up 15%. Operating margin expanded to 26.7%. Password sharing crackdown drove subscriber surge.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=NFLX&type=10-K'},
+  {sym:'CHIME',name:'Chime Financial Inc.',type:'S-1',date:'Dec 20, 2024',desc:'Confidential IPO registration filed with SEC. Neobank with 22M customers. Revenue ~$1.7B. Goldman Sachs and JPMorgan as lead underwriters. Target 2025 IPO.',important:true,url:'https://www.sec.gov/cgi-bin/browse-edgar'},
+  {sym:'COIN',name:'Coinbase Global',type:'8-K',date:'Mar 4, 2025',desc:'Q4 2024 shareholder letter filed as 8-K. Revenue $2.3B up 138% YoY driven by crypto market recovery. Base L2 processed $10B+ in volume.',important:false,url:'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=COIN&type=8-K'},
+];
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+function searchFilter(v) { currentSearch = v.toUpperCase(); render(); }
+
+const typeClass = {'10-K':'10k','10-Q':'10q','8-K':'8k','13F':'13f','Form 4':'4','S-1':'s1','DEF 14A':'def14a'};
+
+function render() {
+  let filtered = filings;
+  if (currentFilter !== 'all') filtered = filtered.filter(f => f.type === currentFilter);
+  if (currentSearch) filtered = filtered.filter(f => f.sym.includes(currentSearch) || f.name.toUpperCase().includes(currentSearch));
+
+  document.getElementById('filingsList').innerHTML = filtered.map(f => `
+    <div class="filing-card" onclick="window.open('${f.url}','_blank')">
+      <div class="filing-type-badge type-${typeClass[f.type]||'8k'}">${f.type}</div>
+      <div class="fc-main">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="fc-company">${f.name}</span>
+          ${f.important?'<span class="important-badge">⚡ Important</span>':''}
+        </div>
+        <div class="fc-sym">${f.sym}</div>
+        <div class="fc-desc">${f.desc}</div>
+      </div>
+      <div class="fc-right">
+        <div class="fc-date">${f.date}</div>
+        <div class="fc-link">View on EDGAR ↗</div>
+      </div>
+    </div>`).join('') || '<div style="color:var(--muted);padding:24px;text-align:center">No filings found.</div>';
+}
+render();
+</script>
+</body>
+</html>

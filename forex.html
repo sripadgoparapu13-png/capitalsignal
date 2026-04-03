@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Forex — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px}
+.page-header-left h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header-left p{color:var(--muted)}
+.update-tag{font-size:.75rem;color:var(--muted);font-family:'DM Mono',monospace}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.converter-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:40px}
+.converter-card h2{font-size:1rem;font-weight:600;margin-bottom:20px}
+.converter-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.conv-input-wrap{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px}
+.conv-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.conv-input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Mono',monospace;font-size:1.1rem;outline:none;width:100%}
+.conv-input:focus{border-color:var(--accent)}
+.conv-select{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;cursor:pointer}
+.conv-select option{background:var(--surface)}
+.conv-arrow{font-size:1.4rem;color:var(--muted);flex-shrink:0;cursor:pointer;transition:.2s;padding:8px}
+.conv-arrow:hover{color:var(--accent)}
+.conv-result{background:linear-gradient(135deg,rgba(47,128,237,.1),rgba(86,204,242,.05));border:1px solid rgba(47,128,237,.2);border-radius:10px;padding:16px 20px;margin-top:16px;font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:600}
+.conv-rate{font-size:.8rem;color:var(--muted);margin-top:6px;font-family:'DM Sans',sans-serif}
+.section-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.majors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:40px}
+.pair-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;cursor:pointer;transition:.2s}
+.pair-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.pair-name{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:700;margin-bottom:4px}
+.pair-full{font-size:.75rem;color:var(--muted);margin-bottom:12px}
+.pair-rate{font-size:1.6rem;font-weight:600;font-family:'DM Mono',monospace;margin-bottom:4px}
+.pair-chg{font-size:.85rem;font-family:'DM Mono',monospace}
+.pair-chg.pos{color:var(--green)}
+.pair-chg.neg{color:var(--red)}
+.pair-range{font-size:.72rem;color:var(--muted);margin-top:6px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:40px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.info-card h3{font-size:.9rem;font-weight:600;margin-bottom:16px}
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.info-row:last-child{border:none}
+.info-label{color:var(--muted)}
+.info-val{font-family:'DM Mono',monospace;font-weight:500}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html" style="color:var(--accent)">💱 Forex</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="news.html">📰 News</a>
+  <a href="ipo.html">🚀 IPOs</a><a href="upgrades.html">⬆️ Upgrades</a>
+  <a href="sec-filings.html">📋 SEC</a><a href="forex.html">💱 Forex</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>💱 Forex Markets</h1>
+    <p>Live currency exchange rates, currency converter, and major pairs</p>
+  </div>
+  <div class="update-tag" id="updateTag">Loading...</div>
+</div>
+
+<main>
+  <!-- CONVERTER -->
+  <div class="converter-card">
+    <h2>Currency Converter</h2>
+    <div class="converter-row">
+      <div class="conv-input-wrap">
+        <div class="conv-label">Amount</div>
+        <input type="number" class="conv-input" id="convAmount" value="1" oninput="convert()">
+      </div>
+      <div class="conv-input-wrap">
+        <div class="conv-label">From</div>
+        <select class="conv-select" id="convFrom" onchange="convert()">
+          <option value="USD">🇺🇸 USD — US Dollar</option>
+          <option value="EUR">🇪🇺 EUR — Euro</option>
+          <option value="GBP">🇬🇧 GBP — British Pound</option>
+          <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+          <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+          <option value="INR">🇮🇳 INR — Indian Rupee</option>
+          <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+          <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+          <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+          <option value="MXN">🇲🇽 MXN — Mexican Peso</option>
+          <option value="BRL">🇧🇷 BRL — Brazilian Real</option>
+          <option value="KRW">🇰🇷 KRW — South Korean Won</option>
+          <option value="SGD">🇸🇬 SGD — Singapore Dollar</option>
+          <option value="HKD">🇭🇰 HKD — Hong Kong Dollar</option>
+          <option value="SEK">🇸🇪 SEK — Swedish Krona</option>
+          <option value="NOK">🇳🇴 NOK — Norwegian Krone</option>
+          <option value="AED">🇦🇪 AED — UAE Dirham</option>
+          <option value="SAR">🇸🇦 SAR — Saudi Riyal</option>
+        </select>
+      </div>
+      <div class="conv-arrow" onclick="swapCurrencies()">⇄</div>
+      <div class="conv-input-wrap">
+        <div class="conv-label">To</div>
+        <select class="conv-select" id="convTo" onchange="convert()">
+          <option value="EUR">🇪🇺 EUR — Euro</option>
+          <option value="USD">🇺🇸 USD — US Dollar</option>
+          <option value="GBP">🇬🇧 GBP — British Pound</option>
+          <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+          <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+          <option value="INR">🇮🇳 INR — Indian Rupee</option>
+          <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+          <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+          <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+          <option value="MXN">🇲🇽 MXN — Mexican Peso</option>
+          <option value="BRL">🇧🇷 BRL — Brazilian Real</option>
+          <option value="KRW">🇰🇷 KRW — South Korean Won</option>
+          <option value="SGD">🇸🇬 SGD — Singapore Dollar</option>
+          <option value="HKD">🇭🇰 HKD — Hong Kong Dollar</option>
+          <option value="SEK">🇸🇪 SEK — Swedish Krona</option>
+          <option value="NOK">🇳🇴 NOK — Norwegian Krone</option>
+          <option value="AED">🇦🇪 AED — UAE Dirham</option>
+          <option value="SAR">🇸🇦 SAR — Saudi Riyal</option>
+        </select>
+      </div>
+    </div>
+    <div class="conv-result" id="convResult">Loading rates...</div>
+    <div class="conv-rate" id="convRate"></div>
+  </div>
+
+  <!-- MAJOR PAIRS -->
+  <div class="section-title">Major Currency Pairs</div>
+  <div class="majors-grid" id="majorsGrid">
+    <div style="color:var(--muted);font-size:.85rem;padding:20px">Loading live rates...</div>
+  </div>
+
+  <div class="two-col">
+    <div class="info-card">
+      <h3>💡 Forex Basics</h3>
+      <div class="info-row"><span class="info-label">Market Hours</span><span class="info-val">24/5 (Sun–Fri)</span></div>
+      <div class="info-row"><span class="info-label">Daily Volume</span><span class="info-val">$7.5 Trillion</span></div>
+      <div class="info-row"><span class="info-label">Most Traded</span><span class="info-val">EUR/USD</span></div>
+      <div class="info-row"><span class="info-label">Largest Market</span><span class="info-val">London (38%)</span></div>
+      <div class="info-row"><span class="info-label">Reserve Currency</span><span class="info-val">USD (58%)</span></div>
+      <div class="info-row"><span class="info-label">Pip</span><span class="info-val">0.0001 (1/100th cent)</span></div>
+    </div>
+    <div class="info-card">
+      <h3>📊 DXY — US Dollar Index</h3>
+      <div id="dxyInfo">
+        <div class="info-row"><span class="info-label">DXY Rate</span><span class="info-val" id="dxy-rate">Loading...</span></div>
+        <div class="info-row"><span class="info-label">Change</span><span class="info-val" id="dxy-chg">—</span></div>
+        <div class="info-row"><span class="info-label">Basket</span><span class="info-val">EUR 57.6%, JPY 13.6%</span></div>
+        <div class="info-row"><span class="info-label">GBP Weight</span><span class="info-val">11.9%</span></div>
+        <div class="info-row"><span class="info-label">CAD Weight</span><span class="info-val">9.1%</span></div>
+        <div class="info-row"><span class="info-label">SEK Weight</span><span class="info-val">4.2%</span></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Forex rates via Yahoo Finance · For informational purposes only</footer>
+
+<script>
+const PROXY = '/api/yahoo?url=';
+const YAHOO = 'https://query1.finance.yahoo.com/v8/finance/chart/';
+async function fw(url){const r=await fetch(PROXY+encodeURIComponent(url));return r.json();}
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const pairs = [
+  {sym:'EURUSD=X',name:'EUR/USD',full:'Euro / US Dollar',flag:'🇪🇺🇺🇸'},
+  {sym:'GBPUSD=X',name:'GBP/USD',full:'British Pound / US Dollar',flag:'🇬🇧🇺🇸'},
+  {sym:'USDJPY=X',name:'USD/JPY',full:'US Dollar / Japanese Yen',flag:'🇺🇸🇯🇵'},
+  {sym:'USDCAD=X',name:'USD/CAD',full:'US Dollar / Canadian Dollar',flag:'🇺🇸🇨🇦'},
+  {sym:'AUDUSD=X',name:'AUD/USD',full:'Australian Dollar / US Dollar',flag:'🇦🇺🇺🇸'},
+  {sym:'USDCHF=X',name:'USD/CHF',full:'US Dollar / Swiss Franc',flag:'🇺🇸🇨🇭'},
+  {sym:'USDCNY=X',name:'USD/CNY',full:'US Dollar / Chinese Yuan',flag:'🇺🇸🇨🇳'},
+  {sym:'USDINR=X',name:'USD/INR',full:'US Dollar / Indian Rupee',flag:'🇺🇸🇮🇳'},
+  {sym:'USDMXN=X',name:'USD/MXN',full:'US Dollar / Mexican Peso',flag:'🇺🇸🇲🇽'},
+  {sym:'USDBRL=X',name:'USD/BRL',full:'US Dollar / Brazilian Real',flag:'🇺🇸🇧🇷'},
+  {sym:'USDKRW=X',name:'USD/KRW',full:'US Dollar / South Korean Won',flag:'🇺🇸🇰🇷'},
+  {sym:'USDSGD=X',name:'USD/SGD',full:'US Dollar / Singapore Dollar',flag:'🇺🇸🇸🇬'},
+];
+
+let rates = {}; // base: USD
+
+async function loadRates() {
+  const results = {};
+  for (const pair of pairs) {
+    try {
+      const d = await fw(YAHOO + pair.sym + '?interval=1d&range=5d');
+      const m = d.chart.result[0].meta;
+      results[pair.sym] = { price: m.regularMarketPrice, prev: m.chartPreviousClose };
+    } catch(e) {}
+  }
+  // Load DXY
+  try {
+    const d = await fw(YAHOO + 'DX-Y.NYB?interval=1d&range=5d');
+    const m = d.chart.result[0].meta;
+    const chg = ((m.regularMarketPrice - m.chartPreviousClose)/m.chartPreviousClose*100).toFixed(2);
+    document.getElementById('dxy-rate').textContent = m.regularMarketPrice.toFixed(2);
+    const ce = document.getElementById('dxy-chg');
+    ce.textContent = (chg>=0?'+':'') + chg + '%';
+    ce.style.color = chg>=0?'var(--green)':'var(--red)';
+  } catch(e) {}
+
+  // Build USD base rates for converter
+  pairs.forEach(p => {
+    if (results[p.sym]) {
+      const basePair = p.name; // e.g. EUR/USD means 1 EUR = X USD
+      rates[p.sym] = results[p.sym].price;
+    }
+  });
+
+  renderPairs(results);
+  convert();
+  document.getElementById('updateTag').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+
+function renderPairs(results) {
+  const grid = document.getElementById('majorsGrid');
+  grid.innerHTML = pairs.map(p => {
+    const r = results[p.sym];
+    if (!r) return '';
+    const chg = ((r.price - r.prev)/r.prev*100).toFixed(3);
+    const isPos = chg >= 0;
+    const decimals = r.price > 10 ? (r.price > 100 ? 2 : 3) : 4;
+    return `<div class="pair-card" onclick="document.getElementById('convFrom').value='${p.name.split('/')[0]}';document.getElementById('convTo').value='${p.name.split('/')[1]}';convert()">
+      <div class="pair-name">${p.flag} ${p.name}</div>
+      <div class="pair-full">${p.full}</div>
+      <div class="pair-rate">${r.price.toFixed(decimals)}</div>
+      <div class="pair-chg ${isPos?'pos':'neg'}">${isPos?'▲':'▼'} ${Math.abs(chg)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// Simple converter using approximate rates
+const approxRates = {
+  USD:1, EUR:0.92, GBP:0.79, JPY:149.5, CNY:7.24, INR:83.1,
+  CAD:1.36, AUD:1.53, CHF:0.90, MXN:17.2, BRL:4.97,
+  KRW:1325, SGD:1.34, HKD:7.82, SEK:10.4, NOK:10.6, AED:3.67, SAR:3.75
+};
+
+// Try to get live rates from Yahoo pairs
+function getLiveRate(from, to) {
+  const symA = `${from}${to}=X`;
+  const symB = `${to}${from}=X`;
+  if (rates[symA]) return rates[symA];
+  if (rates[symB]) return 1/rates[symB];
+  // fallback to approx
+  const usdFrom = approxRates[from] || 1;
+  const usdTo = approxRates[to] || 1;
+  return usdTo / usdFrom;
+}
+
+function convert() {
+  const amount = parseFloat(document.getElementById('convAmount').value) || 1;
+  const from = document.getElementById('convFrom').value;
+  const to = document.getElementById('convTo').value;
+  const rate = getLiveRate(from, to);
+  const result = amount * rate;
+  const decimals = result > 100 ? 2 : result > 1 ? 4 : 6;
+  document.getElementById('convResult').textContent = `${amount.toLocaleString()} ${from} = ${result.toFixed(decimals)} ${to}`;
+  document.getElementById('convRate').textContent = `1 ${from} = ${rate.toFixed(4)} ${to} · 1 ${to} = ${(1/rate).toFixed(4)} ${from}`;
+}
+
+function swapCurrencies() {
+  const from = document.getElementById('convFrom');
+  const to = document.getElementById('convTo');
+  const tmp = from.value;
+  from.value = to.value;
+  to.value = tmp;
+  convert();
+}
+
+loadRates();
+setInterval(loadRates, 60000);
+</script>
+</body>
+</html>

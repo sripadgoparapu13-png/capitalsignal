@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Analyst Upgrades & Downgrades — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.search-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none;width:180px}
+.search-input:focus{border-color:var(--accent)}
+.upgrades-list{display:grid;gap:10px}
+.upgrade-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;transition:.2s}
+.upgrade-card:hover{border-color:var(--border);background:var(--surface2)}
+.upgrade-card.up{border-left:3px solid var(--green)}
+.upgrade-card.down{border-left:3px solid var(--red)}
+.upgrade-card.init{border-left:3px solid var(--accent)}
+.uc-arrow{font-size:1.4rem;width:32px;text-align:center}
+.uc-main{}
+.uc-sym{font-family:'DM Mono',monospace;font-size:.95rem;color:var(--accent);font-weight:700;margin-bottom:2px}
+.uc-name{font-size:.82rem;color:var(--muted);margin-bottom:6px}
+.uc-change{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.uc-from{font-size:.8rem;color:var(--muted);text-decoration:line-through}
+.uc-arrow-small{color:var(--muted);font-size:.8rem}
+.uc-to{font-size:.85rem;font-weight:600}
+.uc-to.buy{color:var(--green)}
+.uc-to.hold{color:var(--yellow)}
+.uc-to.sell{color:var(--red)}
+.uc-firm{font-size:.75rem;color:var(--muted);margin-top:4px}
+.uc-right{text-align:right;flex-shrink:0}
+.uc-pt{font-size:.85rem;font-family:'DM Mono',monospace;font-weight:600}
+.uc-pt-old{font-size:.75rem;color:var(--muted);text-decoration:line-through}
+.uc-pt-new{font-size:.9rem;font-weight:600}
+.uc-pt-new.up{color:var(--green)}
+.uc-pt-new.down{color:var(--red)}
+.uc-date{font-size:.72rem;color:var(--muted);margin-top:4px}
+.badge{font-size:.68rem;padding:2px 8px;border-radius:4px;font-weight:600;display:inline-block;margin-top:6px}
+.badge.upgrade{background:rgba(39,174,96,.15);color:var(--green)}
+.badge.downgrade{background:rgba(255,77,106,.15);color:var(--red)}
+.badge.initiate{background:rgba(47,128,237,.15);color:var(--accent)}
+.badge.reiterate{background:rgba(242,201,76,.15);color:var(--yellow)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+@media(max-width:600px){.upgrade-card{grid-template-columns:auto 1fr}.uc-right{display:none}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html" style="color:var(--accent)">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="index.html#watchlist">👁️ Watchlist</a>
+        <a href="index.html#alerts">🔔 Price Alerts</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="news.html">📰 News</a>
+  <a href="ipo.html">🚀 IPOs</a><a href="upgrades.html">⬆️ Upgrades</a>
+  <a href="sec-filings.html">📋 SEC</a><a href="forex.html">💱 Forex</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>⬆️ Analyst Upgrades & Downgrades</h1>
+  <p>Latest rating changes from Goldman Sachs, Morgan Stanley, JPMorgan, and more</p>
+</div>
+
+<main>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('upgrade',this)">🟢 Upgrades</button>
+    <button class="filter-btn" onclick="setFilter('downgrade',this)">🔴 Downgrades</button>
+    <button class="filter-btn" onclick="setFilter('initiate',this)">🔵 Initiations</button>
+    <button class="filter-btn" onclick="setFilter('reiterate',this)">🟡 Reiterations</button>
+    <input class="search-input" type="text" placeholder="Search ticker..." oninput="searchFilter(this.value)" id="searchBox">
+  </div>
+  <div class="upgrades-list" id="upgradesList"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · Analyst ratings for informational purposes only</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const ratings = [
+  {sym:'NVDA',name:'NVIDIA Corp.',type:'upgrade',from:'Neutral',to:'Buy',firm:'Goldman Sachs',ptOld:900,ptNew:1200,date:'Apr 2, 2025',note:'AI infrastructure demand accelerating beyond expectations'},
+  {sym:'AAPL',name:'Apple Inc.',type:'reiterate',from:'Buy',to:'Buy',firm:'Morgan Stanley',ptOld:220,ptNew:245,date:'Apr 2, 2025',note:'Services segment re-rating catalyst ahead of WWDC'},
+  {sym:'TSLA',name:'Tesla Inc.',type:'downgrade',from:'Buy',to:'Hold',firm:'Wells Fargo',ptOld:300,ptNew:200,date:'Apr 1, 2025',note:'Near-term margin pressure from price cuts in China'},
+  {sym:'META',name:'Meta Platforms',type:'upgrade',from:'Hold',to:'Buy',firm:'Barclays',ptOld:450,ptNew:680,date:'Apr 1, 2025',note:'Llama AI moat underappreciated; ad efficiency gains'},
+  {sym:'AMZN',name:'Amazon.com',type:'reiterate',from:'Buy',to:'Buy',firm:'JPMorgan',ptOld:220,ptNew:250,date:'Mar 31, 2025',note:'AWS re-acceleration + advertising margin expansion'},
+  {sym:'PLTR',name:'Palantir Technologies',type:'initiate',from:'—',to:'Buy',firm:'Wedbush',ptOld:null,ptNew:120,date:'Mar 31, 2025',note:'Government AI platform moat; AIP commercial traction'},
+  {sym:'MSFT',name:'Microsoft Corp.',type:'reiterate',from:'Buy',to:'Buy',firm:'Bank of America',ptOld:470,ptNew:510,date:'Mar 30, 2025',note:'Copilot monetization inflecting; Azure share gains'},
+  {sym:'GOOGL',name:'Alphabet Inc.',type:'upgrade',from:'Neutral',to:'Overweight',firm:'Piper Sandler',ptOld:175,ptNew:210,date:'Mar 29, 2025',note:'Search share fears overblown; Gemini integration upside'},
+  {sym:'NFLX',name:'Netflix Inc.',type:'reiterate',from:'Overweight',to:'Overweight',firm:'Morgan Stanley',ptOld:700,ptNew:800,date:'Mar 28, 2025',note:'Ad-supported tier growing faster than expected'},
+  {sym:'PFE',name:'Pfizer Inc.',type:'downgrade',from:'Overweight',to:'Neutral',firm:'Piper Sandler',ptOld:35,ptNew:26,date:'Mar 28, 2025',note:'Pipeline setbacks and COVID revenue normalization'},
+  {sym:'AMD',name:'Advanced Micro Devices',type:'upgrade',from:'Neutral',to:'Buy',firm:'Needham',ptOld:150,ptNew:220,date:'Mar 27, 2025',note:'MI300X gaining traction as NVDA alternative for inference'},
+  {sym:'COIN',name:'Coinbase',type:'initiate',from:'—',to:'Buy',firm:'Canaccord',ptOld:null,ptNew:320,date:'Mar 27, 2025',note:'Regulatory tailwinds; Base L2 growing rapidly'},
+  {sym:'JPM',name:'JPMorgan Chase',type:'reiterate',from:'Overweight',to:'Overweight',firm:'Wells Fargo',ptOld:235,ptNew:265,date:'Mar 26, 2025',note:'Net interest income resilience; IB fee recovery'},
+  {sym:'NKE',name:'Nike Inc.',type:'downgrade',from:'Buy',to:'Neutral',firm:'Citigroup',ptOld:100,ptNew:80,date:'Mar 26, 2025',note:'China recovery slower than expected; DTC reversal costs'},
+  {sym:'UBER',name:'Uber Technologies',type:'upgrade',from:'Neutral',to:'Buy',firm:'Deutsche Bank',ptOld:70,ptNew:95,date:'Mar 25, 2025',note:'Autonomous vehicle partnerships de-risk long-term model'},
+  {sym:'V',name:'Visa Inc.',type:'reiterate',from:'Buy',to:'Buy',firm:'Goldman Sachs',ptOld:310,ptNew:345,date:'Mar 25, 2025',note:'Cross-border recovery + new flows acceleration'},
+  {sym:'LLY',name:'Eli Lilly',type:'initiate',from:'—',to:'Strong Buy',firm:'Raymond James',ptOld:null,ptNew:1100,date:'Mar 24, 2025',note:'GLP-1 obesity market dominance; pipeline depth'},
+  {sym:'INTC',name:'Intel Corp.',type:'downgrade',from:'Neutral',to:'Sell',firm:'Bernstein',ptOld:28,ptNew:18,date:'Mar 24, 2025',note:'Foundry execution risk; market share losses accelerating'},
+  {sym:'CRM',name:'Salesforce Inc.',type:'upgrade',from:'Hold',to:'Buy',firm:'Truist',ptOld:280,ptNew:360,date:'Mar 23, 2025',note:'Agentforce AI platform shows strong early adoption'},
+  {sym:'COST',name:'Costco Wholesale',type:'reiterate',from:'Buy',to:'Buy',firm:'Oppenheimer',ptOld:950,ptNew:1050,date:'Mar 22, 2025',note:'Membership fee hike revenue flowing directly to EPS'},
+];
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function searchFilter(v) {
+  currentSearch = v.toUpperCase();
+  render();
+}
+
+function getRatingClass(r) {
+  const buy = ['buy','overweight','strong buy','outperform'];
+  const sell = ['sell','underweight','underperform'];
+  if (buy.some(b => r.toLowerCase().includes(b))) return 'buy';
+  if (sell.some(s => r.toLowerCase().includes(s))) return 'sell';
+  return 'hold';
+}
+
+function render() {
+  let filtered = ratings;
+  if (currentFilter !== 'all') filtered = filtered.filter(r => r.type === currentFilter);
+  if (currentSearch) filtered = filtered.filter(r => r.sym.includes(currentSearch) || r.name.toUpperCase().includes(currentSearch));
+
+  const arrows = {upgrade:'⬆️', downgrade:'⬇️', initiate:'🔵', reiterate:'↔️'};
+  const cardClass = {upgrade:'up', downgrade:'down', initiate:'init', reiterate:''};
+
+  document.getElementById('upgradesList').innerHTML = filtered.map(r => {
+    const ptChange = r.ptOld && r.ptNew ? ((r.ptNew - r.ptOld)/r.ptOld*100).toFixed(0) : null;
+    const ptClass = ptChange >= 0 ? 'up' : 'down';
+    return `<div class="upgrade-card ${cardClass[r.type]||''}">
+      <div class="uc-arrow">${arrows[r.type]}</div>
+      <div class="uc-main">
+        <div class="uc-sym">${r.sym}</div>
+        <div class="uc-name">${r.name}</div>
+        <div class="uc-change">
+          ${r.type!=='initiate'?`<span class="uc-from">${r.from}</span><span class="uc-arrow-small">→</span>`:''}
+          <span class="uc-to ${getRatingClass(r.to)}">${r.to}</span>
+          <span class="badge ${r.type}">${r.type.toUpperCase()}</span>
+        </div>
+        <div class="uc-firm">${r.firm} · ${r.note}</div>
+      </div>
+      <div class="uc-right">
+        ${r.ptOld?`<div class="uc-pt-old">$${r.ptOld}</div>`:''}
+        <div class="uc-pt-new ${ptClass}">$${r.ptNew}${ptChange?` (${ptChange>=0?'+':''}${ptChange}%)`:''}</div>
+        <div class="uc-date">${r.date}</div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:var(--muted);padding:24px;text-align:center">No results found.</div>';
+}
+
+render();
+</script>
+</body>
+</html>
