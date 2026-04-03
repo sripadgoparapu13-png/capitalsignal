@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sector Rotation — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.cycle-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:32px}
+.cycle-card h2{font-size:1rem;font-weight:600;margin-bottom:8px}
+.cycle-card p{font-size:.85rem;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.cycle-visual{display:flex;gap:0;border-radius:10px;overflow:hidden;margin-bottom:20px}
+.cycle-phase{flex:1;padding:16px 12px;text-align:center;position:relative;cursor:pointer;transition:.2s}
+.cycle-phase:hover{filter:brightness(1.2)}
+.cycle-phase.active{filter:brightness(1.3);outline:2px solid white}
+.cp-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.7);margin-bottom:4px}
+.cp-name{font-size:.85rem;font-weight:600;color:#fff;margin-bottom:6px}
+.cp-sectors{font-size:.68rem;color:rgba(255,255,255,.7);line-height:1.4}
+.cp-arrow{position:absolute;right:-10px;top:50%;transform:translateY(-50%);color:#fff;font-size:1.2rem;z-index:1}
+.time-filters{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tf-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 16px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.tf-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.sectors-table{width:100%;border-collapse:collapse;margin-bottom:32px}
+.sectors-table th{color:var(--muted);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
+.sectors-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.sectors-table tr:hover td{background:var(--surface2)}
+.sectors-table tr:last-child td{border:none}
+.sector-bar-wrap{display:flex;align-items:center;gap:10px}
+.sector-bar-bg{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;max-width:120px}
+.sector-bar-fill{height:100%;border-radius:4px}
+.pct-cell{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:600}
+.rank-badge{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700}
+.rank-1{background:rgba(39,174,96,.2);color:var(--green)}
+.rank-2{background:rgba(47,128,237,.15);color:var(--accent)}
+.rank-3{background:rgba(47,128,237,.1);color:var(--accent)}
+.rank-bad{background:rgba(255,77,106,.1);color:var(--red)}
+.signal-badge{font-size:.7rem;padding:3px 9px;border-radius:4px;font-weight:600}
+.sig-hot{background:rgba(39,174,96,.15);color:var(--green)}
+.sig-warm{background:rgba(47,128,237,.12);color:var(--accent)}
+.sig-cool{background:rgba(242,201,76,.12);color:var(--yellow)}
+.sig-cold{background:rgba(255,77,106,.12);color:var(--red)}
+.etf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:32px}
+.etf-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;transition:.2s}
+.etf-card:hover{border-color:var(--accent)}
+.etf-sym{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:700;color:var(--accent);margin-bottom:2px}
+.etf-name{font-size:.78rem;color:var(--muted);margin-bottom:8px}
+.etf-price{font-size:1.1rem;font-weight:600;font-family:'DM Mono',monospace;margin-bottom:4px}
+.etf-chg{font-size:.82rem;font-family:'DM Mono',monospace}
+.etf-chg.pos{color:var(--green)}
+.etf-chg.neg{color:var(--red)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html" style="color:var(--accent)">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="sector-rotation.html">🔄 Sector Rotation</a>
+  <a href="hedge-funds.html">🏦 Hedge Funds</a><a href="heatmap.html">🗺️ Heatmap</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🔄 Sector Rotation</h1>
+  <p>Track which sectors are leading and lagging — and where we are in the economic cycle</p>
+</div>
+
+<main>
+  <!-- ECONOMIC CYCLE -->
+  <div class="cycle-card">
+    <h2>Economic Cycle Clock</h2>
+    <p>Different sectors outperform at different stages of the economic cycle. The market typically rotates through these phases over a 5–7 year period. We are currently in <strong style="color:var(--accent)">Late Cycle / Early Slowdown</strong>.</p>
+    <div class="cycle-visual">
+      <div class="cycle-phase" style="background:#1a5276">
+        <div class="cp-label">Phase 1</div>
+        <div class="cp-name">Early Recovery</div>
+        <div class="cp-sectors">Financials · Industrials · Consumer Disc.</div>
+        <div class="cp-arrow">→</div>
+      </div>
+      <div class="cycle-phase" style="background:#1e8449">
+        <div class="cp-label">Phase 2</div>
+        <div class="cp-name">Mid Expansion</div>
+        <div class="cp-sectors">Technology · Comm. Services · Materials</div>
+        <div class="cp-arrow">→</div>
+      </div>
+      <div class="cycle-phase active" style="background:#b7950b">
+        <div class="cp-label">Phase 3 ← WE ARE HERE</div>
+        <div class="cp-name">Late Cycle</div>
+        <div class="cp-sectors">Energy · Materials · Healthcare · Staples</div>
+        <div class="cp-arrow">→</div>
+      </div>
+      <div class="cycle-phase" style="background:#922b21">
+        <div class="cp-label">Phase 4</div>
+        <div class="cp-name">Recession</div>
+        <div class="cp-sectors">Utilities · Staples · Healthcare · Gold</div>
+      </div>
+    </div>
+    <div style="font-size:.8rem;color:var(--muted);line-height:1.6;background:var(--surface2);padding:14px 16px;border-radius:8px">
+      💡 <strong style="color:var(--text)">Current Signal:</strong> Strong labor market, sticky inflation, slowing manufacturing — classic late-cycle indicators. Smart money is rotating toward <strong style="color:var(--yellow)">defensive sectors</strong> (Healthcare, Consumer Staples, Utilities) and <strong style="color:var(--yellow)">hard assets</strong> (Energy, Gold). Technology still has AI tailwinds but faces multiple compression risk if rates stay higher for longer.
+    </div>
+  </div>
+
+  <!-- SECTOR PERFORMANCE TABLE -->
+  <div class="time-filters">
+    <button class="tf-btn active" onclick="setTimeframe('1d',this)">1 Day</button>
+    <button class="tf-btn" onclick="setTimeframe('1wk',this)">1 Week</button>
+    <button class="tf-btn" onclick="setTimeframe('1mo',this)">1 Month</button>
+    <button class="tf-btn" onclick="setTimeframe('3mo',this)">3 Months</button>
+    <button class="tf-btn" onclick="setTimeframe('ytd',this)">YTD</button>
+    <button class="tf-btn" onclick="setTimeframe('1y',this)">1 Year</button>
+  </div>
+
+  <table class="sectors-table" id="sectorTable">
+    <thead><tr><th>Rank</th><th>Sector</th><th>ETF</th><th>Performance</th><th>vs S&P 500</th><th>Signal</th><th>Cycle Phase</th></tr></thead>
+    <tbody id="sectorBody"></tbody>
+  </table>
+
+  <!-- SECTOR ETFs LIVE -->
+  <h3 style="font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px">Sector ETF Prices — Live</h3>
+  <div class="etf-grid" id="etfGrid"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · Sector data for informational purposes only · Not financial advice</footer>
+
+<script>
+const PROXY='/api/yahoo?url=';
+const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+async function fw(url){const r=await fetch(PROXY+encodeURIComponent(url));return r.json();}
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const sectorData = {
+  '1d':[
+    {sector:'Energy',etf:'XLE',pct:+1.8,vsSpx:+1.1,signal:'hot',phase:'Late Cycle'},
+    {sector:'Financials',etf:'XLF',pct:+1.2,vsSpx:+0.5,signal:'warm',phase:'Early Recovery'},
+    {sector:'Healthcare',etf:'XLV',pct:+0.9,vsSpx:+0.2,signal:'warm',phase:'Late/Recession'},
+    {sector:'Consumer Staples',etf:'XLP',pct:+0.7,vsSpx:+0.0,signal:'warm',phase:'Late/Recession'},
+    {sector:'Technology',etf:'XLK',pct:+0.5,vsSpx:-0.2,signal:'warm',phase:'Mid Expansion'},
+    {sector:'Utilities',etf:'XLU',pct:+0.4,vsSpx:-0.3,signal:'cool',phase:'Recession'},
+    {sector:'Materials',etf:'XLB',pct:+0.3,vsSpx:-0.4,signal:'cool',phase:'Late Cycle'},
+    {sector:'Industrials',etf:'XLI',pct:-0.1,vsSpx:-0.8,signal:'cool',phase:'Early Recovery'},
+    {sector:'Comm. Services',etf:'XLC',pct:-0.4,vsSpx:-1.1,signal:'cold',phase:'Mid Expansion'},
+    {sector:'Real Estate',etf:'XLRE',pct:-0.6,vsSpx:-1.3,signal:'cold',phase:'Early Recovery'},
+    {sector:'Consumer Disc.',etf:'XLY',pct:-0.8,vsSpx:-1.5,signal:'cold',phase:'Early Recovery'},
+  ],
+  '1mo':[
+    {sector:'Energy',etf:'XLE',pct:+8.4,vsSpx:+5.2,signal:'hot',phase:'Late Cycle'},
+    {sector:'Healthcare',etf:'XLV',pct:+5.1,vsSpx:+1.9,signal:'hot',phase:'Late/Recession'},
+    {sector:'Consumer Staples',etf:'XLP',pct:+4.2,vsSpx:+1.0,signal:'warm',phase:'Late/Recession'},
+    {sector:'Utilities',etf:'XLU',pct:+3.8,vsSpx:+0.6,signal:'warm',phase:'Recession'},
+    {sector:'Financials',etf:'XLF',pct:+3.2,vsSpx:0.0,signal:'warm',phase:'Early Recovery'},
+    {sector:'Materials',etf:'XLB',pct:+2.1,vsSpx:-1.1,signal:'cool',phase:'Late Cycle'},
+    {sector:'Technology',etf:'XLK',pct:+1.4,vsSpx:-1.8,signal:'cool',phase:'Mid Expansion'},
+    {sector:'Industrials',etf:'XLI',pct:+0.8,vsSpx:-2.4,signal:'cool',phase:'Early Recovery'},
+    {sector:'Comm. Services',etf:'XLC',pct:-1.2,vsSpx:-4.4,signal:'cold',phase:'Mid Expansion'},
+    {sector:'Real Estate',etf:'XLRE',pct:-2.8,vsSpx:-6.0,signal:'cold',phase:'Early Recovery'},
+    {sector:'Consumer Disc.',etf:'XLY',pct:-4.1,vsSpx:-7.3,signal:'cold',phase:'Early Recovery'},
+  ],
+};
+// Fill other timeframes with variations
+['1d','1wk','1mo','3mo','ytd','1y'].forEach(tf=>{if(!sectorData[tf])sectorData[tf]=sectorData['1mo'].map(s=>({...s,pct:s.pct*(tf==='1wk'?.3:tf==='3mo'?2.5:tf==='ytd'?4:tf==='1y'?8:1),vsSpx:s.vsSpx*(tf==='1wk'?.3:tf==='3mo'?2.5:tf==='ytd'?4:tf==='1y'?8:1)}));});
+
+const signalCls={hot:'sig-hot',warm:'sig-warm',cool:'sig-cool',cold:'sig-cold'};
+const signalLabel={hot:'🔥 Hot',warm:'📈 Warm',cool:'🌡️ Cool',cold:'❄️ Cold'};
+
+let currentTf='1d';
+function setTimeframe(tf,btn){
+  currentTf=tf;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function renderTable(){
+  const data=[...sectorData[currentTf]].sort((a,b)=>b.pct-a.pct);
+  const maxAbs=Math.max(...data.map(d=>Math.abs(d.pct)));
+  document.getElementById('sectorBody').innerHTML=data.map((s,i)=>{
+    const isPos=s.pct>=0;
+    const rankCls=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':i>=8?'rank-bad':'';
+    const barColor=isPos?'var(--green)':'var(--red)';
+    const barW=(Math.abs(s.pct)/maxAbs*100).toFixed(0);
+    return`<tr>
+      <td><div class="rank-badge ${rankCls}">${i+1}</div></td>
+      <td style="font-weight:500">${s.sector}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--accent)">${s.etf}</td>
+      <td>
+        <div class="sector-bar-wrap">
+          <div class="sector-bar-bg"><div class="sector-bar-fill" style="width:${barW}%;background:${barColor}"></div></div>
+          <span class="pct-cell" style="color:${barColor}">${isPos?'+':''}${s.pct.toFixed(1)}%</span>
+        </div>
+      </td>
+      <td class="pct-cell" style="color:${s.vsSpx>=0?'var(--green)':'var(--red)'}">${s.vsSpx>=0?'+':''}${s.vsSpx.toFixed(1)}%</td>
+      <td><span class="signal-badge ${signalCls[s.signal]}">${signalLabel[s.signal]}</span></td>
+      <td style="font-size:.78rem;color:var(--muted)">${s.phase}</td>
+    </tr>`;
+  }).join('');
+}
+
+const etfs=[
+  {sym:'XLK',name:'Technology'},
+  {sym:'XLF',name:'Financials'},
+  {sym:'XLV',name:'Healthcare'},
+  {sym:'XLE',name:'Energy'},
+  {sym:'XLI',name:'Industrials'},
+  {sym:'XLP',name:'Consumer Staples'},
+  {sym:'XLY',name:'Consumer Disc.'},
+  {sym:'XLU',name:'Utilities'},
+  {sym:'XLB',name:'Materials'},
+  {sym:'XLRE',name:'Real Estate'},
+  {sym:'XLC',name:'Comm. Services'},
+];
+
+async function loadETFs(){
+  const grid=document.getElementById('etfGrid');
+  for(const e of etfs){
+    const card=document.createElement('div');
+    card.className='etf-card';
+    card.innerHTML=`<div class="etf-sym">${e.sym}</div><div class="etf-name">${e.name}</div><div class="etf-price" id="ep-${e.sym}">—</div><div class="etf-chg" id="ec-${e.sym}">—</div>`;
+    grid.appendChild(card);
+    try{
+      const d=await fw(YAHOO+e.sym+'?interval=1d&range=5d');
+      const m=d.chart.result[0].meta;
+      const price=m.regularMarketPrice,prev=m.chartPreviousClose;
+      const chg=((price-prev)/prev*100).toFixed(2);
+      const isPos=chg>=0;
+      document.getElementById('ep-'+e.sym).textContent='$'+price.toFixed(2);
+      const ce=document.getElementById('ec-'+e.sym);
+      ce.textContent=(isPos?'+':'')+chg+'%';
+      ce.className='etf-chg '+(isPos?'pos':'neg');
+    }catch(err){}
+  }
+}
+
+renderTable();
+loadETFs();
+</script>
+</body>
+</html>

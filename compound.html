@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Compound Interest Calculator — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:900px;margin:0 auto;text-align:center}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:900px;margin:0 auto;padding:0 24px 64px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.calc-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px}
+.calc-card h2{font-size:1rem;font-weight:600;margin-bottom:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;outline:none;transition:.2s}
+.field input:focus{border-color:var(--accent)}
+.result-hero{text-align:center;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.rh-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.rh-value{font-size:3rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)}
+.rh-sub{font-size:.85rem;color:var(--muted);margin-top:4px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-box{background:var(--surface2);border-radius:10px;padding:14px;text-align:center}
+.sl{font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.sv{font-size:.95rem;font-weight:600;font-family:'DM Mono',monospace}
+.chart-wrap{position:relative;height:180px;margin-bottom:16px}
+canvas{width:100%;height:100%}
+.year-table{width:100%;border-collapse:collapse;font-size:.82rem;max-height:300px;overflow-y:auto;display:block}
+.year-table th{color:var(--muted);font-weight:500;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.72rem;text-transform:uppercase;position:sticky;top:0;background:var(--surface)}
+.year-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace}
+.quick-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.preset-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:.78rem;cursor:pointer;transition:.2s}
+.preset-btn:hover{border-color:var(--accent);color:var(--accent)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html" style="color:var(--accent)">📈 Compound Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global</a>
+        <a href="macro.html">🏛️ Macro</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="compound.html">📈 Compound</a><a href="position-size.html">🎯 Position Size</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>📈 Compound Interest Calculator</h1>
+  <p>See how your money grows over time with the power of compounding — Einstein called it the eighth wonder of the world.</p>
+</div>
+
+<main>
+  <div class="quick-presets">
+    <span style="font-size:.78rem;color:var(--muted);padding:6px 0">Quick scenarios:</span>
+    <button class="preset-btn" onclick="loadPreset(1000,200,10,30)">$1K + $200/mo · 30yr</button>
+    <button class="preset-btn" onclick="loadPreset(5000,500,10,20)">$5K + $500/mo · 20yr</button>
+    <button class="preset-btn" onclick="loadPreset(10000,0,7,40)">$10K lump sum · 40yr</button>
+    <button class="preset-btn" onclick="loadPreset(0,100,10,40)">$100/mo from zero · 40yr</button>
+    <button class="preset-btn" onclick="loadPreset(50000,1000,8,25)">$50K + $1K/mo · 25yr</button>
+  </div>
+
+  <div class="two-col">
+    <div class="calc-card">
+      <h2>Inputs</h2>
+      <div class="field"><label>Initial Investment ($)</label><input type="number" id="ci-principal" placeholder="5000" oninput="calc()"></div>
+      <div class="field"><label>Monthly Contribution ($)</label><input type="number" id="ci-monthly" placeholder="500" oninput="calc()"></div>
+      <div class="field"><label>Annual Return Rate (%)</label><input type="number" id="ci-rate" placeholder="10" step="0.5" oninput="calc()"></div>
+      <div class="field"><label>Time Period (Years)</label><input type="number" id="ci-years" placeholder="20" step="1" oninput="calc()"></div>
+      <div class="field"><label>Compound Frequency</label>
+        <select id="ci-freq" onchange="calc()">
+          <option value="12">Monthly</option>
+          <option value="4">Quarterly</option>
+          <option value="1">Annually</option>
+          <option value="365">Daily</option>
+        </select>
+      </div>
+    </div>
+    <div class="calc-card" id="resultCard">
+      <div class="result-hero">
+        <div class="rh-label">Final Balance</div>
+        <div class="rh-value" id="ci-final">—</div>
+        <div class="rh-sub" id="ci-sub">Enter values to calculate</div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="sl">Total Invested</div><div class="sv" id="ci-invested">—</div></div>
+        <div class="stat-box"><div class="sl">Interest Earned</div><div class="sv" style="color:var(--green)" id="ci-interest">—</div></div>
+        <div class="stat-box"><div class="sl">Return Multiple</div><div class="sv" id="ci-multiple">—</div></div>
+      </div>
+      <div class="chart-wrap"><canvas id="compoundCanvas"></canvas></div>
+    </div>
+  </div>
+
+  <div class="calc-card">
+    <h2>Year-by-Year Breakdown</h2>
+    <div style="max-height:300px;overflow-y:auto">
+      <table class="year-table"><thead><tr><th>Year</th><th>Balance</th><th>Total Invested</th><th>Interest Earned</th><th>Annual Gain</th></tr></thead><tbody id="yearTable"></tbody></table>
+    </div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Compound calculator for educational purposes only</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+function loadPreset(p,m,r,y){
+  document.getElementById('ci-principal').value=p;
+  document.getElementById('ci-monthly').value=m;
+  document.getElementById('ci-rate').value=r;
+  document.getElementById('ci-years').value=y;
+  calc();
+}
+
+function fmtM(n){return '$'+(n>=1e6?(n/1e6).toFixed(2)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n.toFixed(0));}
+
+function calc(){
+  const P=parseFloat(document.getElementById('ci-principal').value)||0;
+  const monthly=parseFloat(document.getElementById('ci-monthly').value)||0;
+  const rate=parseFloat(document.getElementById('ci-rate').value)/100||0;
+  const years=parseInt(document.getElementById('ci-years').value)||0;
+  const n=parseInt(document.getElementById('ci-freq').value)||12;
+  if(!rate||!years)return;
+  const r=rate/n;
+  const yearlyData=[];
+  let balance=P;
+  let totalInvested=P;
+  for(let y=1;y<=years;y++){
+    const startBal=balance;
+    for(let m=0;m<12;m++){balance=balance*(1+r);if(monthly>0)balance+=monthly;}
+    totalInvested+=monthly*12;
+    yearlyData.push({year:y,balance,totalInvested,interest:balance-totalInvested,annualGain:balance-startBal-monthly*12});
+  }
+  const final=yearlyData[yearlyData.length-1]?.balance||0;
+  const invested=yearlyData[yearlyData.length-1]?.totalInvested||P;
+  const interest=final-invested;
+  document.getElementById('ci-final').textContent=fmtM(final);
+  document.getElementById('ci-sub').textContent=`Over ${years} years at ${(rate*100).toFixed(1)}% annual return`;
+  document.getElementById('ci-invested').textContent=fmtM(invested);
+  document.getElementById('ci-interest').textContent=fmtM(interest);
+  document.getElementById('ci-multiple').textContent=(final/invested).toFixed(2)+'x';
+  document.getElementById('yearTable').innerHTML=yearlyData.map(d=>`<tr><td>${d.year}</td><td style="color:var(--green);font-weight:600">${fmtM(d.balance)}</td><td>${fmtM(d.totalInvested)}</td><td style="color:var(--green)">${fmtM(d.interest)}</td><td>${fmtM(d.annualGain)}</td></tr>`).join('');
+  drawChart(yearlyData, P);
+}
+
+function drawChart(data, P){
+  const canvas=document.getElementById('compoundCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||500, H=180;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(2,2);
+  const pad={t:10,b:20,l:10,r:10};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const maxV=data[data.length-1].balance;
+  const toX=i=>pad.l+(i/data.length)*cW;
+  const toY=v=>pad.t+cH-((v/maxV)*cH);
+  // Invested area
+  const grad2=ctx.createLinearGradient(0,0,0,H);
+  grad2.addColorStop(0,'rgba(47,128,237,0.4)');grad2.addColorStop(1,'rgba(47,128,237,0.05)');
+  ctx.beginPath();ctx.moveTo(pad.l,toY(data[0].totalInvested));
+  data.forEach((d,i)=>ctx.lineTo(toX(i+1),toY(d.totalInvested)));
+  ctx.lineTo(W-pad.r,H-pad.b);ctx.lineTo(pad.l,H-pad.b);ctx.closePath();
+  ctx.fillStyle=grad2;ctx.fill();
+  // Balance area
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(39,174,96,0.4)');grad.addColorStop(1,'rgba(39,174,96,0.05)');
+  ctx.beginPath();ctx.moveTo(pad.l,toY(P||data[0].balance));
+  data.forEach((d,i)=>ctx.lineTo(toX(i+1),toY(d.balance)));
+  ctx.lineTo(W-pad.r,H-pad.b);ctx.lineTo(pad.l,H-pad.b);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+  // Lines
+  ctx.beginPath();ctx.moveTo(pad.l,toY(data[0].totalInvested));
+  data.forEach((d,i)=>ctx.lineTo(toX(i+1),toY(d.totalInvested)));
+  ctx.strokeStyle='#2F80ED';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pad.l,toY(P||data[0].balance));
+  data.forEach((d,i)=>ctx.lineTo(toX(i+1),toY(d.balance)));
+  ctx.strokeStyle='#27ae60';ctx.lineWidth=2;ctx.stroke();
+}
+loadPreset(5000,500,10,20);
+</script>
+</body>
+</html>

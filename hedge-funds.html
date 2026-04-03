@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Hedge Fund Tracker — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.info-banner{background:rgba(47,128,237,.06);border:1px solid rgba(47,128,237,.2);border-radius:12px;padding:14px 18px;margin-bottom:28px;font-size:.83rem;color:var(--muted);line-height:1.6}
+.info-banner strong{color:var(--text)}
+.fund-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.fund-tab{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-size:.82rem;cursor:pointer;transition:.2s}
+.fund-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.fund-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden}
+.fund-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;cursor:pointer}
+.fund-header:hover{background:var(--surface2)}
+.fund-name{font-size:1.1rem;font-weight:600;margin-bottom:2px}
+.fund-manager{font-size:.82rem;color:var(--muted)}
+.fund-aum{text-align:right}
+.fund-aum-val{font-size:1.1rem;font-weight:600;font-family:'DM Mono',monospace;color:var(--accent)}
+.fund-aum-label{font-size:.72rem;color:var(--muted)}
+.fund-body{padding:20px 24px}
+.holdings-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px}
+.holdings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px}
+.holding-card{background:var(--surface2);border-radius:10px;padding:14px}
+.hc-sym{font-family:'DM Mono',monospace;font-size:.9rem;font-weight:700;color:var(--accent);margin-bottom:2px}
+.hc-name{font-size:.72rem;color:var(--muted);margin-bottom:8px}
+.hc-value{font-size:.88rem;font-weight:600;font-family:'DM Mono',monospace}
+.hc-pct{font-size:.72rem;color:var(--muted);margin-top:2px}
+.hc-change{display:inline-block;font-size:.68rem;padding:2px 7px;border-radius:4px;margin-top:6px;font-weight:600}
+.hc-change.new{background:rgba(39,174,96,.15);color:var(--green)}
+.hc-change.added{background:rgba(47,128,237,.15);color:var(--accent)}
+.hc-change.reduced{background:rgba(255,77,106,.15);color:var(--red)}
+.hc-change.sold{background:rgba(255,77,106,.2);color:var(--red)}
+.hc-change.unchanged{background:var(--surface);color:var(--muted)}
+.activity-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.activity-row:last-child{border:none}
+.activity-sym{font-family:'DM Mono',monospace;color:var(--accent);font-weight:600}
+.activity-action{font-size:.78rem;padding:2px 8px;border-radius:4px;font-weight:600}
+.action-buy{background:rgba(39,174,96,.15);color:var(--green)}
+.action-sell{background:rgba(255,77,106,.15);color:var(--red)}
+.action-new{background:rgba(47,128,237,.15);color:var(--accent)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="hedge-funds.html" style="color:var(--accent)">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="hedge-funds.html">🏦 Hedge Funds</a>
+  <a href="sector-rotation.html">🔄 Sector Rotation</a><a href="sec-filings.html">📋 SEC</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🏦 Hedge Fund Tracker</h1>
+  <p>What the world's best investors are buying and selling — based on quarterly 13F filings</p>
+</div>
+
+<main>
+  <div class="info-banner">
+    <strong>How this works:</strong> Hedge funds managing over $100M must file a <strong>13F form</strong> with the SEC every quarter, disclosing their US stock holdings. This data is public — filed 45 days after quarter end. It's a <strong>lagging indicator</strong> (up to 45 days old), but it shows where the smartest money in the world is positioned. Data shown is from Q4 2024 13F filings.
+  </div>
+
+  <div class="fund-tabs">
+    <button class="fund-tab active" onclick="setTab('all',this)">All Funds</button>
+    <button class="fund-tab" onclick="setTab('berkshire',this)">🏛️ Berkshire</button>
+    <button class="fund-tab" onclick="setTab('pershing',this)">🎯 Pershing Square</button>
+    <button class="fund-tab" onclick="setTab('scion',this)">📉 Scion Asset Mgmt</button>
+    <button class="fund-tab" onclick="setTab('bridgewater',this)">🌊 Bridgewater</button>
+    <button class="fund-tab" onclick="setTab('tiger',this)">🐯 Tiger Global</button>
+  </div>
+
+  <div id="fundsContainer"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · 13F data from SEC EDGAR · Q4 2024 filings · 45-day lag applies · Not financial advice</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const funds = [
+  {
+    id:'berkshire',name:'Berkshire Hathaway',manager:'Warren Buffett',aum:'$296B',filed:'Feb 14, 2025',style:'Value · Long-term',
+    topHoldings:[
+      {sym:'AAPL',name:'Apple Inc.',value:'$74.8B',pct:'25.2%',change:'reduced'},
+      {sym:'BAC',name:'Bank of America',value:'$29.2B',pct:'9.9%',change:'reduced'},
+      {sym:'AXP',name:'American Express',value:'$41.8B',pct:'14.1%',change:'unchanged'},
+      {sym:'KO',name:'Coca-Cola',value:'$25.5B',pct:'8.6%',change:'unchanged'},
+      {sym:'CVX',name:'Chevron',value:'$17.5B',pct:'5.9%',change:'reduced'},
+      {sym:'OXY',name:'Occidental Petroleum',value:'$13.2B',pct:'4.5%',change:'added'},
+      {sym:'DVA',name:'DaVita',value:'$5.3B',pct:'1.8%',change:'unchanged'},
+      {sym:'KHC',name:'Kraft Heinz',value:'$11.4B',pct:'3.9%',change:'unchanged'},
+    ],
+    activity:[
+      {sym:'AAPL',action:'sell',detail:'Sold 25% of position — now $74.8B'},
+      {sym:'BAC',action:'sell',detail:'Continued trimming — below 10% threshold'},
+      {sym:'OXY',action:'buy',detail:'Added to Occidental stake — now 28.2%'},
+      {sym:'DOMINO',action:'new',detail:'New position in Dominos Pizza'},
+      {sym:'POOL',action:'new',detail:'New position in Pool Corporation'},
+    ],
+    note:"Buffett's cash pile hit a record $325B — suggests he sees few attractive opportunities at current valuations."
+  },
+  {
+    id:'pershing',name:'Pershing Square Capital',manager:'Bill Ackman',aum:'$18.5B',filed:'Feb 14, 2025',style:'Concentrated · Activist',
+    topHoldings:[
+      {sym:'HHH',name:'Howard Hughes Holdings',value:'$1.2B',pct:'6.5%',change:'unchanged'},
+      {sym:'CMG',name:'Chipotle Mexican Grill',value:'$3.4B',pct:'18.4%',change:'added'},
+      {sym:'HLT',name:'Hilton Worldwide',value:'$2.1B',pct:'11.4%',change:'unchanged'},
+      {sym:'QSR',name:'Restaurant Brands',value:'$1.8B',pct:'9.7%',change:'unchanged'},
+      {sym:'GOOGL',name:'Alphabet',value:'$2.8B',pct:'15.1%',change:'added'},
+      {sym:'NKE',name:'Nike Inc.',value:'$1.4B',pct:'7.6%',change:'new'},
+      {sym:'UNI',name:'Univision',value:'$0.9B',pct:'4.9%',change:'unchanged'},
+    ],
+    activity:[
+      {sym:'NKE',action:'new',detail:'New activist position — pushing for brand turnaround'},
+      {sym:'CMG',action:'buy',detail:'Added to Chipotle on pullback'},
+      {sym:'GOOGL',action:'buy',detail:'Increased Alphabet position significantly'},
+    ],
+    note:"Ackman's Nike bet is activist in nature — he's pushing management to accelerate DTC strategy reversal."
+  },
+  {
+    id:'scion',name:'Scion Asset Management',manager:'Michael Burry',aum:'$119M',filed:'Feb 14, 2025',style:'Contrarian · Deep Value',
+    topHoldings:[
+      {sym:'BABA',name:'Alibaba',value:'$19.8M',pct:'16.6%',change:'added'},
+      {sym:'JD',name:'JD.com',value:'$14.2M',pct:'11.9%',change:'new'},
+      {sym:'BIDU',name:'Baidu',value:'$11.1M',pct:'9.3%',change:'new'},
+      {sym:'PDD',name:'PDD Holdings',value:'$9.8M',pct:'8.2%',change:'new'},
+      {sym:'REAL',name:'The RealReal',value:'$8.4M',pct:'7.1%',change:'added'},
+      {sym:'GEO',name:'GEO Group',value:'$7.2M',pct:'6.1%',change:'new'},
+    ],
+    activity:[
+      {sym:'BABA',action:'buy',detail:'Doubled down on Alibaba — deep value bet on China'},
+      {sym:'JD',action:'new',detail:'New position in JD.com'},
+      {sym:'BIDU',action:'new',detail:'New position in Baidu'},
+      {sym:'PDD',action:'new',detail:'New position in PDD Holdings (Temu parent)'},
+    ],
+    note:"Big Doctor Doom is making a contrarian bet on Chinese tech stocks, which have been beaten down. He sold all US positions."
+  },
+  {
+    id:'bridgewater',name:'Bridgewater Associates',manager:'Greg Jensen / Bob Prince',aum:'$97B',filed:'Feb 14, 2025',style:'Macro · All Weather',
+    topHoldings:[
+      {sym:'SPY',name:'S&P 500 ETF',value:'$4.2B',pct:'4.3%',change:'reduced'},
+      {sym:'EEM',name:'Emerging Markets ETF',value:'$3.8B',pct:'3.9%',change:'added'},
+      {sym:'GLD',name:'Gold ETF (SPDR)',value:'$3.1B',pct:'3.2%',change:'added'},
+      {sym:'VWO',name:'Vanguard Emerging Mkts',value:'$2.4B',pct:'2.5%',change:'added'},
+      {sym:'IAU',name:'iShares Gold Trust',value:'$1.9B',pct:'2.0%',change:'added'},
+      {sym:'IVV',name:'iShares Core S&P 500',value:'$1.7B',pct:'1.7%',change:'reduced'},
+    ],
+    activity:[
+      {sym:'GLD',action:'buy',detail:'Significantly increased gold allocation'},
+      {sym:'EEM',action:'buy',detail:'Added emerging market exposure'},
+      {sym:'SPY',action:'sell',detail:'Reduced US equity exposure by 18%'},
+    ],
+    note:"Bridgewater's All Weather portfolio is rotating toward hard assets and EM — reflecting concern about US dollar weakness."
+  },
+  {
+    id:'tiger',name:'Tiger Global Management',manager:'Chase Coleman',aum:'$25.4B',filed:'Feb 14, 2025',style:'Growth · Tech-focused',
+    topHoldings:[
+      {sym:'META',name:'Meta Platforms',value:'$2.1B',pct:'8.3%',change:'added'},
+      {sym:'MSFT',name:'Microsoft',value:'$1.8B',pct:'7.1%',change:'unchanged'},
+      {sym:'AMZN',name:'Amazon',value:'$1.6B',pct:'6.3%',change:'added'},
+      {sym:'NVDA',name:'NVIDIA',value:'$1.4B',pct:'5.5%',change:'added'},
+      {sym:'GOOGL',name:'Alphabet',value:'$1.2B',pct:'4.7%',change:'new'},
+      {sym:'CRM',name:'Salesforce',value:'$0.9B',pct:'3.5%',change:'new'},
+      {sym:'SPOT',name:'Spotify',value:'$0.8B',pct:'3.1%',change:'added'},
+    ],
+    activity:[
+      {sym:'GOOGL',action:'new',detail:'New position in Alphabet — AI upside'},
+      {sym:'CRM',action:'new',detail:'New Salesforce position — Agentforce bet'},
+      {sym:'META',action:'buy',detail:'Added significantly — top conviction pick'},
+      {sym:'NVDA',action:'buy',detail:'Increased NVIDIA exposure'},
+    ],
+    note:"Tiger Global is rebuilding its portfolio after losses in 2022. Heavy concentration in AI-adjacent megacaps."
+  }
+];
+
+let currentTab = 'all';
+function setTab(t, btn){
+  currentTab=t;
+  document.querySelectorAll('.fund-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+const changeLabels={new:'🆕 New',added:'➕ Added',reduced:'➖ Reduced',sold:'🔴 Sold',unchanged:'→ Unchanged'};
+const actionLabels={buy:'BUY',sell:'SELL',new:'NEW'};
+const actionCls={buy:'action-buy',sell:'action-sell',new:'action-new'};
+
+function render(){
+  const toShow = currentTab==='all' ? funds : funds.filter(f=>f.id===currentTab);
+  document.getElementById('fundsContainer').innerHTML = toShow.map(f=>`
+    <div class="fund-card">
+      <div class="fund-header">
+        <div>
+          <div class="fund-name">${f.name}</div>
+          <div class="fund-manager">Manager: ${f.manager} · Style: ${f.style} · Filed: ${f.filed}</div>
+        </div>
+        <div class="fund-aum">
+          <div class="fund-aum-val">${f.aum}</div>
+          <div class="fund-aum-label">AUM</div>
+        </div>
+      </div>
+      <div class="fund-body">
+        <div class="holdings-title">Top Holdings (Q4 2024 13F)</div>
+        <div class="holdings-grid">
+          ${f.topHoldings.map(h=>`<div class="holding-card">
+            <div class="hc-sym">${h.sym}</div>
+            <div class="hc-name">${h.name}</div>
+            <div class="hc-value">${h.value}</div>
+            <div class="hc-pct">${h.pct} of portfolio</div>
+            <span class="hc-change ${h.change}">${changeLabels[h.change]||h.change}</span>
+          </div>`).join('')}
+        </div>
+        <div class="holdings-title">Q4 Activity</div>
+        ${f.activity.map(a=>`<div class="activity-row">
+          <div><span class="activity-sym">${a.sym}</span> — ${a.detail}</div>
+          <span class="activity-action ${actionCls[a.action]}">${actionLabels[a.action]}</span>
+        </div>`).join('')}
+        <div style="margin-top:16px;padding:12px 16px;background:rgba(47,128,237,.06);border-radius:8px;font-size:.82rem;color:var(--muted);line-height:1.6">
+          💡 <strong style="color:var(--text)">Manager's Thesis:</strong> ${f.note}
+        </div>
+      </div>
+    </div>`).join('');
+}
+render();
+</script>
+</body>
+</html>

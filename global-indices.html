@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Global Indices — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.section-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:32px}
+.indices-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.idx-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:.2s}
+.idx-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.idx-flag{font-size:1.4rem;margin-bottom:6px}
+.idx-name{font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.idx-market{font-size:.95rem;font-weight:600;margin-bottom:10px}
+.idx-price{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.idx-chg{font-size:.85rem;font-family:'DM Mono',monospace}
+.idx-chg.pos{color:var(--green)}
+.idx-chg.neg{color:var(--red)}
+.idx-status{font-size:.7rem;color:var(--muted);margin-top:6px}
+.status-open{color:var(--green)}
+.status-closed{color:var(--muted)}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html" style="color:var(--accent)">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a>
+  <a href="commodities.html">🛢️ Commodities</a><a href="bonds.html">📈 Bonds</a>
+  <a href="global-indices.html">🌍 Global</a><a href="macro.html">🏛️ Macro</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🌍 Global Indices</h1>
+  <p>Live stock market indices from around the world</p>
+</div>
+
+<main>
+  <div style="color:var(--muted);font-size:.85rem;margin-bottom:16px"><span class="spinner"></span>Loading live global data...</div>
+  <div class="section-title">Americas</div>
+  <div class="indices-grid" id="americasGrid"></div>
+  <div class="section-title">Europe</div>
+  <div class="indices-grid" id="europeGrid"></div>
+  <div class="section-title">Asia Pacific</div>
+  <div class="indices-grid" id="asiaGrid"></div>
+  <div class="section-title">Middle East & Africa</div>
+  <div class="indices-grid" id="meaGrid"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · Global index data via Yahoo Finance</footer>
+
+<script>
+const PROXY='/api/yahoo?url=';
+const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+async function fw(url){const r=await fetch(PROXY+encodeURIComponent(url));return r.json();}
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const regions={
+  americas:[
+    {sym:'^GSPC',flag:'🇺🇸',name:'S&P 500',market:'New York'},
+    {sym:'^DJI',flag:'🇺🇸',name:'Dow Jones',market:'New York'},
+    {sym:'^IXIC',flag:'🇺🇸',name:'NASDAQ',market:'New York'},
+    {sym:'^RUT',flag:'🇺🇸',name:'Russell 2000',market:'New York'},
+    {sym:'^GSPTSE',flag:'🇨🇦',name:'TSX Composite',market:'Toronto'},
+    {sym:'^BVSP',flag:'🇧🇷',name:'Bovespa',market:'São Paulo'},
+    {sym:'^MXX',flag:'🇲🇽',name:'IPC Mexico',market:'Mexico City'},
+  ],
+  europe:[
+    {sym:'^FTSE',flag:'🇬🇧',name:'FTSE 100',market:'London'},
+    {sym:'^GDAXI',flag:'🇩🇪',name:'DAX',market:'Frankfurt'},
+    {sym:'^FCHI',flag:'🇫🇷',name:'CAC 40',market:'Paris'},
+    {sym:'^STOXX50E',flag:'🇪🇺',name:'Euro Stoxx 50',market:'Europe'},
+    {sym:'^IBEX',flag:'🇪🇸',name:'IBEX 35',market:'Madrid'},
+    {sym:'^AEX',flag:'🇳🇱',name:'AEX',market:'Amsterdam'},
+    {sym:'^SSMI',flag:'🇨🇭',name:'SMI',market:'Zurich'},
+  ],
+  asia:[
+    {sym:'^N225',flag:'🇯🇵',name:'Nikkei 225',market:'Tokyo'},
+    {sym:'^HSI',flag:'🇭🇰',name:'Hang Seng',market:'Hong Kong'},
+    {sym:'000001.SS',flag:'🇨🇳',name:'Shanghai Composite',market:'Shanghai'},
+    {sym:'^STI',flag:'🇸🇬',name:'Straits Times',market:'Singapore'},
+    {sym:'^AXJO',flag:'🇦🇺',name:'ASX 200',market:'Sydney'},
+    {sym:'^KOSPI',flag:'🇰🇷',name:'KOSPI',market:'Seoul'},
+    {sym:'^NSEI',flag:'🇮🇳',name:'Nifty 50',market:'Mumbai'},
+    {sym:'^TWII',flag:'🇹🇼',name:'Taiwan Weighted',market:'Taipei'},
+  ],
+  mea:[
+    {sym:'^TA125.TA',flag:'🇮🇱',name:'Tel Aviv 125',market:'Tel Aviv'},
+    {sym:'^TASI.SR',flag:'🇸🇦',name:'Tadawul (TASI)',market:'Riyadh'},
+    {sym:'^CASE30',flag:'🇪🇬',name:'EGX 30',market:'Cairo'},
+    {sym:'^JSE.JO',flag:'🇿🇦',name:'JSE All Share',market:'Johannesburg'},
+  ]
+};
+
+async function loadRegion(indices, gridId){
+  const grid=document.getElementById(gridId);
+  for(const idx of indices){
+    try{
+      const d=await fw(YAHOO+encodeURIComponent(idx.sym)+'?interval=1d&range=5d');
+      const m=d.chart.result[0].meta;
+      const price=m.regularMarketPrice, prev=m.chartPreviousClose;
+      const chg=((price-prev)/prev*100).toFixed(2);
+      const chgAbs=(price-prev).toFixed(2);
+      const isPos=chg>=0;
+      const card=document.createElement('div');
+      card.className='idx-card';
+      card.innerHTML=`<div class="idx-flag">${idx.flag}</div><div class="idx-name">${idx.market}</div><div class="idx-market">${idx.name}</div><div class="idx-price">${price.toLocaleString('en-US',{maximumFractionDigits:2})}</div><div class="idx-chg ${isPos?'pos':'neg'}">${isPos?'▲':'▼'} ${Math.abs(chgAbs)} (${isPos?'+':''}${chg}%)</div>`;
+      grid.appendChild(card);
+    }catch(e){
+      const card=document.createElement('div');
+      card.className='idx-card';
+      card.innerHTML=`<div class="idx-flag">${idx.flag}</div><div class="idx-name">${idx.market}</div><div class="idx-market">${idx.name}</div><div class="idx-price" style="color:var(--muted)">Unavailable</div>`;
+      grid.appendChild(card);
+    }
+  }
+}
+
+loadRegion(regions.americas,'americasGrid');
+loadRegion(regions.europe,'europeGrid');
+loadRegion(regions.asia,'asiaGrid');
+loadRegion(regions.mea,'meaGrid');
+</script>
+</body>
+</html>

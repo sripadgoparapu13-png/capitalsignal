@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Commodities — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.section-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:32px}
+.comm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.comm-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:.2s;position:relative;overflow:hidden}
+.comm-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.comm-icon{font-size:1.8rem;margin-bottom:8px}
+.comm-name{font-size:.95rem;font-weight:600;margin-bottom:2px}
+.comm-sym{font-family:'DM Mono',monospace;font-size:.72rem;color:var(--accent);margin-bottom:10px}
+.comm-price{font-size:1.5rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.comm-chg{font-size:.85rem;font-family:'DM Mono',monospace;margin-bottom:8px}
+.comm-chg.pos{color:var(--green)}
+.comm-chg.neg{color:var(--red)}
+.comm-stats{display:flex;gap:12px;font-size:.72rem;color:var(--muted);flex-wrap:wrap}
+.comm-unit{position:absolute;top:12px;right:12px;font-size:.65rem;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--muted)}
+.loading-msg{color:var(--muted);font-size:.85rem;padding:20px 0}
+.spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="commodities.html" style="color:var(--accent)">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a>
+  <a href="commodities.html">🛢️ Commodities</a><a href="bonds.html">📈 Bonds</a>
+  <a href="global-indices.html">🌍 Global</a><a href="macro.html">🏛️ Macro</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🛢️ Commodities</h1>
+  <p>Live prices for energy, metals, agriculture, and more</p>
+</div>
+
+<main>
+  <div id="loadingMsg" class="loading-msg"><span class="spinner"></span>Loading live commodity prices...</div>
+
+  <div class="section-title">Energy</div>
+  <div class="comm-grid" id="energyGrid"></div>
+
+  <div class="section-title">Precious Metals</div>
+  <div class="comm-grid" id="metalsGrid"></div>
+
+  <div class="section-title">Industrial Metals</div>
+  <div class="comm-grid" id="industrialGrid"></div>
+
+  <div class="section-title">Agriculture</div>
+  <div class="comm-grid" id="agriGrid"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · Commodity prices via Yahoo Finance · Delayed data</footer>
+
+<script>
+const PROXY='/api/yahoo?url=';
+const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+async function fw(url){const r=await fetch(PROXY+encodeURIComponent(url));return r.json();}
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const commodities = {
+  energy:[
+    {sym:'CL=F',name:'Crude Oil (WTI)',icon:'🛢️',unit:'per barrel',desc:'US benchmark crude'},
+    {sym:'BZ=F',name:'Brent Crude',icon:'⛽',unit:'per barrel',desc:'Global benchmark crude'},
+    {sym:'NG=F',name:'Natural Gas',icon:'🔥',unit:'per MMBtu',desc:'Henry Hub natural gas'},
+    {sym:'RB=F',name:'Gasoline',icon:'⛽',unit:'per gallon',desc:'RBOB gasoline futures'},
+    {sym:'HO=F',name:'Heating Oil',icon:'🌡️',unit:'per gallon',desc:'Distillate fuel oil'},
+  ],
+  metals:[
+    {sym:'GC=F',name:'Gold',icon:'🥇',unit:'per troy oz',desc:'Safe haven asset'},
+    {sym:'SI=F',name:'Silver',icon:'🥈',unit:'per troy oz',desc:'Industrial + monetary metal'},
+    {sym:'PL=F',name:'Platinum',icon:'💿',unit:'per troy oz',desc:'Auto catalyst demand'},
+    {sym:'PA=F',name:'Palladium',icon:'⚪',unit:'per troy oz',desc:'Auto & industrial use'},
+  ],
+  industrial:[
+    {sym:'HG=F',name:'Copper',icon:'🔶',unit:'per pound',desc:'Economic bellwether'},
+    {sym:'ALI=F',name:'Aluminum',icon:'🔷',unit:'per pound',desc:'Packaging & transport'},
+    {sym:'ZNC=F',name:'Zinc',icon:'🔩',unit:'per tonne',desc:'Galvanizing steel'},
+  ],
+  agri:[
+    {sym:'ZW=F',name:'Wheat',icon:'🌾',unit:'per bushel',desc:'Staple food commodity'},
+    {sym:'ZC=F',name:'Corn',icon:'🌽',unit:'per bushel',desc:'Feed & ethanol demand'},
+    {sym:'ZS=F',name:'Soybeans',icon:'🫘',unit:'per bushel',desc:'Oil & animal feed'},
+    {sym:'KC=F',name:'Coffee',icon:'☕',unit:'per pound',desc:'Arabica coffee futures'},
+    {sym:'CT=F',name:'Cotton',icon:'🌸',unit:'per pound',desc:'Textile fiber'},
+    {sym:'SB=F',name:'Sugar',icon:'🍬',unit:'per pound',desc:'Raw sugar futures'},
+  ]
+};
+
+async function loadComm(syms, gridId) {
+  const grid = document.getElementById(gridId);
+  for (const c of syms) {
+    try {
+      const d = await fw(YAHOO + encodeURIComponent(c.sym) + '?interval=1d&range=5d');
+      const m = d.chart.result[0].meta;
+      const price = m.regularMarketPrice;
+      const prev = m.chartPreviousClose;
+      const chg = ((price-prev)/prev*100).toFixed(2);
+      const chgAbs = (price-prev).toFixed(2);
+      const isPos = chg >= 0;
+      const decimals = price > 100 ? 2 : price > 10 ? 3 : 4;
+      const card = document.createElement('div');
+      card.className = 'comm-card';
+      card.innerHTML = `
+        <div class="comm-unit">${c.unit}</div>
+        <div class="comm-icon">${c.icon}</div>
+        <div class="comm-name">${c.name}</div>
+        <div class="comm-sym">${c.sym}</div>
+        <div class="comm-price">$${price.toFixed(decimals)}</div>
+        <div class="comm-chg ${isPos?'pos':'neg'}">${isPos?'▲':'▼'} ${Math.abs(chgAbs)} (${isPos?'+':''}${chg}%)</div>
+        <div class="comm-stats"><span>52W: tracking live</span><span>${c.desc}</span></div>`;
+      grid.appendChild(card);
+    } catch(e) {
+      const card = document.createElement('div');
+      card.className = 'comm-card';
+      card.innerHTML = `<div class="comm-icon">${c.icon}</div><div class="comm-name">${c.name}</div><div class="comm-sym">${c.sym}</div><div class="comm-price" style="color:var(--muted)">Unavailable</div><div class="comm-stats">${c.desc}</div>`;
+      grid.appendChild(card);
+    }
+  }
+}
+
+async function init() {
+  await loadComm(commodities.energy, 'energyGrid');
+  await loadComm(commodities.metals, 'metalsGrid');
+  await loadComm(commodities.industrial, 'industrialGrid');
+  await loadComm(commodities.agri, 'agriGrid');
+  document.getElementById('loadingMsg').style.display = 'none';
+}
+init();
+</script>
+</body>
+</html>

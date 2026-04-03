@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Position Size Calculator — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:900px;margin:0 auto;text-align:center}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:900px;margin:0 auto;padding:0 24px 64px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.calc-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:24px}
+.calc-card h2{font-size:1rem;font-weight:600;margin-bottom:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;outline:none;transition:.2s}
+.field input:focus{border-color:var(--accent)}
+.field .hint{font-size:.7rem;color:var(--muted);margin-top:3px}
+.calc-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;transition:.2s}
+.calc-btn:hover{background:#1a6bc7}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.res-box{background:var(--surface2);border-radius:10px;padding:16px}
+.res-label{font-size:.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.res-value{font-size:1.2rem;font-weight:700;font-family:'DM Mono',monospace}
+.res-value.good{color:var(--green)}
+.res-value.warn{color:var(--yellow)}
+.res-value.bad{color:var(--red)}
+.rule-box{background:linear-gradient(135deg,rgba(47,128,237,.08),rgba(47,128,237,.02));border:1px solid rgba(47,128,237,.2);border-radius:12px;padding:20px;margin-bottom:24px}
+.rule-box h3{font-size:.9rem;font-weight:600;margin-bottom:12px;color:var(--accent)}
+.rule-box p{font-size:.85rem;color:var(--muted);line-height:1.6}
+.rr-viz{display:flex;gap:4px;align-items:center;margin-top:12px;font-size:.8rem;color:var(--muted)}
+.rr-loss{background:var(--red);height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem;font-weight:600}
+.rr-profit{background:var(--green);height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem;font-weight:600}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="position-size.html" style="color:var(--accent)">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="position-size.html">🎯 Position Size</a>
+  <a href="compound.html">📈 Compound</a><a href="dcf.html">🧮 DCF</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🎯 Position Size Calculator</h1>
+  <p>How many shares should you buy? Calculate position size based on your risk tolerance — the way professional traders do it.</p>
+</div>
+
+<main>
+  <div class="rule-box">
+    <h3>The 1–2% Rule</h3>
+    <p>Professional traders never risk more than 1–2% of their total portfolio on a single trade. This means if the trade hits your stop loss, you only lose 1–2% — not enough to hurt you. This lets you survive 50+ losing trades in a row without blowing up your account.</p>
+    <div class="rr-viz">
+      Risk $200 <div class="rr-loss" style="width:60px">Loss</div> vs. <div class="rr-profit" style="width:120px">Profit $400</div> = 2:1 reward/risk ✅
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="calc-card">
+      <h2>Position Size Calculator</h2>
+      <div class="field"><label>Total Portfolio Value ($)</label><input type="number" id="ps-portfolio" placeholder="10000" oninput="calcPosition()"></div>
+      <div class="field"><label>Risk Per Trade (%)</label><input type="number" id="ps-risk" placeholder="2" step="0.5" oninput="calcPosition()"><div class="hint">Recommended: 1–2% for beginners</div></div>
+      <div class="field"><label>Stock Entry Price ($)</label><input type="number" id="ps-entry" placeholder="150.00" step="0.01" oninput="calcPosition()"></div>
+      <div class="field"><label>Stop Loss Price ($)</label><input type="number" id="ps-stop" placeholder="143.00" step="0.01" oninput="calcPosition()"><div class="hint">Where you'll sell if the trade goes wrong</div></div>
+      <div class="field"><label>Target Price ($) — Optional</label><input type="number" id="ps-target" placeholder="165.00" step="0.01" oninput="calcPosition()"></div>
+    </div>
+    <div>
+      <div class="calc-card">
+        <h2>Results</h2>
+        <div class="result-grid" id="psResults">
+          <div class="res-box"><div class="res-label">Shares to Buy</div><div class="res-value" id="ps-shares">—</div></div>
+          <div class="res-box"><div class="res-label">Position Value</div><div class="res-value" id="ps-value">—</div></div>
+          <div class="res-box"><div class="res-label">Max Loss ($)</div><div class="res-value bad" id="ps-maxloss">—</div></div>
+          <div class="res-box"><div class="res-label">% of Portfolio</div><div class="res-value" id="ps-pct">—</div></div>
+          <div class="res-box"><div class="res-label">Potential Profit</div><div class="res-value good" id="ps-profit">—</div></div>
+          <div class="res-box"><div class="res-label">Reward/Risk Ratio</div><div class="res-value" id="ps-rr">—</div></div>
+        </div>
+      </div>
+      <div class="calc-card" style="margin-top:0">
+        <h2>Risk/Reward Visual</h2>
+        <div id="rrViz" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Not financial advice · Position sizing is one tool among many</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+function calcPosition(){
+  const portfolio=parseFloat(document.getElementById('ps-portfolio').value)||0;
+  const riskPct=parseFloat(document.getElementById('ps-risk').value)||2;
+  const entry=parseFloat(document.getElementById('ps-entry').value)||0;
+  const stop=parseFloat(document.getElementById('ps-stop').value)||0;
+  const target=parseFloat(document.getElementById('ps-target').value)||0;
+  if(!portfolio||!entry||!stop)return;
+  const riskAmount=portfolio*(riskPct/100);
+  const riskPerShare=Math.abs(entry-stop);
+  if(!riskPerShare)return;
+  const shares=Math.floor(riskAmount/riskPerShare);
+  const posValue=shares*entry;
+  const maxLoss=shares*riskPerShare;
+  const positionPct=(posValue/portfolio*100).toFixed(1);
+  const profit=target?((target-entry)*shares):0;
+  const rr=target&&riskPerShare?(((target-entry)/riskPerShare)).toFixed(2):null;
+  document.getElementById('ps-shares').textContent=shares.toLocaleString();
+  document.getElementById('ps-value').textContent='$'+posValue.toLocaleString('en-US',{maximumFractionDigits:0});
+  document.getElementById('ps-maxloss').textContent='-$'+maxLoss.toFixed(0);
+  const pctEl=document.getElementById('ps-pct');
+  pctEl.textContent=positionPct+'%';
+  pctEl.className='res-value '+(positionPct>20?'bad':positionPct>10?'warn':'good');
+  document.getElementById('ps-profit').textContent=target?'+$'+profit.toFixed(0):'—';
+  const rrEl=document.getElementById('ps-rr');
+  rrEl.textContent=rr?rr+':1':'—';
+  rrEl.className='res-value '+(rr>=2?'good':rr>=1?'warn':'bad');
+  if(rr&&target){
+    const lossW=100, profitW=Math.min(rr*lossW,300);
+    document.getElementById('rrViz').innerHTML=`
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--muted)">
+        <div class="rr-loss" style="width:${lossW}px;background:var(--red);height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:600">-$${maxLoss.toFixed(0)}</div>
+        <span>vs</span>
+        <div class="rr-profit" style="width:${profitW}px;background:var(--green);height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:600">+$${profit.toFixed(0)}</div>
+        <span>${rr}:1 R/R ${rr>=2?'✅ Good':rr>=1?'⚠️ OK':'❌ Poor'}</span>
+      </div>`;
+  }
+}
+</script>
+</body>
+</html>

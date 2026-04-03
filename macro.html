@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Macro Dashboard — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.section-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:40px}
+.macro-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:8px}
+.macro-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:.2s}
+.macro-card:hover{border-color:var(--accent)}
+.mc-label{font-size:.72rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+.mc-value{font-size:1.6rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.mc-change{font-size:.8rem;font-family:'DM Mono',monospace;margin-bottom:6px}
+.mc-change.pos{color:var(--green)}
+.mc-change.neg{color:var(--red)}
+.mc-change.neutral{color:var(--muted)}
+.mc-desc{font-size:.75rem;color:var(--muted);line-height:1.4}
+.signal{display:inline-block;font-size:.68rem;padding:2px 8px;border-radius:4px;font-weight:600;margin-top:6px}
+.signal.bull{background:rgba(39,174,96,.15);color:var(--green)}
+.signal.bear{background:rgba(255,77,106,.15);color:var(--red)}
+.signal.neutral{background:rgba(242,201,76,.15);color:var(--yellow)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
+.info-card h3{font-size:.9rem;font-weight:600;margin-bottom:16px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:.85rem}
+.info-row:last-child{border:none}
+.ir-label{color:var(--muted)}
+.ir-val{font-family:'DM Mono',monospace;font-weight:500}
+.yield-curve{display:flex;align-items:flex-end;gap:6px;height:80px;margin-top:8px}
+.yc-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.yc-bar{width:100%;border-radius:3px 3px 0 0;min-height:4px;background:var(--accent)}
+.yc-label{font-size:.62rem;color:var(--muted)}
+.yc-val{font-size:.65rem;color:var(--text);font-family:'DM Mono',monospace}
+.fear-greed{text-align:center;padding:20px}
+.fg-value{font-size:3rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:8px}
+.fg-label{font-size:1rem;font-weight:600;margin-bottom:16px}
+.fg-bar-bg{height:12px;background:linear-gradient(90deg,#ff4d6a,#f2c94c,#27ae60);border-radius:6px;position:relative;margin:0 auto;max-width:280px}
+.fg-needle{position:absolute;top:-4px;width:4px;height:20px;background:white;border-radius:2px;transform:translateX(-50%);transition:left 1s ease}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="crypto.html">₿ Crypto</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html" style="color:var(--accent)">🏛️ Macro Dashboard</a>
+        <a href="economic-calendar.html">🏦 Economic Calendar</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="earnings.html">📅 Earnings</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+        <a href="index.html#screener">🔍 Screener</a>
+        <a href="index.html#portfolio">💼 Portfolio</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades/Downgrades</a>
+        <a href="sec-filings.html">📋 SEC Filings</a>
+        <a href="forex.html">💱 Forex</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="macro.html">🏛️ Macro</a>
+  <a href="commodities.html">🛢️ Commodities</a><a href="bonds.html">📈 Bonds</a>
+  <a href="global-indices.html">🌍 Global</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🏛️ Macro Dashboard</h1>
+  <p>Key economic indicators that drive markets — inflation, jobs, GDP, money supply, and more</p>
+</div>
+
+<main>
+  <div class="section-title">Inflation & Prices</div>
+  <div class="macro-grid">
+    <div class="macro-card"><div class="mc-label">CPI Inflation (YoY)</div><div class="mc-value" style="color:var(--red)">2.9%</div><div class="mc-change neg">▲ vs 2.7% prior</div><div class="mc-desc">Consumer Price Index — Jan 2025</div><span class="signal bear">Above Fed Target</span></div>
+    <div class="macro-card"><div class="mc-label">Core CPI (ex Food/Energy)</div><div class="mc-value" style="color:var(--yellow)">3.2%</div><div class="mc-change neg">▲ vs 3.2% prior</div><div class="mc-desc">Stickier measure watched by the Fed</div><span class="signal bear">Sticky</span></div>
+    <div class="macro-card"><div class="mc-label">PCE Inflation</div><div class="mc-value" style="color:var(--yellow)">2.5%</div><div class="mc-change neutral">→ vs 2.4% prior</div><div class="mc-desc">Fed's preferred inflation gauge</div><span class="signal neutral">Near Target</span></div>
+    <div class="macro-card"><div class="mc-label">PPI (Producer Prices)</div><div class="mc-value" style="color:var(--yellow)">3.3%</div><div class="mc-change neg">▲ vs 3.0% prior</div><div class="mc-desc">Wholesale inflation — leading indicator</div><span class="signal bear">Rising</span></div>
+  </div>
+
+  <div class="section-title">Labor Market</div>
+  <div class="macro-grid">
+    <div class="macro-card"><div class="mc-label">Unemployment Rate</div><div class="mc-value" style="color:var(--green)">4.1%</div><div class="mc-change pos">▼ vs 4.2% prior</div><div class="mc-desc">Jan 2025 — Near historic lows</div><span class="signal bull">Strong</span></div>
+    <div class="macro-card"><div class="mc-label">Non-Farm Payrolls</div><div class="mc-value" style="color:var(--green)">256K</div><div class="mc-change pos">▲ vs 212K est.</div><div class="mc-desc">Jobs added in December 2024</div><span class="signal bull">Beat</span></div>
+    <div class="macro-card"><div class="mc-label">Jobless Claims (Weekly)</div><div class="mc-value">217K</div><div class="mc-change neutral">→ vs 220K prior</div><div class="mc-desc">Initial unemployment filings</div><span class="signal bull">Healthy</span></div>
+    <div class="macro-card"><div class="mc-label">Avg Hourly Earnings</div><div class="mc-value" style="color:var(--yellow)">+4.1%</div><div class="mc-change neg">▲ vs 4.0% prior</div><div class="mc-desc">YoY wage growth — inflationary</div><span class="signal neutral">Elevated</span></div>
+  </div>
+
+  <div class="section-title">Growth & Output</div>
+  <div class="macro-grid">
+    <div class="macro-card"><div class="mc-label">GDP Growth (Q3 2024)</div><div class="mc-value" style="color:var(--green)">3.1%</div><div class="mc-change pos">▲ vs 2.8% prior</div><div class="mc-desc">Annualized real GDP growth rate</div><span class="signal bull">Strong</span></div>
+    <div class="macro-card"><div class="mc-label">ISM Manufacturing</div><div class="mc-value" style="color:var(--red)">49.3</div><div class="mc-change neg">▼ Below 50 = contraction</div><div class="mc-desc">Factory activity index</div><span class="signal bear">Contracting</span></div>
+    <div class="macro-card"><div class="mc-label">ISM Services</div><div class="mc-value" style="color:var(--green)">54.1</div><div class="mc-change pos">▲ Above 50 = expansion</div><div class="mc-desc">Service sector activity</div><span class="signal bull">Expanding</span></div>
+    <div class="macro-card"><div class="mc-label">Retail Sales (MoM)</div><div class="mc-value" style="color:var(--green)">+0.4%</div><div class="mc-change pos">▲ vs -0.1% prior</div><div class="mc-desc">Consumer spending at retail stores</div><span class="signal bull">Resilient</span></div>
+  </div>
+
+  <div class="section-title">Money & Credit</div>
+  <div class="macro-grid">
+    <div class="macro-card"><div class="mc-label">Fed Funds Rate</div><div class="mc-value" style="color:var(--accent)">4.25–4.50%</div><div class="mc-change neg">▼ Cut 100bps in 2024</div><div class="mc-desc">Current target range</div><span class="signal neutral">Restrictive</span></div>
+    <div class="macro-card"><div class="mc-label">M2 Money Supply</div><div class="mc-value">$21.4T</div><div class="mc-change pos">▲ +3.8% YoY</div><div class="mc-desc">Broad money supply measure</div><span class="signal bull">Growing</span></div>
+    <div class="macro-card"><div class="mc-label">Credit Card Delinquency</div><div class="mc-value" style="color:var(--red)">3.2%</div><div class="mc-change neg">▲ vs 2.6% year ago</div><div class="mc-desc">% of balances 90+ days past due</div><span class="signal bear">Rising</span></div>
+    <div class="macro-card"><div class="mc-label">Consumer Confidence</div><div class="mc-value" style="color:var(--yellow)">104.7</div><div class="mc-change neg">▼ vs 109.7 prior</div><div class="mc-desc">Conference Board Index</div><span class="signal neutral">Softening</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="info-card">
+      <h3>📈 Yield Curve</h3>
+      <div class="yield-curve" id="yieldCurve"></div>
+      <div style="margin-top:16px">
+        <div class="info-row"><span class="ir-label">2yr–10yr Spread</span><span class="ir-val" style="color:var(--green)">+0.24%</span></div>
+        <div class="info-row"><span class="ir-label">Curve Status</span><span class="ir-val" style="color:var(--green)">Normal (Un-inverted)</span></div>
+        <div class="info-row"><span class="ir-label">Signal</span><span class="ir-val">Recession risk reduced</span></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="fear-greed">
+        <div class="mc-label" style="text-align:center">CNN Fear & Greed Index</div>
+        <div class="fg-value" style="color:var(--red)" id="fgValue">28</div>
+        <div class="fg-label" style="color:var(--red)" id="fgLabel">Fear</div>
+        <div class="fg-bar-bg"><div class="fg-needle" id="fgNeedle"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:8px;max-width:280px;margin-left:auto;margin-right:auto"><span>Extreme Fear</span><span>Greed</span></div>
+      </div>
+      <div class="info-row"><span class="ir-label">Market Momentum</span><span class="ir-val" style="color:var(--red)">Fear</span></div>
+      <div class="info-row"><span class="ir-label">VIX Level</span><span class="ir-val">18.4</span></div>
+      <div class="info-row"><span class="ir-label">Put/Call Ratio</span><span class="ir-val">1.12 (Bearish)</span></div>
+    </div>
+  </div>
+
+  <div class="section-title">Fed Watch</div>
+  <div class="macro-grid">
+    <div class="macro-card"><div class="mc-label">Next FOMC Meeting</div><div class="mc-value" style="font-size:1.1rem">Jan 28–29</div><div class="mc-change neutral">→ Hold expected</div><div class="mc-desc">Market pricing 85% chance of no change</div><span class="signal neutral">Hold</span></div>
+    <div class="macro-card"><div class="mc-label">Rate Cuts Expected 2025</div><div class="mc-value">1–2</div><div class="mc-change neutral">Down from 4 expected</div><div class="mc-desc">Fed dot plot median projection</div><span class="signal neutral">Fewer Cuts</span></div>
+    <div class="macro-card"><div class="mc-label">Neutral Rate Estimate</div><div class="mc-value">2.5–3.0%</div><div class="mc-change neutral">→ Unchanged</div><div class="mc-desc">Long-run Fed funds rate target</div><span class="signal neutral">Steady</span></div>
+    <div class="macro-card"><div class="mc-label">QT Pace</div><div class="mc-value" style="font-size:1.1rem">$60B/mo</div><div class="mc-change neutral">Balance sheet reduction</div><div class="mc-desc">Fed reducing its $7T+ balance sheet</div><span class="signal bear">Tightening</span></div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Macro data sourced from BLS, BEA, Federal Reserve · For informational purposes only</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+// Yield curve
+const yields = [{t:'1M',v:4.32},{t:'3M',v:4.28},{t:'6M',v:4.18},{t:'1Y',v:4.05},{t:'2Y',v:4.18},{t:'5Y',v:4.24},{t:'10Y',v:4.42},{t:'20Y',v:4.65},{t:'30Y',v:4.62}];
+const maxY=Math.max(...yields.map(y=>y.v));
+const minY=Math.min(...yields.map(y=>y.v));
+document.getElementById('yieldCurve').innerHTML=yields.map(y=>{
+  const pct=((y.v-minY)/(maxY-minY)*70+15).toFixed(0);
+  return`<div class="yc-bar-wrap"><div class="yc-val">${y.v}%</div><div class="yc-bar" style="height:${pct}%"></div><div class="yc-label">${y.t}</div></div>`;
+}).join('');
+
+// Fear & greed needle
+setTimeout(()=>{
+  const val=28;
+  document.getElementById('fgNeedle').style.left=val+'%';
+},300);
+</script>
+</body>
+</html>
