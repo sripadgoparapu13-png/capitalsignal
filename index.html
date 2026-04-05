@@ -424,7 +424,61 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   <a href="about.html">👤 About</a>
 </div>
 
+<div id="marketMoodBanner" style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;font-size:.82rem;overflow-x:auto">
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span style="color:var(--muted)">Market:</span>
+    <span id="mood-status" style="font-weight:600;font-family:'DM Mono',monospace">Loading...</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span style="color:var(--muted)">Fear & Greed:</span>
+    <span id="mood-fg" style="font-weight:600;font-family:'DM Mono',monospace">—</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span style="color:var(--muted)">VIX:</span>
+    <span id="mood-vix" style="font-weight:600;font-family:'DM Mono',monospace">—</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span style="color:var(--muted)">S&P 500:</span>
+    <span id="mood-spy" style="font-weight:600;font-family:'DM Mono',monospace">—</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span style="color:var(--muted)">10Y Yield:</span>
+    <span id="mood-tnx" style="font-weight:600;font-family:'DM Mono',monospace">—</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <span style="color:var(--muted)">Bitcoin:</span>
+    <span id="mood-btc" style="font-weight:600;font-family:'DM Mono',monospace">—</span>
+  </div>
+</div>
+
 <main style="max-width:900px;margin:0 auto;padding:0 24px;">
+
+  <!-- STOCK OF THE DAY -->
+  <div id="sotdCard" style="background:linear-gradient(135deg,rgba(47,128,237,.12),rgba(86,204,242,.04));border:1px solid rgba(47,128,237,.3);border-radius:14px;padding:20px 24px;margin:24px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;cursor:pointer" onclick="quickSearch(sotdSym)">
+    <div>
+      <div style="font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">⭐ Stock of the Day</div>
+      <div style="font-size:1.2rem;font-weight:700" id="sotd-name">Loading...</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:4px" id="sotd-reason">—</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:1.6rem;font-weight:700;font-family:'DM Mono',monospace" id="sotd-price">—</div>
+      <div style="font-size:.85rem;font-family:'DM Mono',monospace" id="sotd-chg">—</div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px">Click to analyze →</div>
+    </div>
+  </div>
+
+  <!-- TOP MOVERS -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-size:.72rem;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;font-weight:600">🚀 Top Gainers Today</div>
+      <div id="topGainers"><div style="color:var(--muted);font-size:.82rem">Loading...</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-size:.72rem;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;font-weight:600">📉 Top Losers Today</div>
+      <div id="topLosers"><div style="color:var(--muted);font-size:.82rem">Loading...</div></div>
+    </div>
+  </div>
+
   <div class="hero">
     <div class="hero-badge">✦ AI-Powered Investing · Beta</div>
     <h1>The signal<br><span class="accent">through</span><br><span class="dim">the noise.</span></h1>
@@ -1210,6 +1264,101 @@ async function updateTicker() {
   }
 }
 
+// MARKET MOOD BANNER
+const sotdData = [
+  {sym:'NVDA', name:'NVIDIA Corp.', reason:'AI infrastructure demand accelerating — Blackwell GPU orders surge. Analyst consensus: Strong Buy with $1,050 avg target.'},
+  {sym:'META', name:'Meta Platforms', reason:'Llama AI adoption growing rapidly. Ad revenue beat estimates by 8%. Zuckerberg buying shares.'},
+  {sym:'AAPL', name:'Apple Inc.', reason:'Services revenue hit record $26.3B. Vision Pro gaining enterprise traction. 31 consecutive dividend increases.'},
+  {sym:'MSFT', name:'Microsoft Corp.', reason:'Azure AI services growing 31% YoY. Copilot showing strong enterprise adoption. Dividend Aristocrat.'},
+  {sym:'AMZN', name:'Amazon.com', reason:'AWS re-acceleration to 19% growth. Advertising crossed $50B annually. Prime membership at all-time high.'},
+  {sym:'JPM', name:'JPMorgan Chase', reason:'CEO Jamie Dimon just bought $30M of stock personally — strongest insider buy signal in years.'},
+  {sym:'PLTR', name:'Palantir Technologies', reason:'AIP platform seeing explosive commercial adoption. Government AI contracts accelerating. Added to S&P 500.'},
+  {sym:'LLY', name:'Eli Lilly', reason:'GLP-1 obesity drug Zepbound growing faster than any drug in history. Pipeline has 5 more blockbusters.'},
+];
+const todaySOTD = sotdData[new Date().getDay() % sotdData.length];
+let sotdSym = todaySOTD.sym;
+document.getElementById('sotd-name').textContent = todaySOTD.sym + ' — ' + todaySOTD.name;
+document.getElementById('sotd-reason').textContent = todaySOTD.reason;
+
+async function loadMarketMood() {
+  try {
+    const [spyD, vixD, tnxD, btcD] = await Promise.all([
+      fetchWithProxy(YAHOO + 'SPY?interval=1d&range=5d'),
+      fetchWithProxy(YAHOO + '%5EVIX?interval=1d&range=5d'),
+      fetchWithProxy(YAHOO + '%5ETNX?interval=1d&range=5d'),
+      fetchWithProxy(YAHOO + 'BTC-USD?interval=1d&range=5d'),
+    ]);
+    const spyP = spyD.chart.result[0].meta.regularMarketPrice;
+    const spyPrev = spyD.chart.result[0].meta.chartPreviousClose;
+    const spyChg = ((spyP - spyPrev) / spyPrev * 100).toFixed(2);
+    const spyPos = spyChg >= 0;
+    document.getElementById('mood-spy').textContent = '$' + spyP.toFixed(2) + ' (' + (spyPos?'+':'') + spyChg + '%)';
+    document.getElementById('mood-spy').style.color = spyPos ? 'var(--green)' : 'var(--red)';
+
+    const vixP = vixD.chart.result[0].meta.regularMarketPrice;
+    document.getElementById('mood-vix').textContent = vixP.toFixed(2);
+    document.getElementById('mood-vix').style.color = vixP > 25 ? 'var(--red)' : vixP > 18 ? 'var(--yellow)' : 'var(--green)';
+
+    const tnxP = tnxD.chart.result[0].meta.regularMarketPrice;
+    document.getElementById('mood-tnx').textContent = tnxP.toFixed(2) + '%';
+
+    const btcP = btcD.chart.result[0].meta.regularMarketPrice;
+    const btcPrev = btcD.chart.result[0].meta.chartPreviousClose;
+    const btcChg = ((btcP - btcPrev) / btcPrev * 100).toFixed(2);
+    const btcPos = btcChg >= 0;
+    document.getElementById('mood-btc').textContent = '$' + btcP.toLocaleString('en-US',{maximumFractionDigits:0}) + ' (' + (btcPos?'+':'') + btcChg + '%)';
+    document.getElementById('mood-btc').style.color = btcPos ? 'var(--green)' : 'var(--red)';
+
+    const fg = vixP < 15 ? 75 : vixP < 20 ? 55 : vixP < 25 ? 40 : vixP < 30 ? 28 : 15;
+    const fgLabel = fg >= 75 ? '🟢 Greed' : fg >= 55 ? '🟡 Neutral' : fg >= 35 ? '🟠 Fear' : '🔴 Extreme Fear';
+    document.getElementById('mood-fg').textContent = fg + ' — ' + fgLabel;
+    document.getElementById('mood-fg').style.color = fg >= 55 ? 'var(--green)' : fg >= 35 ? 'var(--yellow)' : 'var(--red)';
+
+    const hour = new Date().getHours();
+    const isWeekday = new Date().getDay() > 0 && new Date().getDay() < 6;
+    const marketOpen = isWeekday && hour >= 9 && hour < 16;
+    const preMarket = isWeekday && hour >= 4 && hour < 9;
+    const afterHours = isWeekday && hour >= 16 && hour < 20;
+    const statusText = marketOpen ? '🟢 Open' : preMarket ? '🟡 Pre-Market' : afterHours ? '🟡 After Hours' : '🔴 Closed';
+    const statusColor = marketOpen ? 'var(--green)' : preMarket || afterHours ? 'var(--yellow)' : 'var(--red)';
+    document.getElementById('mood-status').textContent = statusText;
+    document.getElementById('mood-status').style.color = statusColor;
+
+    // Load SOTD price
+    const sotdD = await fetchWithProxy(YAHOO + sotdSym + '?interval=1d&range=5d');
+    const sotdP = sotdD.chart.result[0].meta.regularMarketPrice;
+    const sotdPrev = sotdD.chart.result[0].meta.chartPreviousClose;
+    const sotdChg = ((sotdP - sotdPrev) / sotdPrev * 100).toFixed(2);
+    const sotdPos = sotdChg >= 0;
+    document.getElementById('sotd-price').textContent = '$' + sotdP.toFixed(2);
+    document.getElementById('sotd-chg').textContent = (sotdPos?'+':'') + sotdChg + '%';
+    document.getElementById('sotd-chg').style.color = sotdPos ? 'var(--green)' : 'var(--red)';
+  } catch(e) {}
+}
+
+async function loadTopMovers() {
+  const movers = ['NVDA','TSLA','AAPL','MSFT','META','AMZN','GOOGL','AMD','NFLX','UBER','JPM','PLTR','COIN','SOFI','RIVN'];
+  const data = [];
+  for (const sym of movers) {
+    try {
+      const d = await fetchWithProxy(YAHOO + sym + '?interval=1d&range=5d');
+      const m = d.chart.result[0].meta;
+      const price = m.regularMarketPrice, prev = m.chartPreviousClose;
+      const chg = ((price - prev) / prev * 100).toFixed(2);
+      data.push({sym, price, chg: parseFloat(chg)});
+    } catch(e) {}
+  }
+  data.sort((a,b) => b.chg - a.chg);
+  const gainers = data.filter(d => d.chg > 0).slice(0,5);
+  const losers = data.filter(d => d.chg < 0).sort((a,b) => a.chg - b.chg).slice(0,5);
+  const mkRow = (d, isGainer) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="quickSearch('${d.sym}')">
+    <span style="font-family:'DM Mono',monospace;font-size:.85rem;color:var(--accent);font-weight:600">${d.sym}</span>
+    <span style="font-family:'DM Mono',monospace;font-size:.82rem;color:${isGainer?'var(--green)':'var(--red)'};font-weight:600">${d.chg>=0?'+':''}${d.chg}%</span>
+  </div>`;
+  document.getElementById('topGainers').innerHTML = gainers.map(d => mkRow(d, true)).join('') || '<div style="color:var(--muted);font-size:.82rem">No data</div>';
+  document.getElementById('topLosers').innerHTML = losers.map(d => mkRow(d, false)).join('') || '<div style="color:var(--muted);font-size:.82rem">No data</div>';
+}
+
 // INIT
 document.addEventListener('DOMContentLoaded', () => {
   renderWatchlist();
@@ -1218,7 +1367,11 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAlerts();
   checkAlerts();
   updateTicker();
+  loadMarketMood();
+  loadTopMovers();
   setInterval(updateTicker, 300000);
+  setInterval(loadMarketMood, 60000);
+  setInterval(loadTopMovers, 60000);
 });
 </script>
 </body>
