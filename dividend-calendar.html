@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dividend Calendar — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.stat-label{font-size:.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:1.3rem;font-weight:700;font-family:'DM Mono',monospace}
+.section-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:32px}
+.div-table{width:100%;border-collapse:collapse;margin-bottom:8px}
+.div-table th{color:var(--muted);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase}
+.div-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.85rem}
+.div-table tr:hover td{background:var(--surface2)}
+.div-table tr:last-child td{border:none}
+.sym-cell{font-family:'DM Mono',monospace;color:var(--accent);font-weight:700;cursor:pointer}
+.yield-cell{font-family:'DM Mono',monospace;font-weight:600;color:var(--green)}
+.amount-cell{font-family:'DM Mono',monospace;font-weight:600}
+.growth-pos{color:var(--green);font-size:.78rem}
+.growth-neg{color:var(--red);font-size:.78rem}
+.days-badge{font-size:.7rem;padding:3px 8px;border-radius:4px;font-family:'DM Mono',monospace;font-weight:600}
+.days-soon{background:rgba(255,77,106,.15);color:var(--red)}
+.days-upcoming{background:rgba(242,201,76,.15);color:var(--yellow)}
+.days-later{background:rgba(47,128,237,.12);color:var(--accent)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="unusual-options.html">🎯 Unusual Options</a>
+        <a href="dark-pool.html">🌑 Dark Pool</a>
+        <a href="52-week.html">📊 52-Week Scanner</a>
+        <a href="dividend-calendar.html" style="color:var(--accent)">💰 Dividend Calendar</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="dividend-calendar.html">💰 Dividends</a><a href="about.html">👤 About</a>
+</div>
+<div class="page-header">
+  <h1>💰 Dividend Calendar</h1>
+  <p>Upcoming ex-dividend dates, payout schedules, and dividend growth rates</p>
+</div>
+<main>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Ex-Div This Week</div><div class="stat-value" style="color:var(--yellow)">12</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Yield (S&P 500)</div><div class="stat-value">1.32%</div></div>
+    <div class="stat-card"><div class="stat-label">Highest Yield Today</div><div class="stat-value" style="color:var(--green)">6.4%</div></div>
+    <div class="stat-card"><div class="stat-label">Dividend Aristocrats</div><div class="stat-value">68</div></div>
+  </div>
+  <div class="section-title">Upcoming Ex-Dividend Dates</div>
+  <table class="div-table">
+    <thead><tr><th>Symbol</th><th>Company</th><th>Ex-Div Date</th><th>Pay Date</th><th>Amount</th><th>Yield</th><th>Growth/yr</th><th>Days Away</th></tr></thead>
+    <tbody id="divBody"></tbody>
+  </table>
+</main>
+<footer>© 2025 CapitalSignal · Dividend data for informational purposes only</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+const divs=[
+  {sym:'AAPL',name:'Apple Inc.',exDate:'2025-02-07',payDate:'2025-02-13',amount:.25,yield:.44,growth:3.5},
+  {sym:'MSFT',name:'Microsoft Corp.',exDate:'2025-02-19',payDate:'2025-03-13',amount:.75,yield:.73,growth:10.2},
+  {sym:'JPM',name:'JPMorgan Chase',exDate:'2025-01-05',payDate:'2025-01-31',amount:1.25,yield:2.2,growth:9.5},
+  {sym:'JNJ',name:'Johnson & Johnson',exDate:'2025-02-18',payDate:'2025-03-04',amount:1.24,yield:3.1,growth:5.0},
+  {sym:'PFE',name:'Pfizer Inc.',exDate:'2025-01-23',payDate:'2025-03-06',amount:.42,yield:6.4,growth:0},
+  {sym:'KO',name:'Coca-Cola Co.',exDate:'2025-03-13',payDate:'2025-04-01',amount:.485,yield:3.2,growth:5.1},
+  {sym:'PG',name:'Procter & Gamble',exDate:'2025-01-17',payDate:'2025-02-14',amount:.9407,yield:2.4,growth:5.8},
+  {sym:'VZ',name:'Verizon Communications',exDate:'2025-01-09',payDate:'2025-02-03',amount:.665,yield:6.8,growth:1.9},
+  {sym:'T',name:'AT&T Inc.',exDate:'2025-01-09',payDate:'2025-02-01',amount:.2775,yield:5.2,growth:0},
+  {sym:'MCD',name:"McDonald's Corp.",exDate:'2025-02-28',payDate:'2025-03-17',amount:1.77,yield:2.5,growth:8.4},
+  {sym:'GS',name:'Goldman Sachs',exDate:'2025-02-28',payDate:'2025-03-27',amount:2.75,yield:2.5,growth:9.0},
+  {sym:'ABBV',name:'AbbVie Inc.',exDate:'2025-01-14',payDate:'2025-02-14',amount:1.64,yield:3.8,growth:8.5},
+  {sym:'MRK',name:'Merck & Co.',exDate:'2025-01-14',payDate:'2025-01-08',amount:.77,yield:2.9,growth:5.5},
+  {sym:'V',name:'Visa Inc.',exDate:'2025-02-28',payDate:'2025-03-03',amount:.52,yield:.8,growth:16.0},
+  {sym:'MA',name:'Mastercard',exDate:'2025-01-08',payDate:'2025-02-07',amount:.66,yield:.6,growth:15.0},
+];
+function getDays(dateStr){return Math.ceil((new Date(dateStr)-Date.now())/86400000);}
+document.getElementById('divBody').innerHTML=[...divs].sort((a,b)=>new Date(a.exDate)-new Date(b.exDate)).map(d=>{
+  const days=getDays(d.exDate);
+  const daysCls=days<=7?'days-soon':days<=30?'days-upcoming':'days-later';
+  const daysText=days<=0?'Today':days===1?'Tomorrow':`${days} days`;
+  return`<tr>
+    <td class="sym-cell" onclick="window.location='index.html?q=${d.sym}'">${d.sym}</td>
+    <td style="color:var(--muted);font-size:.82rem">${d.name}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:.82rem">${d.exDate}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:.82rem;color:var(--muted)">${d.payDate}</td>
+    <td class="amount-cell">$${d.amount}</td>
+    <td class="yield-cell">${d.yield}%</td>
+    <td class="${d.growth>0?'growth-pos':'growth-neg'}">${d.growth>0?'+':''}${d.growth}%</td>
+    <td><span class="days-badge ${daysCls}">${daysText}</span></td>
+  </tr>`;
+}).join('');
+</script>
+</body>
+</html>

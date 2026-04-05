@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DRIP Calculator — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:900px;margin:0 auto;text-align:center}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:900px;margin:0 auto;padding:0 24px 64px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.calc-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px}
+.calc-card h2{font-size:.9rem;font-weight:600;margin-bottom:18px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;outline:none}
+.field input:focus{border-color:var(--accent)}
+.calc-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px}
+.result-hero{text-align:center;padding:20px 0 20px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.rh-val{font-size:2.8rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)}
+.rh-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.stats-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px}
+.sbox{background:var(--surface2);border-radius:10px;padding:14px;text-align:center}
+.sl{font-size:.7rem;color:var(--muted);margin-bottom:4px}
+.sv{font-size:.95rem;font-weight:600;font-family:'DM Mono',monospace}
+.drip-table{width:100%;border-collapse:collapse;font-size:.82rem;max-height:280px;overflow-y:auto;display:block}
+.drip-table th{color:var(--muted);font-weight:500;text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);font-size:.72rem;text-transform:uppercase;position:sticky;top:0;background:var(--surface)}
+.drip-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace}
+.quick-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.qb{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace;transition:.2s}
+.qb:hover{border-color:var(--accent);color:var(--accent)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calc</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound</a>
+        <a href="drip.html" style="color:var(--accent)">💵 DRIP Calculator</a>
+        <a href="split-calculator.html">✂️ Split Calculator</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="drip.html">💵 DRIP</a><a href="about.html">👤 About</a>
+</div>
+<div class="page-header">
+  <h1>💵 DRIP Calculator</h1>
+  <p>Dividend Reinvestment Plan simulator — see how reinvesting dividends compounds your wealth over time</p>
+</div>
+<main>
+  <div class="quick-btns">
+    <span style="font-size:.78rem;color:var(--muted);padding:6px 0">Quick load:</span>
+    <button class="qb" onclick="load(10000,1.32,5,10,20)">S&P 500 avg</button>
+    <button class="qb" onclick="load(5000,3.1,5,8,25)">JNJ (Div Aristocrat)</button>
+    <button class="qb" onclick="load(5000,6.4,0,5,20)">PFE (High Yield)</button>
+    <button class="qb" onclick="load(10000,2.5,8,10,30)">JPM (Growth)</button>
+  </div>
+  <div class="two-col">
+    <div class="calc-card">
+      <h2>Inputs</h2>
+      <div class="field"><label>Initial Investment ($)</label><input type="number" id="d-principal" placeholder="10000" oninput="calc()"></div>
+      <div class="field"><label>Annual Dividend Yield (%)</label><input type="number" id="d-yield" placeholder="3.0" step="0.1" oninput="calc()"></div>
+      <div class="field"><label>Annual Dividend Growth Rate (%)</label><input type="number" id="d-growth" placeholder="5" step="0.5" oninput="calc()"></div>
+      <div class="field"><label>Annual Stock Price Appreciation (%)</label><input type="number" id="d-appreciation" placeholder="7" step="0.5" oninput="calc()"></div>
+      <div class="field"><label>Investment Period (Years)</label><input type="number" id="d-years" placeholder="20" step="1" oninput="calc()"></div>
+      <div class="field"><label>Dividend Frequency</label>
+        <select id="d-freq" onchange="calc()">
+          <option value="4">Quarterly (most common)</option>
+          <option value="12">Monthly</option>
+          <option value="1">Annual</option>
+        </select>
+      </div>
+    </div>
+    <div class="calc-card" id="resultCard">
+      <div class="result-hero">
+        <div class="rh-label">Final Portfolio Value</div>
+        <div class="rh-val" id="d-final">—</div>
+        <div style="font-size:.82rem;color:var(--muted);margin-top:6px" id="d-sub">Enter values to calculate</div>
+      </div>
+      <div class="stats-3">
+        <div class="sbox"><div class="sl">Without DRIP</div><div class="sv" id="d-nodiv">—</div></div>
+        <div class="sbox"><div class="sl">DRIP Bonus</div><div class="sv" style="color:var(--green)" id="d-bonus">—</div></div>
+        <div class="sbox"><div class="sl">Total Dividends</div><div class="sv" id="d-totaldiv">—</div></div>
+      </div>
+      <div style="max-height:240px;overflow-y:auto">
+        <table class="drip-table"><thead><tr><th>Year</th><th>Shares</th><th>Price</th><th>Dividends</th><th>Total Value</th></tr></thead>
+        <tbody id="dripTable"></tbody></table>
+      </div>
+    </div>
+  </div>
+</main>
+<footer>© 2025 CapitalSignal · DRIP calculator for educational purposes only</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+function load(p,y,g,a,yr){
+  document.getElementById('d-principal').value=p;
+  document.getElementById('d-yield').value=y;
+  document.getElementById('d-growth').value=g;
+  document.getElementById('d-appreciation').value=a;
+  document.getElementById('d-years').value=yr;
+  calc();
+}
+function fmtM(n){return n>=1e6?'$'+(n/1e6).toFixed(2)+'M':n>=1e3?'$'+(n/1e3).toFixed(1)+'K':'$'+n.toFixed(0);}
+function calc(){
+  const P=parseFloat(document.getElementById('d-principal').value)||0;
+  const divYield=parseFloat(document.getElementById('d-yield').value)/100||0;
+  const divGrowth=parseFloat(document.getElementById('d-growth').value)/100||0;
+  const appreciation=parseFloat(document.getElementById('d-appreciation').value)/100||0;
+  const years=parseInt(document.getElementById('d-years').value)||0;
+  const freq=parseInt(document.getElementById('d-freq').value)||4;
+  if(!P||!years)return;
+  const initPrice=100;
+  let shares=P/initPrice, price=initPrice, totalDivs=0;
+  const rows=[];
+  for(let y=1;y<=years;y++){
+    let yearDivs=0;
+    const annualDivPerShare=price*divYield;
+    for(let q=0;q<freq;q++){
+      price*=(1+appreciation/freq);
+      const divPerShare=annualDivPerShare/freq;
+      const totalDiv=shares*divPerShare;
+      yearDivs+=totalDiv;
+      const newShares=totalDiv/price;
+      shares+=newShares;
+    }
+    totalDivs+=yearDivs;
+    rows.push({year:y,shares:shares.toFixed(2),price:price.toFixed(2),divs:yearDivs,total:shares*price});
+  }
+  const finalVal=shares*price;
+  const noDripVal=P*Math.pow(1+appreciation,years);
+  const bonus=finalVal-noDripVal;
+  document.getElementById('d-final').textContent=fmtM(finalVal);
+  document.getElementById('d-sub').textContent=`Over ${years} years with DRIP reinvestment`;
+  document.getElementById('d-nodiv').textContent=fmtM(noDripVal);
+  document.getElementById('d-bonus').textContent='+'+fmtM(bonus);
+  document.getElementById('d-totaldiv').textContent=fmtM(totalDivs);
+  document.getElementById('dripTable').innerHTML=rows.map(r=>`<tr><td>${r.year}</td><td>${r.shares}</td><td>$${r.price}</td><td>${fmtM(r.divs)}</td><td style="color:var(--green);font-weight:600">${fmtM(r.total)}</td></tr>`).join('');
+}
+load(10000,1.32,5,7,20);
+</script>
+</body>
+</html>

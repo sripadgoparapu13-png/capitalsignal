@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Futures Dashboard — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.page-header-left h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header-left p{color:var(--muted)}
+.market-status{font-size:.78rem;font-family:'DM Mono',monospace;color:var(--muted)}
+.market-open{color:var(--green)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.section-title{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:32px}
+.futures-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:8px}
+.fut-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;transition:.2s}
+.fut-card:hover{border-color:var(--accent)}
+.fut-name{font-size:.82rem;color:var(--muted);margin-bottom:4px}
+.fut-sym{font-family:'DM Mono',monospace;font-size:.75rem;color:var(--accent);margin-bottom:10px}
+.fut-price{font-size:1.5rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.fut-chg{font-size:.85rem;font-family:'DM Mono',monospace}
+.fut-chg.pos{color:var(--green)}
+.fut-chg.neg{color:var(--red)}
+.fut-sub{font-size:.72rem;color:var(--muted);margin-top:6px}
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="futures.html" style="color:var(--accent)">📈 Futures</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="futures.html">📈 Futures</a><a href="commodities.html">🛢️ Commodities</a><a href="about.html">👤 About</a>
+</div>
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>📈 Futures Dashboard</h1>
+    <p>Pre-market and after-hours futures — see where markets are heading before they open</p>
+  </div>
+  <div class="market-status"><span class="spinner"></span>Loading live data... <span id="updateTime"></span></div>
+</div>
+<main>
+  <div class="section-title">Equity Index Futures</div>
+  <div class="futures-grid" id="equityGrid"></div>
+  <div class="section-title">Currency Futures</div>
+  <div class="futures-grid" id="currencyGrid"></div>
+  <div class="section-title">Energy Futures</div>
+  <div class="futures-grid" id="energyGrid"></div>
+  <div class="section-title">Metals Futures</div>
+  <div class="futures-grid" id="metalsGrid"></div>
+  <div class="section-title">Agricultural Futures</div>
+  <div class="futures-grid" id="agriGrid"></div>
+</main>
+<footer>© 2025 CapitalSignal · Futures data via Yahoo Finance · Delayed 15 minutes</footer>
+<script>
+const PROXY='/api/yahoo?url=';
+const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+async function fw(url){const r=await fetch(PROXY+encodeURIComponent(url));return r.json();}
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+const sections={
+  equity:[
+    {sym:'ES=F',name:'S&P 500 Futures',sub:'E-mini S&P 500'},
+    {sym:'NQ=F',name:'Nasdaq 100 Futures',sub:'E-mini NASDAQ'},
+    {sym:'YM=F',name:'Dow Futures',sub:'E-mini Dow Jones'},
+    {sym:'RTY=F',name:'Russell 2000 Futures',sub:'E-mini Russell'},
+    {sym:'VX=F',name:'VIX Futures',sub:'CBOE Volatility Index'},
+  ],
+  currency:[
+    {sym:'6E=F',name:'Euro Futures',sub:'EUR/USD'},
+    {sym:'6J=F',name:'Japanese Yen Futures',sub:'JPY/USD'},
+    {sym:'6B=F',name:'British Pound Futures',sub:'GBP/USD'},
+    {sym:'6C=F',name:'Canadian Dollar Futures',sub:'CAD/USD'},
+    {sym:'DX=F',name:'US Dollar Index',sub:'DXY Futures'},
+  ],
+  energy:[
+    {sym:'CL=F',name:'Crude Oil Futures',sub:'WTI Light Sweet Crude'},
+    {sym:'BZ=F',name:'Brent Crude Futures',sub:'ICE Brent Crude'},
+    {sym:'NG=F',name:'Natural Gas Futures',sub:'Henry Hub'},
+    {sym:'RB=F',name:'Gasoline Futures',sub:'RBOB Gasoline'},
+  ],
+  metals:[
+    {sym:'GC=F',name:'Gold Futures',sub:'COMEX Gold'},
+    {sym:'SI=F',name:'Silver Futures',sub:'COMEX Silver'},
+    {sym:'HG=F',name:'Copper Futures',sub:'COMEX Copper'},
+    {sym:'PL=F',name:'Platinum Futures',sub:'NYMEX Platinum'},
+  ],
+  agri:[
+    {sym:'ZW=F',name:'Wheat Futures',sub:'CBOT Wheat'},
+    {sym:'ZC=F',name:'Corn Futures',sub:'CBOT Corn'},
+    {sym:'ZS=F',name:'Soybean Futures',sub:'CBOT Soybeans'},
+    {sym:'KC=F',name:'Coffee Futures',sub:'ICE Coffee C'},
+    {sym:'CT=F',name:'Cotton Futures',sub:'ICE Cotton'},
+  ]
+};
+async function loadSection(items,gridId){
+  const grid=document.getElementById(gridId);
+  for(const f of items){
+    const card=document.createElement('div');
+    card.className='fut-card';
+    card.innerHTML=`<div class="fut-name">${f.name}</div><div class="fut-sym">${f.sym}</div><div class="fut-price" id="fp-${f.sym.replace('=','_')}">—</div><div class="fut-chg" id="fc-${f.sym.replace('=','_')}">—</div><div class="fut-sub">${f.sub}</div>`;
+    grid.appendChild(card);
+    try{
+      const d=await fw(YAHOO+encodeURIComponent(f.sym)+'?interval=1d&range=5d');
+      const m=d.chart.result[0].meta;
+      const price=m.regularMarketPrice,prev=m.chartPreviousClose;
+      const chg=((price-prev)/prev*100).toFixed(2);
+      const chgAbs=(price-prev).toFixed(2);
+      const isPos=chg>=0;
+      const key=f.sym.replace('=','_');
+      const pe=document.getElementById('fp-'+key);
+      const ce=document.getElementById('fc-'+key);
+      if(pe)pe.textContent='$'+price.toFixed(price>100?2:price>1?3:4);
+      if(ce){ce.textContent=(isPos?'+':'')+chgAbs+' ('+(isPos?'+':'')+chg+'%)';ce.className='fut-chg '+(isPos?'pos':'neg');}
+    }catch(e){}
+  }
+}
+Object.entries(sections).forEach(([key,items])=>loadSection(items,key+'Grid'));
+setInterval(()=>{document.getElementById('updateTime').textContent='Updated '+new Date().toLocaleTimeString();},60000);
+document.getElementById('updateTime').textContent='Updated '+new Date().toLocaleTimeString();
+</script>
+</body>
+</html>

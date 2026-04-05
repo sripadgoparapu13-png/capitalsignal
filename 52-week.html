@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>52-Week High/Low Scanner — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.tab-row{display:flex;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;margin-bottom:28px}
+.tab-btn{padding:8px 24px;border-radius:7px;border:none;background:none;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;transition:.2s}
+.tab-btn.active-high{background:var(--green);color:#fff}
+.tab-btn.active-low{background:var(--red);color:#fff}
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.stock-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;cursor:pointer;transition:.2s}
+.stock-card:hover{transform:translateY(-2px)}
+.stock-card.high{border-left:3px solid var(--green)}
+.stock-card.low{border-left:3px solid var(--red)}
+.sc-sym{font-family:'DM Mono',monospace;font-size:.95rem;font-weight:700;color:var(--accent);margin-bottom:2px}
+.sc-name{font-size:.75rem;color:var(--muted);margin-bottom:10px}
+.sc-price{font-size:1.3rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.sc-badge{font-size:.72rem;padding:3px 9px;border-radius:4px;font-weight:700;display:inline-block;margin-bottom:8px}
+.badge-high{background:rgba(39,174,96,.15);color:var(--green)}
+.badge-low{background:rgba(255,77,106,.15);color:var(--red)}
+.sc-range{font-size:.75rem;color:var(--muted)}
+.range-bar{height:4px;background:var(--surface2);border-radius:2px;margin:6px 0;position:relative}
+.range-fill{position:absolute;height:100%;border-radius:2px}
+.range-dot{position:absolute;width:8px;height:8px;border-radius:50%;top:-2px;transform:translateX(-50%)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="unusual-options.html">🎯 Unusual Options</a>
+        <a href="dark-pool.html">🌑 Dark Pool</a>
+        <a href="52-week.html" style="color:var(--accent)">📊 52-Week Scanner</a>
+        <a href="dividend-calendar.html">💰 Dividend Calendar</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="52-week.html">📊 52-Week</a><a href="about.html">👤 About</a>
+</div>
+<div class="page-header">
+  <h1>📊 52-Week High/Low Scanner</h1>
+  <p>Stocks hitting new highs — breakout signals — and stocks at new lows — potential reversals or traps</p>
+</div>
+<main>
+  <div class="tab-row">
+    <button class="tab-btn active-high" id="highBtn" onclick="setTab('high')">🚀 New 52-Week Highs</button>
+    <button class="tab-btn" id="lowBtn" onclick="setTab('low')">📉 New 52-Week Lows</button>
+  </div>
+  <div class="stock-grid" id="stockGrid"></div>
+</main>
+<footer>© 2025 CapitalSignal · Scanner data for informational purposes only</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+const highs=[
+  {sym:'NVDA',name:'NVIDIA Corp.',price:885.21,low52:392.30,high52:885.21,chg:3.8},
+  {sym:'META',name:'Meta Platforms',price:741.20,low52:414.50,high52:741.20,chg:2.1},
+  {sym:'WMT',name:'Walmart Inc.',price:102.44,low52:59.95,high52:102.44,chg:1.4},
+  {sym:'LLY',name:'Eli Lilly',price:962.18,low52:538.00,high52:962.18,chg:2.8},
+  {sym:'GS',name:'Goldman Sachs',price:648.22,low52:385.00,high52:648.22,chg:1.9},
+  {sym:'JPM',name:'JPMorgan Chase',price:279.44,low52:183.06,high52:279.44,chg:1.2},
+  {sym:'COST',name:'Costco Wholesale',price:1072.18,low52:718.75,high52:1072.18,chg:0.9},
+  {sym:'PLTR',name:'Palantir Tech.',price:82.44,low52:14.88,high52:82.44,chg:4.2},
+  {sym:'VST',name:'Vistra Corp.',price:182.44,low52:48.22,high52:182.44,chg:3.1},
+  {sym:'CEG',name:'Constellation Energy',price:284.18,low52:94.18,high52:284.18,chg:2.4},
+  {sym:'AXON',name:'Axon Enterprise',price:382.44,low52:188.22,high52:382.44,chg:1.8},
+  {sym:'PWR',name:'Quanta Services',price:318.22,low52:168.44,high52:318.22,chg:1.2},
+];
+const lows=[
+  {sym:'BYND',name:'Beyond Meat',price:4.82,low52:4.82,high52:18.44,chg:-8.2},
+  {sym:'MLCO',name:'Melco Resorts',price:5.44,low52:5.44,high52:14.22,chg:-4.1},
+  {sym:'PARA',name:'Paramount Global',price:9.88,low52:9.88,high52:22.44,chg:-5.8},
+  {sym:'WBA',name:"Walgreens Boots",price:8.22,low52:8.22,high52:28.44,chg:-3.2},
+  {sym:'INTC',name:'Intel Corp.',price:18.44,low52:18.44,high52:42.22,chg:-2.8},
+  {sym:'LUMN',name:'Lumen Technologies',price:1.12,low52:1.12,high52:4.88,chg:-6.4},
+  {sym:'MPW',name:'Medical Properties Trust',price:4.44,low52:4.44,high52:12.88,chg:-4.2},
+  {sym:'VFC',name:'VF Corporation',price:12.88,low52:12.88,high52:28.44,chg:-3.8},
+  {sym:'FRO',name:'Frontline Plc',price:16.22,low52:16.22,high52:32.44,chg:-2.1},
+  {sym:'CMCSA',name:'Comcast Corp.',price:36.44,low52:36.44,high52:48.22,chg:-1.8},
+];
+let currentTab='high';
+function setTab(t){
+  currentTab=t;
+  document.getElementById('highBtn').className='tab-btn '+(t==='high'?'active-high':'');
+  document.getElementById('lowBtn').className='tab-btn '+(t==='low'?'active-low':'');
+  render();
+}
+function render(){
+  const data=currentTab==='high'?highs:lows;
+  const isHigh=currentTab==='high';
+  document.getElementById('stockGrid').innerHTML=data.map(s=>{
+    const rangePct=((s.price-s.low52)/(s.high52-s.low52)*100).toFixed(0);
+    return`<div class="stock-card ${isHigh?'high':'low'}" onclick="window.location='index.html?q=${s.sym}'">
+      <div class="sc-sym">${s.sym}</div>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-price">$${s.price.toFixed(2)}</div>
+      <span class="sc-badge ${isHigh?'badge-high':'badge-low'}">${isHigh?'🚀 52W High':'📉 52W Low'}</span>
+      <div class="sc-range">52W: $${s.low52} – $${s.high52}</div>
+      <div class="range-bar">
+        <div class="range-fill" style="left:0;width:${rangePct}%;background:${isHigh?'var(--green)':'var(--red)'}"></div>
+        <div class="range-dot" style="left:${rangePct}%;background:${isHigh?'var(--green)':'var(--red)'}"></div>
+      </div>
+      <div style="font-size:.75rem;color:${s.chg>=0?'var(--green)':'var(--red)'};font-family:'DM Mono',monospace">${s.chg>=0?'+':''}${s.chg}% today</div>
+    </div>`;
+  }).join('');
+}
+render();
+</script>
+</body>
+</html>

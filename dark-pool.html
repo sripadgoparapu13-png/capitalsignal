@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Dark Pool Tracker — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.info-banner{background:rgba(255,77,106,.06);border:1px solid rgba(255,77,106,.2);border-radius:12px;padding:14px 18px;margin-bottom:28px;font-size:.83rem;color:var(--muted);line-height:1.6}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.stat-label{font-size:.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace}
+.dp-table{width:100%;border-collapse:collapse}
+.dp-table th{color:var(--muted);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase}
+.dp-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.85rem}
+.dp-table tr:hover td{background:var(--surface2)}
+.sym-cell{font-family:'DM Mono',monospace;color:var(--accent);font-weight:700}
+.dp-pct{font-family:'DM Mono',monospace;font-size:.85rem}
+.dp-bar-bg{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;width:80px}
+.dp-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#9b59b6,#2F80ED)}
+.signal-bull{color:var(--green);font-size:.78rem;font-weight:600}
+.signal-bear{color:var(--red);font-size:.78rem;font-weight:600}
+.signal-neutral{color:var(--muted);font-size:.78rem}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="unusual-options.html">🎯 Unusual Options</a>
+        <a href="dark-pool.html" style="color:var(--accent)">🌑 Dark Pool</a>
+        <a href="52-week.html">📊 52-Week Scanner</a>
+        <a href="dividend-calendar.html">💰 Dividend Calendar</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare</a>
+        <a href="dcf.html">🧮 DCF</a>
+        <a href="options.html">💰 Options Calc</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound</a>
+        <a href="drip.html">💵 DRIP</a>
+        <a href="split-calculator.html">✂️ Split Calc</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="dark-pool.html">🌑 Dark Pool</a><a href="unusual-options.html">🎯 Options Flow</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🌑 Dark Pool Tracker</h1>
+  <p>Off-exchange institutional block trades — where the big money moves quietly</p>
+</div>
+
+<main>
+  <div class="info-banner">
+    <strong>What are dark pools?</strong> Dark pools are private exchanges where institutions trade large blocks of stock away from public markets — to avoid moving the price. About <strong>35–40% of all US equity volume</strong> trades in dark pools. When dark pool volume spikes in a stock, it often signals that institutions are quietly building or exiting positions. High dark pool buy % = bullish signal.
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Dark Pool Volume Today</div><div class="stat-value" style="color:var(--accent)">$18.4B</div></div>
+    <div class="stat-card"><div class="stat-label">% of Total Market</div><div class="stat-value">36.2%</div></div>
+    <div class="stat-card"><div class="stat-label">Bullish Prints</div><div class="stat-value" style="color:var(--green)">68%</div></div>
+    <div class="stat-card"><div class="stat-label">Top Dark Pool Stock</div><div class="stat-value" style="color:var(--accent)">NVDA</div></div>
+  </div>
+  <table class="dp-table">
+    <thead><tr><th>Symbol</th><th>Company</th><th>Dark Pool Vol</th><th>% of Total Vol</th><th>Dark Pool %</th><th>Avg Price</th><th>Signal</th></tr></thead>
+    <tbody id="dpBody"></tbody>
+  </table>
+</main>
+<footer>© 2025 CapitalSignal · Dark pool data is estimated · For informational purposes only</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+const dpData=[
+  {sym:'NVDA',name:'NVIDIA Corp.',dpVol:'42.1M',totalPct:38.2,dpBuyPct:74,avgPrice:867.42,signal:'bull'},
+  {sym:'AAPL',name:'Apple Inc.',dpVol:'28.4M',totalPct:41.8,dpBuyPct:68,avgPrice:192.18,signal:'bull'},
+  {sym:'MSFT',name:'Microsoft Corp.',dpVol:'18.2M',totalPct:44.1,dpBuyPct:71,avgPrice:412.34,signal:'bull'},
+  {sym:'TSLA',name:'Tesla Inc.',dpVol:'52.8M',totalPct:36.4,dpBuyPct:42,avgPrice:248.91,signal:'bear'},
+  {sym:'META',name:'Meta Platforms',dpVol:'12.4M',totalPct:39.8,dpBuyPct:65,avgPrice:548.22,signal:'bull'},
+  {sym:'AMZN',name:'Amazon.com',dpVol:'21.6M',totalPct:42.2,dpBuyPct:58,avgPrice:204.11,signal:'neutral'},
+  {sym:'GOOGL',name:'Alphabet Inc.',dpVol:'14.8M',totalPct:37.6,dpBuyPct:62,avgPrice:173.84,signal:'bull'},
+  {sym:'AMD',name:'Advanced Micro Devices',dpVol:'38.4M',totalPct:35.8,dpBuyPct:71,avgPrice:148.22,signal:'bull'},
+  {sym:'JPM',name:'JPMorgan Chase',dpVol:'8.2M',totalPct:43.4,dpBuyPct:55,avgPrice:213.44,signal:'neutral'},
+  {sym:'NFLX',name:'Netflix Inc.',dpVol:'4.1M',totalPct:38.8,dpBuyPct:48,avgPrice:712.88,signal:'neutral'},
+  {sym:'PLTR',name:'Palantir Tech.',dpVol:'44.2M',totalPct:32.4,dpBuyPct:78,avgPrice:74.12,signal:'bull'},
+  {sym:'COIN',name:'Coinbase Global',dpVol:'18.8M',totalPct:29.8,dpBuyPct:66,avgPrice:248.44,signal:'bull'},
+  {sym:'BA',name:'Boeing Co.',dpVol:'12.2M',totalPct:44.8,dpBuyPct:38,avgPrice:168.22,signal:'bear'},
+  {sym:'PFE',name:'Pfizer Inc.',dpVol:'22.4M',totalPct:46.2,dpBuyPct:34,avgPrice:26.88,signal:'bear'},
+];
+const signals={bull:'🟢 Bullish',bear:'🔴 Bearish',neutral:'⚪ Neutral'};
+const sigCls={bull:'signal-bull',bear:'signal-bear',neutral:'signal-neutral'};
+document.getElementById('dpBody').innerHTML=dpData.map(d=>`<tr>
+  <td class="sym-cell">${d.sym}</td>
+  <td style="color:var(--muted);font-size:.82rem">${d.name}</td>
+  <td style="font-family:'DM Mono',monospace">${d.dpVol}</td>
+  <td><div style="display:flex;align-items:center;gap:8px"><div class="dp-bar-bg"><div class="dp-bar-fill" style="width:${d.totalPct}%"></div></div><span class="dp-pct">${d.totalPct}%</span></div></td>
+  <td><span class="dp-pct" style="color:${d.dpBuyPct>=60?'var(--green)':d.dpBuyPct<=40?'var(--red)':'var(--muted)'}">${d.dpBuyPct}% Buy</span></td>
+  <td style="font-family:'DM Mono',monospace">$${d.avgPrice}</td>
+  <td class="${sigCls[d.signal]}">${signals[d.signal]}</td>
+</tr>`).join('');
+</script>
+</body>
+</html>

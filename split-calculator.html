@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Stock Split Calculator — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:800px;margin:0 auto;text-align:center}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:800px;margin:0 auto;padding:0 24px 64px}
+.calc-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:24px}
+.calc-card h2{font-size:.9rem;font-weight:600;margin-bottom:20px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.field input,.field select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.95rem;outline:none;width:100%}
+.split-ratio{display:flex;align-items:center;gap:12px}
+.split-ratio input{width:80px}
+.split-ratio span{color:var(--muted);font-size:1.2rem}
+.calc-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:12px}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.res-box{background:var(--surface2);border-radius:10px;padding:18px}
+.rl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.rv{font-size:1.3rem;font-weight:700;font-family:'DM Mono',monospace}
+.arrow-box{display:flex;align-items:center;justify-content:center;gap:24px;background:linear-gradient(135deg,rgba(47,128,237,.08),rgba(47,128,237,.02));border:1px solid rgba(47,128,237,.2);border-radius:12px;padding:24px;margin-top:20px;flex-wrap:wrap;gap:16px}
+.ab-item{text-align:center}
+.ab-label{font-size:.72rem;color:var(--muted);margin-bottom:6px}
+.ab-val{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace}
+.ab-arrow{font-size:1.8rem;color:var(--accent)}
+.history-section{margin-top:32px}
+.h-title{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.split-item{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.85rem}
+.split-sym{font-family:'DM Mono',monospace;color:var(--accent);font-weight:700}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="dcf.html">🧮 DCF</a>
+        <a href="options.html">💰 Options Calc</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound</a>
+        <a href="drip.html">💵 DRIP</a>
+        <a href="split-calculator.html" style="color:var(--accent)">✂️ Split Calculator</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="split-calculator.html">✂️ Split Calc</a><a href="about.html">👤 About</a>
+</div>
+<div class="page-header">
+  <h1>✂️ Stock Split Calculator</h1>
+  <p>See how stock splits affect your share count, cost basis, and portfolio value</p>
+</div>
+<main>
+  <div class="calc-card">
+    <h2>Your Holdings</h2>
+    <div class="field"><label>Shares Owned</label><input type="number" id="s-shares" placeholder="100" oninput="calc()"></div>
+    <div class="field"><label>Cost Basis Per Share ($)</label><input type="number" id="s-cost" placeholder="450.00" step="0.01" oninput="calc()"></div>
+    <div class="field"><label>Current Price ($)</label><input type="number" id="s-price" placeholder="900.00" step="0.01" oninput="calc()"></div>
+    <div class="field"><label>Split Ratio</label>
+      <div class="split-ratio">
+        <input type="number" id="s-for" placeholder="2" oninput="calc()">
+        <span>for</span>
+        <input type="number" id="s-per" placeholder="1" oninput="calc()">
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:4px">e.g. 10 for 1 = ten new shares for every old share (like NVDA 2024)</div>
+    </div>
+    <div class="field"><label>Quick Ratios</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+        <button onclick="setRatio(2,1)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem">2:1</button>
+        <button onclick="setRatio(3,1)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem">3:1</button>
+        <button onclick="setRatio(4,1)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem">4:1</button>
+        <button onclick="setRatio(10,1)" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem">10:1</button>
+        <button onclick="setRatio(1,10)" style="background:var(--surface2);border:1px solid var(--border);color:var(--red);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:.78rem">1:10 (Reverse)</button>
+      </div>
+    </div>
+    <div class="arrow-box" id="arrowBox"></div>
+    <div class="result-grid" id="resultGrid"></div>
+  </div>
+  <div class="history-section">
+    <div class="h-title">Notable Recent Stock Splits</div>
+    <div class="split-item"><span><span class="split-sym">NVDA</span> — NVIDIA Corp.</span><span style="font-family:'DM Mono',monospace;color:var(--accent)">10:1</span><span style="color:var(--muted);font-size:.8rem">June 2024</span></div>
+    <div class="split-item"><span><span class="split-sym">TSLA</span> — Tesla Inc.</span><span style="font-family:'DM Mono',monospace;color:var(--accent)">3:1</span><span style="color:var(--muted);font-size:.8rem">Aug 2022</span></div>
+    <div class="split-item"><span><span class="split-sym">AMZN</span> — Amazon.com</span><span style="font-family:'DM Mono',monospace;color:var(--accent)">20:1</span><span style="color:var(--muted);font-size:.8rem">June 2022</span></div>
+    <div class="split-item"><span><span class="split-sym">GOOGL</span> — Alphabet</span><span style="font-family:'DM Mono',monospace;color:var(--accent)">20:1</span><span style="color:var(--muted);font-size:.8rem">July 2022</span></div>
+    <div class="split-item"><span><span class="split-sym">AAPL</span> — Apple Inc.</span><span style="font-family:'DM Mono',monospace;color:var(--accent)">4:1</span><span style="color:var(--muted);font-size:.8rem">Aug 2020</span></div>
+    <div class="split-item"><span><span class="split-sym">TSLA</span> — Tesla Inc.</span><span style="font-family:'DM Mono',monospace;color:var(--accent)">5:1</span><span style="color:var(--muted);font-size:.8rem">Aug 2020</span></div>
+  </div>
+</main>
+<footer>© 2025 CapitalSignal · Stock splits do not change the total value of your investment</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+function setRatio(f,p){document.getElementById('s-for').value=f;document.getElementById('s-per').value=p;calc();}
+function calc(){
+  const shares=parseFloat(document.getElementById('s-shares').value)||0;
+  const cost=parseFloat(document.getElementById('s-cost').value)||0;
+  const price=parseFloat(document.getElementById('s-price').value)||0;
+  const splitFor=parseFloat(document.getElementById('s-for').value)||2;
+  const splitPer=parseFloat(document.getElementById('s-per').value)||1;
+  if(!shares||!cost||!price)return;
+  const ratio=splitFor/splitPer;
+  const newShares=shares*ratio;
+  const newCost=cost/ratio;
+  const newPrice=price/ratio;
+  const totalVal=shares*price;
+  document.getElementById('arrowBox').innerHTML=`
+    <div class="ab-item"><div class="ab-label">Before Split</div><div class="ab-val">${shares} shares @ $${price.toFixed(2)}</div></div>
+    <div class="ab-arrow">→</div>
+    <div class="ab-item"><div class="ab-label">After ${splitFor}:${splitPer} Split</div><div class="ab-val">${newShares.toFixed(0)} shares @ $${newPrice.toFixed(2)}</div></div>`;
+  document.getElementById('resultGrid').innerHTML=`
+    <div class="res-box"><div class="rl">New Share Count</div><div class="rv" style="color:var(--green)">${newShares.toLocaleString()}</div></div>
+    <div class="res-box"><div class="rl">New Price Per Share</div><div class="rv">$${newPrice.toFixed(2)}</div></div>
+    <div class="res-box"><div class="rl">New Cost Basis</div><div class="rv">$${newCost.toFixed(2)}</div></div>
+    <div class="res-box"><div class="rl">Total Value (unchanged)</div><div class="rv">$${totalVal.toLocaleString('en-US',{maximumFractionDigits:0})}</div></div>`;
+}
+setRatio(10,1);
+document.getElementById('s-shares').value=100;
+document.getElementById('s-cost').value=90;
+document.getElementById('s-price').value=850;
+calc();
+</script>
+</body>
+</html>

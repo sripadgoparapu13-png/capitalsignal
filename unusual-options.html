@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Unusual Options Activity — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1100px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 64px}
+.info-banner{background:rgba(47,128,237,.06);border:1px solid rgba(47,128,237,.2);border-radius:12px;padding:14px 18px;margin-bottom:28px;font-size:.83rem;color:var(--muted);line-height:1.6}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.stat-label{font-size:.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.filter-btn.calls{border-color:rgba(39,174,96,.3);color:var(--green)}
+.filter-btn.calls.active{background:rgba(39,174,96,.1)}
+.filter-btn.puts{border-color:rgba(255,77,106,.3);color:var(--red)}
+.filter-btn.puts.active{background:rgba(255,77,106,.1)}
+.options-table{width:100%;border-collapse:collapse}
+.options-table th{color:var(--muted);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);font-size:.75rem;text-transform:uppercase}
+.options-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:.85rem}
+.options-table tr:hover td{background:var(--surface2)}
+.options-table tr:last-child td{border:none}
+.sym-cell{font-family:'DM Mono',monospace;color:var(--accent);font-weight:700;font-size:.95rem}
+.call-badge{background:rgba(39,174,96,.15);color:var(--green);font-size:.72rem;padding:3px 9px;border-radius:4px;font-weight:700}
+.put-badge{background:rgba(255,77,106,.15);color:var(--red);font-size:.72rem;padding:3px 9px;border-radius:4px;font-weight:700}
+.premium-cell{font-family:'DM Mono',monospace;font-weight:600;color:var(--yellow)}
+.oi-bar-wrap{display:flex;align-items:center;gap:8px}
+.oi-bar-bg{width:60px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.oi-bar-fill{height:100%;border-radius:3px;background:var(--accent)}
+.sentiment-bull{color:var(--green);font-size:.78rem;font-weight:600}
+.sentiment-bear{color:var(--red);font-size:.78rem;font-weight:600}
+.unusual-badge{font-size:.65rem;padding:2px 7px;border-radius:4px;font-weight:700}
+.unusual-sweep{background:rgba(242,201,76,.2);color:var(--yellow)}
+.unusual-block{background:rgba(47,128,237,.2);color:var(--accent)}
+.unusual-golden{background:rgba(255,165,0,.2);color:orange}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+@media(max-width:700px){.options-table th:nth-child(n+5),.options-table td:nth-child(n+5){display:none}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="futures.html">📈 Futures</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+        <a href="drip.html">💵 DRIP Calculator</a>
+        <a href="split-calculator.html">✂️ Split Calculator</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="unusual-options.html" style="color:var(--accent)">🎯 Unusual Options</a>
+        <a href="dark-pool.html">🌑 Dark Pool</a>
+        <a href="52-week.html">📊 52-Week Scanner</a>
+        <a href="dividend-calendar.html">💰 Dividend Calendar</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="unusual-options.html">🎯 Unusual Options</a>
+  <a href="dark-pool.html">🌑 Dark Pool</a><a href="52-week.html">📊 52-Week</a>
+  <a href="dividend-calendar.html">💰 Dividends</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🎯 Unusual Options Activity</h1>
+  <p>Large options trades that signal where smart money is positioning — sweeps, blocks, and golden tickets</p>
+</div>
+
+<main>
+  <div class="info-banner">
+    <strong>What is unusual options activity?</strong> When institutions or "smart money" makes large, out-of-the-money options bets — especially <strong>sweeps</strong> (urgent buys across multiple exchanges) — it often signals that someone knows something. These trades stand out because they're larger than normal relative to open interest. They're not guaranteed to work, but they're watched closely by professional traders.
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Total Premium Today</div><div class="stat-value" style="color:var(--yellow)">$4.2B</div></div>
+    <div class="stat-card"><div class="stat-label">Bullish / Bearish Split</div><div class="stat-value"><span style="color:var(--green)">62%</span> / <span style="color:var(--red)">38%</span></div></div>
+    <div class="stat-card"><div class="stat-label">Unusual Sweeps</div><div class="stat-value" style="color:var(--accent)">47</div></div>
+    <div class="stat-card"><div class="stat-label">Put/Call Ratio</div><div class="stat-value" style="color:var(--yellow)">0.82</div></div>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn calls" onclick="setFilter('call',this)">🟢 Calls Only</button>
+    <button class="filter-btn puts" onclick="setFilter('put',this)">🔴 Puts Only</button>
+    <button class="filter-btn" onclick="setFilter('sweep',this)">⚡ Sweeps Only</button>
+    <button class="filter-btn" onclick="setFilter('block',this)">🧱 Blocks Only</button>
+  </div>
+
+  <table class="options-table">
+    <thead><tr><th>Symbol</th><th>Type</th><th>Strike</th><th>Expiry</th><th>Premium</th><th>Volume/OI</th><th>IV</th><th>Sentiment</th><th>Trade Type</th></tr></thead>
+    <tbody id="optionsBody"></tbody>
+  </table>
+</main>
+
+<footer>© 2025 CapitalSignal · Options flow data for informational purposes only · Not financial advice</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const flowData=[
+  {sym:'NVDA',type:'call',strike:1000,expiry:'2025-03-21',premium:8400000,vol:12400,oi:3200,iv:68,sentiment:'bull',tradeType:'sweep'},
+  {sym:'TSLA',type:'put',strike:180,expiry:'2025-02-14',premium:6200000,vol:8900,oi:2100,iv:82,sentiment:'bear',tradeType:'sweep'},
+  {sym:'AAPL',type:'call',strike:220,expiry:'2025-04-17',premium:5100000,vol:7200,oi:18400,iv:28,sentiment:'bull',tradeType:'block'},
+  {sym:'META',type:'call',strike:650,expiry:'2025-03-07',premium:4800000,vol:5600,oi:890,iv:42,sentiment:'bull',tradeType:'sweep'},
+  {sym:'SPY',type:'put',strike:470,expiry:'2025-02-21',premium:12000000,vol:45000,oi:124000,iv:18,sentiment:'bear',tradeType:'block'},
+  {sym:'AMD',type:'call',strike:250,expiry:'2025-05-16',premium:3200000,vol:9800,oi:4200,iv:58,sentiment:'bull',tradeType:'sweep'},
+  {sym:'AMZN',type:'call',strike:230,expiry:'2025-03-21',premium:4400000,vol:6100,oi:2800,iv:35,sentiment:'bull',tradeType:'golden'},
+  {sym:'MSFT',type:'call',strike:480,expiry:'2025-04-17',premium:3800000,vol:4200,oi:6700,iv:30,sentiment:'bull',tradeType:'block'},
+  {sym:'QQQ',type:'put',strike:440,expiry:'2025-02-28',premium:9200000,vol:28000,oi:86000,iv:22,sentiment:'bear',tradeType:'sweep'},
+  {sym:'GOOGL',type:'call',strike:200,expiry:'2025-06-20',premium:2900000,vol:3400,oi:1200,iv:38,sentiment:'bull',tradeType:'sweep'},
+  {sym:'COIN',type:'call',strike:350,expiry:'2025-03-28',premium:2400000,vol:5800,oi:960,iv:95,sentiment:'bull',tradeType:'sweep'},
+  {sym:'PLTR',type:'call',strike:90,expiry:'2025-04-17',premium:1800000,vol:22000,oi:8400,iv:72,sentiment:'bull',tradeType:'golden'},
+  {sym:'NFLX',type:'put',strike:700,expiry:'2025-02-21',premium:2100000,vol:1800,oi:420,iv:45,sentiment:'bear',tradeType:'block'},
+  {sym:'GS',type:'call',strike:580,expiry:'2025-03-21',premium:1600000,vol:2200,oi:780,iv:28,sentiment:'bull',tradeType:'sweep'},
+  {sym:'XOM',type:'call',strike:120,expiry:'2025-04-17',premium:1400000,vol:8900,oi:12000,iv:24,sentiment:'bull',tradeType:'block'},
+  {sym:'UBER',type:'call',strike:85,expiry:'2025-05-16',premium:1200000,vol:6400,oi:3200,iv:42,sentiment:'bull',tradeType:'sweep'},
+  {sym:'BA',type:'put',strike:160,expiry:'2025-03-07',premium:1900000,vol:4200,oi:1800,iv:55,sentiment:'bear',tradeType:'sweep'},
+  {sym:'JPM',type:'call',strike:260,expiry:'2025-04-17',premium:2200000,vol:3100,oi:5600,iv:22,sentiment:'bull',tradeType:'block'},
+];
+
+const tradeLabels={sweep:'⚡ Sweep',block:'🧱 Block',golden:'🏆 Golden'};
+const tradeCls={sweep:'unusual-sweep',block:'unusual-block',golden:'unusual-golden'};
+let currentFilter='all';
+
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function fmtPrem(n){return n>=1e6?'$'+(n/1e6).toFixed(1)+'M':'$'+(n/1e3).toFixed(0)+'K';}
+
+function render(){
+  let data=[...flowData];
+  if(currentFilter==='call') data=data.filter(d=>d.type==='call');
+  else if(currentFilter==='put') data=data.filter(d=>d.type==='put');
+  else if(currentFilter==='sweep') data=data.filter(d=>d.tradeType==='sweep');
+  else if(currentFilter==='block') data=data.filter(d=>d.tradeType==='block');
+  data.sort((a,b)=>b.premium-a.premium);
+
+  document.getElementById('optionsBody').innerHTML=data.map(d=>{
+    const ratio=(d.vol/d.oi).toFixed(1);
+    const barW=Math.min(100,d.vol/d.oi*30).toFixed(0);
+    return`<tr>
+      <td class="sym-cell">${d.sym}</td>
+      <td>${d.type==='call'?'<span class="call-badge">CALL</span>':'<span class="put-badge">PUT</span>'}</td>
+      <td style="font-family:'DM Mono',monospace">$${d.strike}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.8rem">${d.expiry}</td>
+      <td class="premium-cell">${fmtPrem(d.premium)}</td>
+      <td><div class="oi-bar-wrap"><div class="oi-bar-bg"><div class="oi-bar-fill" style="width:${barW}%"></div></div><span style="font-size:.78rem;font-family:'DM Mono',monospace">${ratio}x</span></div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:.82rem">${d.iv}%</td>
+      <td class="${d.sentiment==='bull'?'sentiment-bull':'sentiment-bear'}">${d.sentiment==='bull'?'🟢 Bullish':'🔴 Bearish'}</td>
+      <td><span class="unusual-badge ${tradeCls[d.tradeType]}">${tradeLabels[d.tradeType]}</span></td>
+    </tr>`;
+  }).join('');
+}
+render();
+</script>
+</body>
+</html>
