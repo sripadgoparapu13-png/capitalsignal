@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Correlation Matrix — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.preset-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-size:.8rem;cursor:pointer;transition:.2s}
+.preset-btn.active{border-color:var(--accent);color:var(--accent)}
+.matrix-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px;overflow-x:auto}
+.matrix-table{border-collapse:collapse;font-size:.75rem;font-family:'DM Mono',monospace}
+.matrix-table th{padding:8px 12px;color:var(--muted);font-weight:600;text-align:center}
+.matrix-table td{padding:8px 12px;text-align:center;border-radius:4px;font-weight:600;cursor:default;min-width:60px}
+.matrix-table .row-label{color:var(--muted);font-weight:600;text-align:right;padding-right:16px}
+.legend{display:flex;align-items:center;gap:16px;margin-top:16px;flex-wrap:wrap}
+.legend-bar{height:12px;width:200px;border-radius:6px;background:linear-gradient(90deg,#ff4d6a,#333,#27ae60)}
+.legend-labels{display:flex;justify-content:space-between;width:200px;font-size:.72rem;color:var(--muted)}
+.insights-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.insights-grid{grid-template-columns:1fr}}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.ic-title{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ic-pair{font-family:'DM Mono',monospace;font-size:.88rem;font-weight:600;color:var(--accent);margin-bottom:4px}
+.ic-val{font-size:.82rem;color:var(--muted)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="correlation.html" style="color:var(--accent)">🔗 Correlation</a>
+    <a href="backtester.html">📊 Backtester</a>
+    <a href="dcf.html">🧮 DCF</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="correlation.html">🔗 Correlation</a><a href="about.html">👤 About</a>
+</div>
+<div class="page-header">
+  <h1>🔗 Correlation Matrix</h1>
+  <p>See how stocks move together — diversify smarter by avoiding highly correlated positions</p>
+</div>
+<main>
+  <div class="preset-row">
+    <button class="preset-btn active" onclick="loadPreset('bigtech',this)">Big Tech</button>
+    <button class="preset-btn" onclick="loadPreset('faang',this)">FAANG+</button>
+    <button class="preset-btn" onclick="loadPreset('finance',this)">Financials</button>
+    <button class="preset-btn" onclick="loadPreset('diversified',this)">Diversified Portfolio</button>
+    <button class="preset-btn" onclick="loadPreset('sectors',this)">Sector ETFs</button>
+  </div>
+  <div class="matrix-wrap">
+    <table class="matrix-table" id="matrixTable"></table>
+    <div class="legend">
+      <div>
+        <div class="legend-bar"></div>
+        <div class="legend-labels"><span>-1.0 (Inverse)</span><span>0 (None)</span><span>+1.0 (Perfect)</span></div>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted)">Based on 1-year daily returns · Higher = moves together</div>
+    </div>
+  </div>
+  <div class="insights-grid" id="insightsGrid"></div>
+</main>
+<footer>© 2025 CapitalSignal · Correlation based on historical data · Past correlations may not persist</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const presets={
+  bigtech:{syms:['AAPL','MSFT','NVDA','GOOGL','META','AMZN'],data:[[1,.82,.74,.78,.71,.76],[.82,1,.68,.81,.65,.72],[.74,.68,1,.62,.72,.64],[.78,.81,.62,1,.69,.78],[.71,.65,.72,.69,1,.68],[.76,.72,.64,.78,.68,1]]},
+  faang:{syms:['META','AAPL','AMZN','NFLX','GOOGL','MSFT'],data:[[1,.71,.68,.52,.69,.65],[.71,1,.76,.48,.78,.82],[.68,.76,1,.44,.78,.72],[.52,.48,.44,1,.46,.44],[.69,.78,.78,.46,1,.81],[.65,.82,.72,.44,.81,1]]},
+  finance:{syms:['JPM','BAC','GS','V','MA','WFC'],data:[[1,.88,.82,.64,.62,.86],[.88,1,.78,.60,.58,.90],[.82,.78,1,.58,.56,.76],[.64,.60,.58,1,.92,.62],[.62,.58,.56,.92,1,.60],[.86,.90,.76,.62,.60,1]]},
+  diversified:{syms:['SPY','TLT','GLD','BTC-USD','XLE','AAPL'],data:[[1,-.32,.18,.42,.68,.82],[-.32,1,.24,-.18,-.28,-.30],[.18,.24,1,.38,.22,.16],[.42,-.18,.38,1,.32,.44],[.68,-.28,.22,.32,1,.62],[.82,-.30,.16,.44,.62,1]]},
+  sectors:{syms:['XLK','XLF','XLV','XLE','XLI','XLP'],data:[[1,.62,.48,.42,.66,.38],[.62,1,.54,.58,.72,.52],[.48,.54,1,.44,.58,.68],[.42,.58,.44,1,.52,.46],[.66,.72,.58,.52,1,.62],[.38,.52,.68,.46,.62,1]]},
+};
+
+function getColor(v){
+  if(v===1)return'rgba(255,255,255,0.1)';
+  if(v>=.8)return'rgba(255,77,106,0.7)';
+  if(v>=.6)return'rgba(255,77,106,0.35)';
+  if(v>=.4)return'rgba(255,165,0,0.3)';
+  if(v>=.2)return'rgba(242,201,76,0.2)';
+  if(v>=0)return'rgba(255,255,255,0.05)';
+  if(v>=-.2)return'rgba(47,128,237,0.2)';
+  return'rgba(39,174,96,0.4)';
+}
+
+function getTextColor(v){return v>=.6?'var(--red)':v>=.4?'var(--yellow)':v<0?'var(--green)':'var(--text)';}
+
+function loadPreset(key,btn){
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const {syms,data}=presets[key];
+  const header='<tr><th></th>'+syms.map(s=>`<th>${s}</th>`).join('')+'</tr>';
+  const rows=data.map((row,i)=>'<tr><td class="row-label">'+syms[i]+'</td>'+row.map((v,j)=>{
+    const display=i===j?'—':v.toFixed(2);
+    return`<td style="background:${getColor(v)};color:${getTextColor(v)}">${display}</td>`;
+  }).join('')+'</tr>').join('');
+  document.getElementById('matrixTable').innerHTML=header+rows;
+
+  // Find highest and lowest correlations
+  let maxV=-2,minV=2,maxPair='',minPair='';
+  for(let i=0;i<syms.length;i++){for(let j=i+1;j<syms.length;j++){
+    if(data[i][j]>maxV){maxV=data[i][j];maxPair=syms[i]+' / '+syms[j];}
+    if(data[i][j]<minV){minV=data[i][j];minPair=syms[i]+' / '+syms[j];}
+  }}
+  document.getElementById('insightsGrid').innerHTML=`
+    <div class="insight-card"><div class="ic-title">🔴 Highest Correlation (Avoid Together)</div><div class="ic-pair">${maxPair}</div><div class="ic-val">Correlation: ${maxV.toFixed(2)} — These stocks move very similarly. Holding both offers little diversification.</div></div>
+    <div class="insight-card"><div class="ic-title">🟢 Lowest Correlation (Best Pair)</div><div class="ic-pair">${minPair}</div><div class="ic-val">Correlation: ${minV.toFixed(2)} — These assets provide the best diversification benefit when held together.</div></div>
+    <div class="insight-card"><div class="ic-title">📊 Diversification Score</div><div class="ic-pair" style="color:var(--green)">${(data.flat().filter((_,i)=>i%data.length!==Math.floor(i/data.length)).reduce((a,b)=>a+b,0)/(data.length*(data.length-1))).toFixed(2)} avg</div><div class="ic-val">Average pairwise correlation. Lower = better diversified portfolio.</div></div>
+    <div class="insight-card"><div class="ic-title">💡 Key Insight</div><div class="ic-pair" style="color:var(--accent)">Portfolio Tip</div><div class="ic-val">For maximum diversification, combine assets with correlation below 0.4. Add bonds (TLT), gold (GLD), or international stocks to reduce overall portfolio risk.</div></div>`;
+}
+loadPreset('bigtech');
+</script>
+</body>
+</html>

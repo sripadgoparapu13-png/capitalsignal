@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Strategy Backtester — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1000px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1000px;margin:0 auto;padding:0 24px 64px}
+.two-col{display:grid;grid-template-columns:1fr 1.6fr;gap:24px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+.config-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px}
+.config-card h2{font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:20px;font-weight:600}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:.9rem;outline:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.run-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:13px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px;transition:.2s}
+.run-btn:hover{background:#1a6bc7}
+.results-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;display:none}
+.results-card.show{display:block}
+.results-header{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.rh-box{background:var(--surface2);border-radius:10px;padding:16px;text-align:center}
+.rh-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.rh-val{font-size:1.2rem;font-weight:700;font-family:'DM Mono',monospace}
+.chart-area{height:200px;position:relative;margin-bottom:20px}
+canvas#btCanvas{width:100%;height:100%}
+.trades-table{width:100%;border-collapse:collapse;font-size:.8rem;max-height:200px;overflow-y:auto;display:block}
+.trades-table th{color:var(--muted);font-weight:500;text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);font-size:.72rem;text-transform:uppercase;position:sticky;top:0;background:var(--surface)}
+.trades-table td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace}
+.win{color:var(--green)}
+.lose{color:var(--red)}
+.strategy-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.sp-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:8px;font-size:.75rem;cursor:pointer;transition:.2s}
+.sp-btn:hover{border-color:var(--accent);color:var(--accent)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="backtester.html" style="color:var(--accent)">📊 Backtester</a>
+    <a href="dcf.html">🧮 DCF</a>
+    <a href="options.html">💰 Options</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="backtester.html">📊 Backtester</a><a href="about.html">👤 About</a>
+</div>
+<div class="page-header">
+  <h1>📊 Strategy Backtester</h1>
+  <p>Test simple trading strategies on historical data — see how they would have performed</p>
+</div>
+<main>
+  <div class="strategy-presets">
+    <span style="font-size:.78rem;color:var(--muted);padding:6px 0">Presets:</span>
+    <button class="sp-btn" onclick="loadPreset('sma')">📈 SMA Crossover</button>
+    <button class="sp-btn" onclick="loadPreset('buyhold')">💼 Buy & Hold</button>
+    <button class="sp-btn" onclick="loadPreset('rsi')">📉 RSI Reversal</button>
+    <button class="sp-btn" onclick="loadPreset('momentum')">🚀 Momentum</button>
+  </div>
+  <div class="two-col">
+    <div class="config-card">
+      <h2>Strategy Configuration</h2>
+      <div class="field"><label>Symbol</label>
+        <select id="bt-sym">
+          <option>SPY</option><option>QQQ</option><option>AAPL</option><option>NVDA</option>
+          <option>TSLA</option><option>MSFT</option><option>AMZN</option><option>GOOGL</option>
+        </select>
+      </div>
+      <div class="field"><label>Strategy</label>
+        <select id="bt-strategy">
+          <option value="sma">SMA Crossover (50/200)</option>
+          <option value="buyhold">Buy & Hold</option>
+          <option value="rsi">RSI Mean Reversion</option>
+          <option value="momentum">Price Momentum</option>
+          <option value="dca">Dollar Cost Averaging</option>
+        </select>
+      </div>
+      <div class="field"><label>Starting Capital ($)</label><input type="number" id="bt-capital" value="10000"></div>
+      <div class="field"><label>Backtest Period</label>
+        <select id="bt-period">
+          <option value="1">1 Year</option>
+          <option value="3" selected>3 Years</option>
+          <option value="5">5 Years</option>
+          <option value="10">10 Years</option>
+        </select>
+      </div>
+      <div class="field"><label>Transaction Cost (%)</label><input type="number" id="bt-cost" value="0.1" step="0.05"></div>
+      <button class="run-btn" onclick="runBacktest()">▶ Run Backtest</button>
+    </div>
+    <div class="results-card" id="resultsCard">
+      <div class="results-header" id="resultsHeader"></div>
+      <div class="chart-area"><canvas id="btCanvas"></canvas></div>
+      <h3 style="font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Trade Log</h3>
+      <div style="max-height:180px;overflow-y:auto">
+        <table class="trades-table"><thead><tr><th>Date</th><th>Action</th><th>Price</th><th>Shares</th><th>P&L</th></tr></thead>
+        <tbody id="tradesBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+</main>
+<footer>© 2025 CapitalSignal · Backtesting uses simulated data · Past performance does not guarantee future results</footer>
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+function loadPreset(p){document.getElementById('bt-strategy').value=p;runBacktest();}
+
+function generatePrices(start, years, annualReturn, volatility){
+  const days=years*252;
+  const prices=[start];
+  const dailyReturn=Math.log(1+annualReturn)/252;
+  const dailyVol=volatility/Math.sqrt(252);
+  for(let i=1;i<days;i++){
+    const shock=(Math.random()-0.5)*2*dailyVol*2;
+    prices.push(prices[i-1]*Math.exp(dailyReturn+shock));
+  }
+  return prices;
+}
+
+function calcSMA(prices,period){
+  return prices.map((_,i)=>i<period-1?null:prices.slice(i-period+1,i+1).reduce((a,b)=>a+b)/period);
+}
+
+function calcRSI(prices,period=14){
+  const rsi=new Array(period).fill(null);
+  for(let i=period;i<prices.length;i++){
+    let gains=0,losses=0;
+    for(let j=i-period+1;j<=i;j++){const d=prices[j]-prices[j-1];if(d>0)gains+=d;else losses+=Math.abs(d);}
+    const rs=gains/losses||0;
+    rsi.push(100-(100/(1+rs)));
+  }
+  return rsi;
+}
+
+function runBacktest(){
+  const sym=document.getElementById('bt-sym').value;
+  const strategy=document.getElementById('bt-strategy').value;
+  const capital=parseFloat(document.getElementById('bt-capital').value)||10000;
+  const years=parseInt(document.getElementById('bt-period').value)||3;
+  const cost=parseFloat(document.getElementById('bt-cost').value)/100||0.001;
+  const annualReturns={SPY:.10,QQQ:.14,AAPL:.18,NVDA:.45,TSLA:.25,MSFT:.16,AMZN:.14,GOOGL:.13};
+  const vols={SPY:.18,QQQ:.22,AAPL:.28,NVDA:.55,TSLA:.65,MSFT:.24,AMZN:.30,GOOGL:.26};
+  const startPrice=100;
+  const prices=generatePrices(startPrice,years,annualReturns[sym]||.10,vols[sym]||.25);
+  let cash=capital,shares=0,equity=capital;
+  const equityCurve=[capital];
+  const trades=[];
+  const sma50=calcSMA(prices,Math.min(50,Math.floor(prices.length/4)));
+  const sma200=calcSMA(prices,Math.min(200,Math.floor(prices.length/2)));
+  const rsi=calcRSI(prices);
+  let position=false;
+  const buyHoldShares=capital/startPrice*(1-cost);
+  const bhCurve=prices.map(p=>buyHoldShares*p);
+  for(let i=1;i<prices.length;i++){
+    const p=prices[i];
+    let signal=null;
+    if(strategy==='sma'&&sma50[i]&&sma200[i]){
+      if(!position&&sma50[i]>sma200[i])signal='buy';
+      else if(position&&sma50[i]<sma200[i])signal='sell';
+    } else if(strategy==='buyhold'){
+      if(!position&&i===1)signal='buy';
+    } else if(strategy==='rsi'&&rsi[i]){
+      if(!position&&rsi[i]<30)signal='buy';
+      else if(position&&rsi[i]>70)signal='sell';
+    } else if(strategy==='momentum'){
+      const lookback=Math.min(20,i);
+      const momentum=(p-prices[i-lookback])/prices[i-lookback];
+      if(!position&&momentum>0.05)signal='buy';
+      else if(position&&momentum<-0.03)signal='sell';
+    } else if(strategy==='dca'){
+      if(i%21===0){
+        const dcaAmount=Math.min(capital/years/12,cash);
+        const newShares=dcaAmount*(1-cost)/p;
+        shares+=newShares;cash-=dcaAmount;
+        trades.push({date:'Day '+i,action:'BUY',price:p.toFixed(2),shares:newShares.toFixed(2),pnl:'DCA'});
+        position=true;
+      }
+    }
+    if(signal==='buy'&&cash>p){
+      shares=cash*(1-cost)/p;cash=0;position=true;
+      trades.push({date:'Day '+i,action:'BUY',price:p.toFixed(2),shares:shares.toFixed(2),pnl:'—'});
+    } else if(signal==='sell'&&shares>0){
+      const proceeds=shares*p*(1-cost);
+      const pnl=proceeds-(shares*(parseFloat(trades.filter(t=>t.action==='BUY').slice(-1)[0]?.price)||p));
+      trades.push({date:'Day '+i,action:'SELL',price:p.toFixed(2),shares:shares.toFixed(2),pnl:(pnl>=0?'+$':'$')+pnl.toFixed(0)});
+      cash=proceeds;shares=0;position=false;
+    }
+    equity=cash+shares*p;
+    equityCurve.push(equity);
+  }
+  const finalEquity=equityCurve[equityCurve.length-1];
+  const totalReturn=((finalEquity-capital)/capital*100).toFixed(1);
+  const bhFinal=bhCurve[bhCurve.length-1];
+  const bhReturn=((bhFinal-capital)/capital*100).toFixed(1);
+  const annReturn=((Math.pow(finalEquity/capital,1/years)-1)*100).toFixed(1);
+  const maxDD=equityCurve.reduce((dd,_,i,arr)=>{
+    const peak=Math.max(...arr.slice(0,i+1));
+    return Math.max(dd,(peak-arr[i])/peak*100);
+  },0).toFixed(1);
+  const winTrades=trades.filter(t=>t.action==='SELL'&&t.pnl.startsWith('+'));
+  const winRate=trades.filter(t=>t.action==='SELL').length?
+    (winTrades.length/trades.filter(t=>t.action==='SELL').length*100).toFixed(0):'—';
+  const isPos=totalReturn>=0;
+  document.getElementById('resultsHeader').innerHTML=`
+    <div class="rh-box"><div class="rh-label">Total Return</div><div class="rh-val" style="color:${isPos?'var(--green)':'var(--red)'}">${isPos?'+':''}${totalReturn}%</div></div>
+    <div class="rh-box"><div class="rh-label">Final Value</div><div class="rh-val">$${finalEquity.toLocaleString('en-US',{maximumFractionDigits:0})}</div></div>
+    <div class="rh-box"><div class="rh-label">Annual Return</div><div class="rh-val" style="color:${annReturn>=0?'var(--green)':'var(--red)'}">${annReturn>=0?'+':''}${annReturn}%</div></div>
+    <div class="rh-box"><div class="rh-label">vs Buy & Hold</div><div class="rh-val" style="color:${totalReturn>=bhReturn?'var(--green)':'var(--red)'}">${(totalReturn-bhReturn)>=0?'+':''}${(totalReturn-parseFloat(bhReturn)).toFixed(1)}%</div></div>
+    <div class="rh-box"><div class="rh-label">Max Drawdown</div><div class="rh-val" style="color:var(--red)">-${maxDD}%</div></div>
+    <div class="rh-box"><div class="rh-label">Win Rate</div><div class="rh-val" style="color:var(--accent)">${winRate}%</div></div>`;
+  document.getElementById('tradesBody').innerHTML=trades.slice(-20).reverse().map(t=>`<tr><td>${t.date}</td><td style="color:${t.action==='BUY'?'var(--green)':'var(--red)'}">${t.action}</td><td>$${t.price}</td><td>${t.shares}</td><td class="${t.pnl?.startsWith('+')?'win':t.pnl==='—'||t.pnl==='DCA'?'':'lose'}">${t.pnl}</td></tr>`).join('');
+  drawChart(equityCurve,bhCurve,capital,isPos);
+  document.getElementById('resultsCard').classList.add('show');
+}
+
+function drawChart(strategy,buyhold,capital,isPos){
+  const canvas=document.getElementById('btCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||600,H=200;
+  canvas.width=W*2;canvas.height=H*2;canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(2,2);
+  const pad={t:10,b:20,l:10,r:10};
+  const cW=W-pad.l-pad.r,cH=H-pad.t-pad.b;
+  const allVals=[...strategy,...buyhold,capital];
+  const minV=Math.min(...allVals)*0.95,maxV=Math.max(...allVals)*1.05;
+  const toX=i=>pad.l+(i/(strategy.length-1))*cW;
+  const toY=v=>pad.t+cH-((v-minV)/(maxV-minV))*cH;
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+(cH/4)*i;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();}
+  // Buy & Hold line
+  ctx.beginPath();ctx.moveTo(toX(0),toY(buyhold[0]));
+  buyhold.forEach((_,i)=>{if(i>0)ctx.lineTo(toX(i),toY(buyhold[i]));});
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+  // Strategy line
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,isPos?'rgba(39,174,96,0.3)':'rgba(255,77,106,0.3)');
+  grad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.beginPath();ctx.moveTo(toX(0),toY(strategy[0]));
+  strategy.forEach((_,i)=>{if(i>0)ctx.lineTo(toX(i),toY(strategy[i]));});
+  ctx.lineTo(W-pad.r,H-pad.b);ctx.lineTo(pad.l,H-pad.b);ctx.closePath();
+  ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();ctx.moveTo(toX(0),toY(strategy[0]));
+  strategy.forEach((_,i)=>{if(i>0)ctx.lineTo(toX(i),toY(strategy[i]));});
+  ctx.strokeStyle=isPos?'#27ae60':'#ff4d6a';ctx.lineWidth=2;ctx.stroke();
+}
+runBacktest();
+</script>
+</body>
+</html>

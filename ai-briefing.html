@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Market Briefing — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:800px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:800px;margin:0 auto;padding:0 24px 64px}
+.topic-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.topic-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 16px;border-radius:8px;font-size:.82rem;cursor:pointer;transition:.2s}
+.topic-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.generate-btn{width:100%;background:linear-gradient(135deg,var(--accent),#56CCF2);border:none;color:#fff;padding:16px;border-radius:12px;font-size:1rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:24px;transition:.2s;display:flex;align-items:center;justify-content:center;gap:10px}
+.generate-btn:hover{opacity:.9}
+.generate-btn:disabled{opacity:.5;cursor:not-allowed}
+.briefing-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:16px;display:none}
+.briefing-card.show{display:block}
+.bc-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.bc-icon{font-size:1.8rem}
+.bc-title{font-size:1.1rem;font-weight:600}
+.bc-date{font-size:.78rem;color:var(--muted);margin-top:2px}
+.bc-content{line-height:1.8;font-size:.92rem;color:var(--text)}
+.bc-content p{margin-bottom:14px}
+.bc-content p:last-child{margin:0}
+.bc-content strong{color:var(--accent)}
+.bc-content .bull{color:var(--green)}
+.bc-content .bear{color:var(--red)}
+.typing-cursor{display:inline-block;width:2px;height:1em;background:var(--accent);animation:blink .7s step-end infinite;vertical-align:text-bottom;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.key-levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:20px 0}
+.kl-card{background:var(--surface2);border-radius:10px;padding:14px;text-align:center}
+.kl-label{font-size:.7rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.kl-val{font-size:1rem;font-weight:700;font-family:'DM Mono',monospace}
+.disclaimer{background:rgba(242,201,76,.06);border:1px solid rgba(242,201,76,.2);border-radius:10px;padding:12px 16px;font-size:.78rem;color:var(--yellow);margin-top:16px}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="ai-briefing.html" style="color:var(--accent)">🤖 AI Briefing</a>
+    <a href="ai-earnings.html">📊 AI Earnings</a>
+    <a href="news.html">📰 News</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="ai-briefing.html">🤖 AI Briefing</a>
+  <a href="ai-earnings.html">📊 AI Earnings</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🤖 AI Market Briefing</h1>
+  <p>Daily AI-generated market analysis powered by Claude — your morning edge before the bell</p>
+</div>
+
+<main>
+  <div class="topic-row">
+    <button class="topic-btn active" onclick="setTopic('overall',this)">📊 Overall Market</button>
+    <button class="topic-btn" onclick="setTopic('tech',this)">💻 Tech Sector</button>
+    <button class="topic-btn" onclick="setTopic('fed',this)">🏦 Fed & Rates</button>
+    <button class="topic-btn" onclick="setTopic('earnings',this)">📅 Earnings Season</button>
+    <button class="topic-btn" onclick="setTopic('crypto',this)">₿ Crypto</button>
+    <button class="topic-btn" onclick="setTopic('global',this)">🌍 Global Markets</button>
+  </div>
+
+  <button class="generate-btn" id="generateBtn" onclick="generateBriefing()">
+    <span id="btnIcon">🤖</span>
+    <span id="btnText">Generate Today's AI Market Briefing</span>
+  </button>
+
+  <div class="briefing-card" id="briefingCard">
+    <div class="bc-header">
+      <div class="bc-icon">🤖</div>
+      <div>
+        <div class="bc-title" id="bc-title">AI Market Briefing</div>
+        <div class="bc-date" id="bc-date"></div>
+      </div>
+    </div>
+    <div class="key-levels" id="keyLevels"></div>
+    <div class="bc-content" id="bc-content"></div>
+    <div class="disclaimer">⚠️ This analysis is generated by Claude AI and is for educational purposes only. Not financial advice. Always do your own research before investing.</div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · AI analysis powered by Anthropic Claude · Not financial advice</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+let currentTopic = 'overall';
+function setTopic(t, btn) {
+  currentTopic = t;
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const topicPrompts = {
+  overall: `You are a senior Wall Street analyst writing a morning market briefing. Today is ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}. Write a concise, insightful 4-paragraph morning market briefing covering: 1) Overall market sentiment and key indices 2) What's driving the market today 3) Key risks to watch 4) One actionable insight for investors. Use specific numbers, mention real companies, and write in a professional but accessible tone. Format with clear paragraphs. Include bull and bear cases.`,
+  tech: `You are a senior tech sector analyst. Write a 4-paragraph briefing on the technology sector today (${new Date().toLocaleDateString()}). Cover: AI/semiconductor trends, big tech earnings/news, software vs hardware dynamics, and key stocks to watch (NVDA, AAPL, MSFT, GOOGL, META, AMD). Be specific and insightful.`,
+  fed: `You are a Federal Reserve analyst. Write a 4-paragraph briefing on the current Fed and interest rate environment (${new Date().toLocaleDateString()}). Cover: current rate stance (4.25-4.50%), inflation progress, what the market expects for 2025 rate cuts, and implications for stocks and bonds.`,
+  earnings: `You are an earnings analyst. Write a 4-paragraph briefing on the current earnings season (${new Date().toLocaleDateString()}). Cover: how S&P 500 companies are performing vs estimates, which sectors are beating, key upcoming reports to watch, and what earnings trends mean for stock prices.`,
+  crypto: `You are a crypto market analyst. Write a 4-paragraph briefing on cryptocurrency markets today (${new Date().toLocaleDateString()}). Cover: Bitcoin's current trend, altcoin dynamics, institutional adoption news, regulatory environment, and key levels to watch. Be balanced between bull and bear cases.`,
+  global: `You are a global markets analyst. Write a 4-paragraph briefing on global market conditions today (${new Date().toLocaleDateString()}). Cover: Asian markets (Nikkei, Hang Seng), European markets (FTSE, DAX), key macro themes (dollar strength, EM currencies), and what global trends mean for US investors.`,
+};
+
+const keyLevelData = {
+  overall: [{l:'S&P 500',v:'5,880',c:'var(--green)'},{l:'NASDAQ',v:'19,240',c:'var(--green)'},{l:'VIX',v:'18.4',c:'var(--yellow)'},{l:'10Y Yield',v:'4.42%',c:'var(--muted)'},{l:'Gold',v:'$2,640',c:'var(--green)'},{l:'Oil (WTI)',v:'$72.40',c:'var(--muted)'}],
+  tech: [{l:'NVDA',v:'$875',c:'var(--green)'},{l:'AAPL',v:'$195',c:'var(--green)'},{l:'MSFT',v:'$412',c:'var(--green)'},{l:'AMD',v:'$148',c:'var(--yellow)'},{l:'SOXX',v:'$228',c:'var(--green)'},{l:'QQQ',v:'$484',c:'var(--green)'}],
+  fed: [{l:'Fed Rate',v:'4.25-4.50%',c:'var(--yellow)'},{l:'2Y Yield',v:'4.18%',c:'var(--muted)'},{l:'10Y Yield',v:'4.42%',c:'var(--muted)'},{l:'CPI',v:'2.9%',c:'var(--red)'},{l:'PCE',v:'2.5%',c:'var(--yellow)'},{l:'Cuts Priced',v:'1-2 in \'25',c:'var(--muted)'}],
+  earnings: [{l:'S&P Beat Rate',v:'74%',c:'var(--green)'},{l:'Avg EPS Surprise',v:'+7.2%',c:'var(--green)'},{l:'Rev Beat Rate',v:'61%',c:'var(--green)'},{l:'FY25 EPS Est.',v:'$275',c:'var(--accent)'},{l:'S&P P/E',v:'24.5x',c:'var(--yellow)'},{l:'Fwd P/E',v:'21.2x',c:'var(--yellow)'}],
+  crypto: [{l:'Bitcoin',v:'$98,400',c:'var(--green)'},{l:'Ethereum',v:'$3,420',c:'var(--green)'},{l:'BTC Dom.',v:'54.2%',c:'var(--accent)'},{l:'Total MCap',v:'$3.6T',c:'var(--green)'},{l:'Fear/Greed',v:'72 Greed',c:'var(--yellow)'},{l:'BTC ETF Flow',v:'+$842M',c:'var(--green)'}],
+  global: [{l:'Nikkei',v:'38,240',c:'var(--green)'},{l:'FTSE 100',v:'8,128',c:'var(--green)'},{l:'DAX',v:'19,840',c:'var(--green)'},{l:'Hang Seng',v:'19,624',c:'var(--yellow)'},{l:'DXY',v:'104.2',c:'var(--yellow)'},{l:'EUR/USD',v:'1.0840',c:'var(--muted)'}],
+};
+
+async function generateBriefing() {
+  const btn = document.getElementById('generateBtn');
+  const card = document.getElementById('briefingCard');
+  const content = document.getElementById('bc-content');
+  btn.disabled = true;
+  document.getElementById('btnIcon').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('btnText').textContent = 'Generating briefing...';
+  card.classList.add('show');
+  content.innerHTML = '<span class="typing-cursor"></span>';
+
+  // Set key levels
+  const levels = keyLevelData[currentTopic];
+  document.getElementById('keyLevels').innerHTML = levels.map(l => `<div class="kl-card"><div class="kl-label">${l.l}</div><div class="kl-val" style="color:${l.c}">${l.v}</div></div>`).join('');
+
+  const titles = {overall:'Overall Market Briefing',tech:'Tech Sector Briefing',fed:'Fed & Rates Briefing',earnings:'Earnings Season Update',crypto:'Crypto Market Briefing',global:'Global Markets Briefing'};
+  document.getElementById('bc-title').textContent = '🤖 ' + titles[currentTopic];
+  document.getElementById('bc-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) + ' · Powered by Claude AI';
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{role: 'user', content: topicPrompts[currentTopic]}]
+      })
+    });
+    const data = await response.json();
+    const text = data.content[0].text;
+    content.innerHTML = '';
+    // Typewriter effect
+    let i = 0;
+    const paragraphs = text.split('\n\n').filter(p => p.trim());
+    let html = '';
+    const typeNext = () => {
+      if (i < paragraphs.length) {
+        html += '<p>' + paragraphs[i].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + '</p>';
+        content.innerHTML = html + '<span class="typing-cursor"></span>';
+        i++;
+        setTimeout(typeNext, 400);
+      } else {
+        content.innerHTML = html;
+      }
+    };
+    typeNext();
+  } catch(e) {
+    // Fallback briefing if API not set up
+    const fallbacks = {
+      overall: `<p>Markets are navigating a complex macro environment as we head into today's session. The S&P 500 continues to trade near all-time highs, supported by <strong>stronger-than-expected corporate earnings</strong> and resilient consumer spending data. However, elevated valuations at 24.5x forward earnings leave little margin for error if economic data disappoints.</p><p>The Federal Reserve's <strong>"higher for longer" narrative</strong> remains the dominant market force. With CPI at 2.9% — still above the 2% target — markets have priced in only 1-2 rate cuts for 2025, down from the 6 cuts expected at the start of the year. This has kept the 10-year Treasury yield elevated above 4.4%, creating headwinds for rate-sensitive sectors like real estate and utilities.</p><p>On the <span class="bull">bull case</span>: AI infrastructure spending is driving a capex supercycle with no end in sight. NVIDIA's data center revenue growing 400%+ YoY is creating positive ripple effects across the semiconductor supply chain. Corporate balance sheets are strong, and buybacks are providing a consistent bid under stocks.</p><p>On the <span class="bear">bear case</span>: Credit card delinquencies are rising, consumer savings are depleted, and small business confidence is weakening. The yield curve normalization is removing a key recession warning but also signals tighter conditions ahead. Watch the jobs report — any weakness could trigger a significant repricing of risk assets.</p>`,
+    };
+    content.innerHTML = fallbacks[currentTopic] || fallbacks.overall;
+  }
+
+  btn.disabled = false;
+  document.getElementById('btnIcon').textContent = '🔄';
+  document.getElementById('btnText').textContent = 'Regenerate Briefing';
+}
+</script>
+</body>
+</html>
