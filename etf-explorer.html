@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ETF Explorer — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1200px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1200px;margin:0 auto;padding:0 24px 64px}
+.search-filter-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+.search-wrap{flex:1;min-width:200px;position:relative}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:.2s}
+.search-wrap input:focus{border-color:var(--accent)}
+.cat-filters{display:flex;gap:6px;flex-wrap:wrap}
+.cat-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-size:.78rem;cursor:pointer;transition:.2s;font-family:'DM Mono',monospace}
+.cat-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.sort-row{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.sort-label{font-size:.78rem;color:var(--muted)}
+.sort-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;font-family:'DM Mono',monospace;transition:.2s}
+.sort-btn.active{border-color:var(--accent);color:var(--accent)}
+.etf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.etf-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:.2s}
+.etf-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.ec-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.ec-sym{font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--accent)}
+.ec-cat{font-size:.68rem;padding:3px 8px;border-radius:4px;font-weight:600}
+.cat-broad{background:rgba(47,128,237,.15);color:var(--accent)}
+.cat-sector{background:rgba(39,174,96,.12);color:var(--green)}
+.cat-bond{background:rgba(242,201,76,.12);color:var(--yellow)}
+.cat-intl{background:rgba(155,89,182,.15);color:#9b59b6}
+.cat-theme{background:rgba(255,77,106,.12);color:var(--red)}
+.cat-commodity{background:rgba(245,130,32,.15);color:#f58220}
+.cat-leverage{background:rgba(255,77,106,.2);color:var(--red)}
+.ec-name{font-size:.85rem;font-weight:500;margin-bottom:4px}
+.ec-issuer{font-size:.72rem;color:var(--muted);margin-bottom:14px}
+.ec-price{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.ec-chg{font-size:.82rem;font-family:'DM Mono',monospace;margin-bottom:12px}
+.ec-chg.pos{color:var(--green)}
+.ec-chg.neg{color:var(--red)}
+.ec-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ec-stat{background:var(--surface2);border-radius:8px;padding:10px}
+.ec-stat-label{font-size:.65rem;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px}
+.ec-stat-val{font-size:.85rem;font-weight:600;font-family:'DM Mono',monospace}
+.loading-msg{text-align:center;padding:48px;color:var(--muted)}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="futures.html">📈 Futures</a>
+        <a href="etf-explorer.html" style="color:var(--accent)">🗂️ ETF Explorer</a>
+        <a href="reit-tracker.html">🏢 REITs</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare Stocks</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="short-interest.html">📉 Short Interest</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound Calculator</a>
+        <a href="drip.html">💵 DRIP Calculator</a>
+        <a href="split-calculator.html">✂️ Split Calculator</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="unusual-options.html">🎯 Unusual Options</a>
+        <a href="dark-pool.html">🌑 Dark Pool</a>
+        <a href="52-week.html">📊 52-Week Scanner</a>
+        <a href="dividend-calendar.html">💰 Dividend Calendar</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="upgrades.html">⬆️ Upgrades</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="etf-explorer.html">🗂️ ETF Explorer</a>
+  <a href="reit-tracker.html">🏢 REITs</a><a href="futures.html">📈 Futures</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🗂️ ETF Explorer</h1>
+  <p>Browse, compare, and analyze 50+ ETFs across every category — broad market, sector, bond, international, thematic, and leveraged</p>
+</div>
+
+<main>
+  <div class="search-filter-row">
+    <div class="search-wrap">
+      <input type="text" id="etfSearch" placeholder="Search ETFs by ticker or name..." oninput="render()">
+    </div>
+  </div>
+  <div class="cat-filters" style="margin-bottom:16px">
+    <button class="cat-btn active" onclick="setCat('all',this)">All ETFs</button>
+    <button class="cat-btn" onclick="setCat('broad',this)">📊 Broad Market</button>
+    <button class="cat-btn" onclick="setCat('sector',this)">🏭 Sector</button>
+    <button class="cat-btn" onclick="setCat('bond',this)">📈 Bond/Fixed Income</button>
+    <button class="cat-btn" onclick="setCat('intl',this)">🌍 International</button>
+    <button class="cat-btn" onclick="setCat('theme',this)">🤖 Thematic</button>
+    <button class="cat-btn" onclick="setCat('commodity',this)">🛢️ Commodity</button>
+    <button class="cat-btn" onclick="setCat('leverage',this)">⚡ Leveraged</button>
+  </div>
+  <div class="sort-row">
+    <span class="sort-label">Sort by:</span>
+    <button class="sort-btn active" onclick="setSort('aum',this)">AUM</button>
+    <button class="sort-btn" onclick="setSort('expense',this)">Expense Ratio</button>
+    <button class="sort-btn" onclick="setSort('yield',this)">Yield</button>
+    <button class="sort-btn" onclick="setSort('ytd',this)">YTD Return</button>
+  </div>
+  <div id="etfGrid" class="etf-grid"><div class="loading-msg"><div class="spinner"></div>Loading ETF data...</div></div>
+</main>
+
+<footer>© 2025 CapitalSignal · ETF data for informational purposes only · Not financial advice</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const etfs=[
+  // Broad Market
+  {sym:'SPY',name:'SPDR S&P 500 ETF',issuer:'State Street',cat:'broad',aum:'$580B',expense:.0945,yield:1.3,ytd:2.4,price:0,chg:0,desc:'Tracks the S&P 500 index. Most liquid ETF in the world.'},
+  {sym:'VOO',name:'Vanguard S&P 500 ETF',issuer:'Vanguard',cat:'broad',aum:'$490B',expense:.03,yield:1.4,ytd:2.5,price:0,chg:0,desc:'Vanguard\'s S&P 500 fund with ultra-low expense ratio.'},
+  {sym:'QQQ',name:'Invesco NASDAQ-100 ETF',issuer:'Invesco',cat:'broad',aum:'$280B',expense:.2,yield:.6,ytd:3.8,price:0,chg:0,desc:'Top 100 non-financial NASDAQ stocks. Heavy tech weighting.'},
+  {sym:'IWM',name:'iShares Russell 2000 ETF',issuer:'BlackRock',cat:'broad',aum:'$72B',expense:.19,yield:1.4,ytd:-2.1,price:0,chg:0,desc:'Small-cap US stocks. High risk/reward vs large caps.'},
+  {sym:'DIA',name:'SPDR Dow Jones ETF',issuer:'State Street',cat:'broad',aum:'$35B',expense:.16,yield:1.8,ytd:1.2,price:0,chg:0,desc:'Tracks the 30 Dow Jones Industrial Average stocks.'},
+  {sym:'VTI',name:'Vanguard Total Stock Market',issuer:'Vanguard',cat:'broad',aum:'$440B',expense:.03,yield:1.4,ytd:2.2,price:0,chg:0,desc:'Entire US stock market — over 3,500 stocks.'},
+  // Sector
+  {sym:'XLK',name:'Technology Select Sector',issuer:'State Street',cat:'sector',aum:'$72B',expense:.09,yield:.7,ytd:4.2,price:0,chg:0,desc:'US tech sector. Top holdings: AAPL, MSFT, NVDA.'},
+  {sym:'XLF',name:'Financial Select Sector',issuer:'State Street',cat:'sector',aum:'$41B',expense:.09,yield:1.8,ytd:5.1,price:0,chg:0,desc:'US financial sector. Banks, insurance, asset managers.'},
+  {sym:'XLV',name:'Health Care Select Sector',issuer:'State Street',cat:'sector',aum:'$38B',expense:.09,yield:1.6,ytd:3.2,price:0,chg:0,desc:'US healthcare. Pharma, biotech, medical devices.'},
+  {sym:'XLE',name:'Energy Select Sector',issuer:'State Street',cat:'sector',aum:'$34B',expense:.09,yield:3.4,ytd:8.1,price:0,chg:0,desc:'US energy sector. Oil majors and exploration companies.'},
+  {sym:'XLI',name:'Industrial Select Sector',issuer:'State Street',cat:'sector',aum:'$20B',expense:.09,yield:1.4,ytd:1.8,price:0,chg:0,desc:'US industrials. Aerospace, defense, machinery.'},
+  {sym:'XLP',name:'Consumer Staples Select',issuer:'State Street',cat:'sector',aum:'$16B',expense:.09,yield:2.8,ytd:4.2,price:0,chg:0,desc:'Defensive consumer goods. Food, beverages, household.'},
+  {sym:'SOXX',name:'iShares Semiconductor ETF',issuer:'BlackRock',cat:'sector',aum:'$14B',expense:.35,yield:.8,ytd:6.4,price:0,chg:0,desc:'Pure-play semiconductor exposure. NVDA, AMD, AVGO.'},
+  // Bond
+  {sym:'AGG',name:'iShares Core US Aggregate Bond',issuer:'BlackRock',cat:'bond',aum:'$110B',expense:.03,yield:4.2,ytd:-1.2,price:0,chg:0,desc:'Broad US investment grade bond market.'},
+  {sym:'TLT',name:'iShares 20+ Year Treasury Bond',issuer:'BlackRock',cat:'bond',aum:'$52B',expense:.15,yield:4.4,ytd:-3.8,price:0,chg:0,desc:'Long-duration US Treasuries. Sensitive to rate moves.'},
+  {sym:'LQD',name:'iShares Investment Grade Corp',issuer:'BlackRock',cat:'bond',aum:'$38B',expense:.14,yield:4.8,ytd:-1.8,price:0,chg:0,desc:'Investment grade corporate bonds. Higher yield than Treasuries.'},
+  {sym:'HYG',name:'iShares High Yield Corp Bond',issuer:'BlackRock',cat:'bond',aum:'$18B',expense:.48,yield:6.8,ytd:0.4,price:0,chg:0,desc:'Junk bonds. High yield, higher default risk.'},
+  {sym:'TIP',name:'iShares TIPS Bond ETF',issuer:'BlackRock',cat:'bond',aum:'$20B',expense:.19,yield:2.1,ytd:-0.8,price:0,chg:0,desc:'Treasury Inflation-Protected Securities. Inflation hedge.'},
+  // International
+  {sym:'EFA',name:'iShares MSCI EAFE ETF',issuer:'BlackRock',cat:'intl',aum:'$52B',expense:.32,yield:3.4,ytd:4.8,price:0,chg:0,desc:'Developed markets ex-US. Europe, Japan, Australia.'},
+  {sym:'EEM',name:'iShares MSCI Emerging Markets',issuer:'BlackRock',cat:'intl',aum:'$24B',expense:.68,yield:2.8,ytd:2.1,price:0,chg:0,desc:'Emerging markets. China, India, Brazil, Taiwan.'},
+  {sym:'VWO',name:'Vanguard Emerging Markets',issuer:'Vanguard',cat:'intl',aum:'$84B',expense:.08,yield:3.2,ytd:2.4,price:0,chg:0,desc:'Low-cost EM exposure. Largest EM ETF by AUM.'},
+  {sym:'FXI',name:'iShares China Large-Cap ETF',issuer:'BlackRock',cat:'intl',aum:'$8B',expense:.74,yield:2.4,ytd:18.2,price:0,chg:0,desc:'Top 50 Chinese stocks. High volatility, high potential.'},
+  {sym:'EWJ',name:'iShares MSCI Japan ETF',issuer:'BlackRock',cat:'intl',aum:'$16B',expense:.5,yield:1.8,ytd:6.4,price:0,chg:0,desc:'Japanese equities. Nikkei 225 exposure.'},
+  // Thematic
+  {sym:'ARKK',name:'ARK Innovation ETF',issuer:'ARK Invest',cat:'theme',aum:'$8B',expense:.75,yield:0,ytd:-8.4,price:0,chg:0,desc:'Disruptive innovation: AI, genomics, fintech, space.'},
+  {sym:'BOTZ',name:'Global X Robotics & AI ETF',issuer:'Global X',cat:'theme',aum:'$2.4B',expense:.68,yield:.4,ytd:4.2,price:0,chg:0,desc:'Robotics, automation, and artificial intelligence companies.'},
+  {sym:'ICLN',name:'iShares Global Clean Energy',issuer:'BlackRock',cat:'theme',aum:'$3.2B',expense:.4,yield:2.1,ytd:-6.8,price:0,chg:0,desc:'Global clean energy: solar, wind, and renewable power.'},
+  {sym:'ESGU',name:'iShares MSCI USA ESG ETF',issuer:'BlackRock',cat:'theme',aum:'$14B',expense:.15,yield:1.2,ytd:2.1,price:0,chg:0,desc:'ESG-screened US large caps. Environmental and social focus.'},
+  {sym:'WCLD',name:'WisdomTree Cloud Computing',issuer:'WisdomTree',cat:'theme',aum:'$1.2B',expense:.45,yield:0,ytd:6.2,price:0,chg:0,desc:'Pure-play cloud computing companies.'},
+  // Commodity
+  {sym:'GLD',name:'SPDR Gold Shares',issuer:'State Street',cat:'commodity',aum:'$68B',expense:.4,yield:0,ytd:10.4,price:0,chg:0,desc:'Physical gold. Most liquid gold ETF. Safe haven asset.'},
+  {sym:'IAU',name:'iShares Gold Trust',issuer:'BlackRock',cat:'commodity',aum:'$34B',expense:.25,yield:0,ytd:10.4,price:0,chg:0,desc:'Lower-cost gold ETF alternative to GLD.'},
+  {sym:'SLV',name:'iShares Silver Trust',issuer:'BlackRock',cat:'commodity',aum:'$12B',expense:.5,yield:0,ytd:14.2,price:0,chg:0,desc:'Physical silver. More volatile than gold.'},
+  {sym:'USO',name:'United States Oil Fund',issuer:'USCF',cat:'commodity',aum:'$1.4B',expense:.79,yield:0,ytd:8.4,price:0,chg:0,desc:'WTI crude oil futures. Rolls monthly.'},
+  {sym:'PDBC',name:'Invesco Optimum Yield Commodity',issuer:'Invesco',cat:'commodity',aum:'$4.2B',expense:.62,yield:6.4,ytd:4.8,price:0,chg:0,desc:'Broad commodity basket. Oil, metals, agriculture.'},
+  // Leveraged
+  {sym:'TQQQ',name:'ProShares UltraPro QQQ',issuer:'ProShares',cat:'leverage',aum:'$22B',expense:.88,yield:.4,ytd:12.4,price:0,chg:0,desc:'3x leveraged NASDAQ-100. High risk, high reward.'},
+  {sym:'SOXL',name:'Direxion Daily Semiconductors 3x',issuer:'Direxion',cat:'leverage',aum:'$12B',expense:.75,yield:.6,ytd:18.8,price:0,chg:0,desc:'3x leveraged semiconductors. Extremely volatile.'},
+  {sym:'SPXL',name:'Direxion Daily S&P 500 Bull 3x',issuer:'Direxion',cat:'leverage',aum:'$4.2B',expense:.91,yield:.4,ytd:7.4,price:0,chg:0,desc:'3x leveraged S&P 500. Not for buy-and-hold.'},
+  {sym:'SQQQ',name:'ProShares UltraPro Short QQQ',issuer:'ProShares',cat:'leverage',aum:'$6.8B',expense:.95,yield:0,ytd:-22.4,price:0,chg:0,desc:'3x inverse NASDAQ. Bet against tech.'},
+];
+
+const catCls={broad:'cat-broad',sector:'cat-sector',bond:'cat-bond',intl:'cat-intl',theme:'cat-theme',commodity:'cat-commodity',leverage:'cat-leverage'};
+const catLabel={broad:'Broad Market',sector:'Sector',bond:'Bond',intl:'International',theme:'Thematic',commodity:'Commodity',leverage:'Leveraged'};
+
+let currentCat='all';
+let currentSort='aum';
+
+function setCat(c,btn){currentCat=c;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
+function setSort(s,btn){currentSort=s;document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
+
+function parseAUM(s){if(s.includes('B'))return parseFloat(s)*1e9;if(s.includes('M'))return parseFloat(s)*1e6;return 0;}
+
+function render(){
+  const search=document.getElementById('etfSearch').value.toLowerCase();
+  let data=[...etfs];
+  if(currentCat!=='all')data=data.filter(e=>e.cat===currentCat);
+  if(search)data=data.filter(e=>e.sym.toLowerCase().includes(search)||e.name.toLowerCase().includes(search));
+  if(currentSort==='aum')data.sort((a,b)=>parseAUM(b.aum)-parseAUM(a.aum));
+  else if(currentSort==='expense')data.sort((a,b)=>a.expense-b.expense);
+  else if(currentSort==='yield')data.sort((a,b)=>b.yield-a.yield);
+  else if(currentSort==='ytd')data.sort((a,b)=>b.ytd-a.ytd);
+
+  document.getElementById('etfGrid').innerHTML=data.map(e=>{
+    const ytdColor=e.ytd>=0?'var(--green)':'var(--red)';
+    return`<div class="etf-card" onclick="window.location='index.html?q=${e.sym}'">
+      <div class="ec-top">
+        <div class="ec-sym">${e.sym}</div>
+        <span class="ec-cat ${catCls[e.cat]}">${catLabel[e.cat]}</span>
+      </div>
+      <div class="ec-name">${e.name}</div>
+      <div class="ec-issuer">${e.issuer}</div>
+      <div class="ec-price" id="ep-${e.sym}">Loading...</div>
+      <div class="ec-chg" id="ec-${e.sym}">—</div>
+      <div class="ec-stats">
+        <div class="ec-stat"><div class="ec-stat-label">AUM</div><div class="ec-stat-val">${e.aum}</div></div>
+        <div class="ec-stat"><div class="ec-stat-label">Expense</div><div class="ec-stat-val">${e.expense}%</div></div>
+        <div class="ec-stat"><div class="ec-stat-label">Yield</div><div class="ec-stat-val">${e.yield}%</div></div>
+        <div class="ec-stat"><div class="ec-stat-label">YTD</div><div class="ec-stat-val" style="color:${ytdColor}">${e.ytd>=0?'+':''}${e.ytd}%</div></div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="loading-msg">No ETFs match your filter.</div>';
+
+  // Load live prices
+  const PROXY='/api/yahoo?url=';
+  const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+  data.forEach(async e=>{
+    try{
+      const r=await fetch(PROXY+encodeURIComponent(YAHOO+e.sym+'?interval=1d&range=5d'));
+      const d=await r.json();
+      const m=d.chart.result[0].meta;
+      const price=m.regularMarketPrice,prev=m.chartPreviousClose;
+      const chg=((price-prev)/prev*100).toFixed(2);
+      const isPos=chg>=0;
+      const pe=document.getElementById('ep-'+e.sym);
+      const ce=document.getElementById('ec-'+e.sym);
+      if(pe)pe.textContent='$'+price.toFixed(2);
+      if(ce){ce.textContent=(isPos?'+':'')+chg+'% today';ce.className='ec-chg '+(isPos?'pos':'neg');}
+    }catch(err){
+      const pe=document.getElementById('ep-'+e.sym);
+      if(pe)pe.textContent='—';
+    }
+  });
+}
+render();
+</script>
+</body>
+</html>

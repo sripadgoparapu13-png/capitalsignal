@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>REIT Tracker — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown{position:relative}
+.nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
+.nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
+.nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
+.nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:.3s;display:block}
+.hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.hamburger.open span:nth-child(2){opacity:0}
+.hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 32px;max-width:1200px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:1200px;margin:0 auto;padding:0 24px 64px}
+.info-banner{background:rgba(47,128,237,.06);border:1px solid rgba(47,128,237,.2);border-radius:12px;padding:14px 18px;margin-bottom:28px;font-size:.83rem;color:var(--muted);line-height:1.6}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.stat-label{font-size:.72rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:1.3rem;font-weight:700;font-family:'DM Mono',monospace}
+.cat-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.cat-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:8px;font-size:.78rem;cursor:pointer;transition:.2s}
+.cat-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.reit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.reit-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:.2s}
+.reit-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.rc-sym{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;color:var(--accent)}
+.rc-type{font-size:.68rem;padding:3px 8px;border-radius:4px;font-weight:600;background:rgba(47,128,237,.12);color:var(--accent)}
+.rc-name{font-size:.88rem;font-weight:500;margin-bottom:4px}
+.rc-desc{font-size:.75rem;color:var(--muted);margin-bottom:14px;line-height:1.4}
+.rc-price{font-size:1.3rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.rc-chg{font-size:.82rem;font-family:'DM Mono',monospace;margin-bottom:12px}
+.rc-chg.pos{color:var(--green)}
+.rc-chg.neg{color:var(--red)}
+.rc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.rc-stat{background:var(--surface2);border-radius:8px;padding:10px;text-align:center}
+.rcs-label{font-size:.65rem;color:var(--muted);margin-bottom:3px;text-transform:uppercase}
+.rcs-val{font-size:.9rem;font-weight:600;font-family:'DM Mono',monospace}
+.high-yield{color:var(--green)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Markets ▾</button>
+      <div class="nav-drop-menu">
+        <a href="markets.html">📊 Markets Overview</a>
+        <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="futures.html">📈 Futures</a>
+        <a href="etf-explorer.html">🗂️ ETF Explorer</a>
+        <a href="reit-tracker.html" style="color:var(--accent)">🏢 REITs</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Tools ▾</button>
+      <div class="nav-drop-menu">
+        <a href="compare.html">⚖️ Compare</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="position-size.html">🎯 Position Size</a>
+        <a href="compound.html">📈 Compound</a>
+        <a href="drip.html">💵 DRIP Calculator</a>
+        <a href="split-calculator.html">✂️ Split Calculator</a>
+      </div>
+    </div>
+    <div class="nav-dropdown">
+      <button class="nav-drop-btn">Data ▾</button>
+      <div class="nav-drop-menu">
+        <a href="news.html">📰 News</a>
+        <a href="unusual-options.html">🎯 Unusual Options</a>
+        <a href="dark-pool.html">🌑 Dark Pool</a>
+        <a href="52-week.html">📊 52-Week Scanner</a>
+        <a href="dividend-calendar.html">💰 Dividend Calendar</a>
+        <a href="ipo.html">🚀 IPO Calendar</a>
+        <a href="hedge-funds.html">🏦 Hedge Funds</a>
+        <a href="sector-rotation.html">🔄 Sector Rotation</a>
+      </div>
+    </div>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="reit-tracker.html">🏢 REITs</a>
+  <a href="etf-explorer.html">🗂️ ETFs</a><a href="dividend-calendar.html">💰 Dividends</a><a href="about.html">👤 About</a>
+</div>
+
+<div class="page-header">
+  <h1>🏢 REIT Tracker</h1>
+  <p>Real Estate Investment Trusts — high-yield dividend stocks backed by real property</p>
+</div>
+
+<main>
+  <div class="info-banner">
+    <strong>What are REITs?</strong> REITs (Real Estate Investment Trusts) own income-producing real estate. By law, they must pay out at least <strong>90% of taxable income as dividends</strong> — making them some of the highest-yielding stocks available. They're split into types: Office, Retail, Industrial, Residential, Healthcare, Data Centers, and more. REITs are sensitive to interest rates — they tend to underperform when rates rise and outperform when rates fall.
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Avg REIT Yield</div><div class="stat-value" style="color:var(--green)">4.8%</div></div>
+    <div class="stat-card"><div class="stat-label">Total REIT Market Cap</div><div class="stat-value">$1.4T</div></div>
+    <div class="stat-card"><div class="stat-label"># of Public REITs</div><div class="stat-value">220+</div></div>
+    <div class="stat-card"><div class="stat-label">Best Sector YTD</div><div class="stat-value" style="color:var(--accent)">Data Centers</div></div>
+  </div>
+  <div class="cat-filters">
+    <button class="cat-btn active" onclick="setCat('all',this)">All REITs</button>
+    <button class="cat-btn" onclick="setCat('datacenter',this)">💻 Data Centers</button>
+    <button class="cat-btn" onclick="setCat('industrial',this)">🏭 Industrial</button>
+    <button class="cat-btn" onclick="setCat('residential',this)">🏠 Residential</button>
+    <button class="cat-btn" onclick="setCat('retail',this)">🛍️ Retail</button>
+    <button class="cat-btn" onclick="setCat('healthcare',this)">🏥 Healthcare</button>
+    <button class="cat-btn" onclick="setCat('office',this)">🏢 Office</button>
+    <button class="cat-btn" onclick="setCat('diversified',this)">🔀 Diversified</button>
+  </div>
+  <div class="reit-grid" id="reitGrid"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · REIT data for informational purposes only · Not financial advice</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const reits=[
+  {sym:'AMT',name:'American Tower Corp',type:'datacenter',desc:'Global wireless tower REIT. 220,000+ tower sites worldwide. Essential telecom infrastructure.',yield:3.2,ffo:10.42,cap:'$88B',payout:'90%'},
+  {sym:'EQIX',name:'Equinix Inc.',type:'datacenter',desc:'World\'s largest data center REIT. 260+ IBX data centers in 71 metros. Critical AI infrastructure.',yield:2.1,ffo:34.18,cap:'$74B',payout:'80%'},
+  {sym:'DLR',name:'Digital Realty Trust',type:'datacenter',desc:'Global data center REIT. Partners with AWS, Google, Microsoft for hyperscale facilities.',yield:3.4,ffo:6.84,cap:'$44B',payout:'85%'},
+  {sym:'PLD',name:'Prologis Inc.',type:'industrial',desc:'Largest industrial REIT. Logistics and e-commerce warehouses for Amazon, FedEx, UPS.',yield:3.2,ffo:5.48,cap:'$114B',payout:'88%'},
+  {sym:'STAG',name:'STAG Industrial',type:'industrial',desc:'Single-tenant industrial properties. Monthly dividend payer. Diversified tenant base.',yield:4.2,ffo:2.24,cap:'$6.8B',payout:'90%'},
+  {sym:'EXR',name:'Extra Space Storage',type:'industrial',desc:'Largest self-storage operator in US. 3,700+ locations. Recession-resistant business.',yield:4.4,ffo:8.14,cap:'$32B',payout:'88%'},
+  {sym:'EQR',name:'Equity Residential',type:'residential',desc:'Premium apartment REIT. Coastal markets: NYC, Boston, Seattle, San Francisco, Denver.',yield:3.8,ffo:3.84,cap:'$26B',payout:'92%'},
+  {sym:'AVB',name:'AvalonBay Communities',type:'residential',desc:'High-quality apartment communities in high barrier-to-entry coastal markets.',yield:3.4,ffo:11.24,cap:'$29B',payout:'90%'},
+  {sym:'NNN',name:'NNN REIT Inc.',type:'retail',desc:'Net lease retail REIT. 3,500+ properties. 35+ consecutive years of dividend growth.',yield:5.2,ffo:3.28,cap:'$8.2B',payout:'92%'},
+  {sym:'O',name:'Realty Income Corp',type:'retail',desc:'"The Monthly Dividend Company." 13,000+ properties. Dividend Aristocrat for 30 years.',yield:5.8,ffo:4.18,cap:'$48B',payout:'95%'},
+  {sym:'SPG',name:'Simon Property Group',type:'retail',desc:'Largest retail REIT. Premium malls and outlet centers. Strong luxury tenant mix.',yield:4.8,ffo:13.44,cap:'$52B',payout:'90%'},
+  {sym:'VTR',name:'Ventas Inc.',type:'healthcare',desc:'Diversified healthcare REIT. Senior housing, medical offices, research facilities.',yield:3.6,ffo:3.12,cap:'$26B',payout:'90%'},
+  {sym:'WELL',name:'Welltower Inc.',type:'healthcare',desc:'Senior care and outpatient medical REIT. Demographic tailwind from aging population.',yield:2.4,ffo:4.18,cap:'$76B',payout:'82%'},
+  {sym:'MPW',name:'Medical Properties Trust',type:'healthcare',desc:'Hospital REIT. Under pressure from tenant issues but high yield attractive to value investors.',yield:8.4,ffo:1.48,cap:'$4.4B',payout:'95%'},
+  {sym:'BXP',name:'BXP Inc. (Boston Properties)',type:'office',desc:'Premium office REIT. Class A buildings in Boston, NYC, San Francisco, Seattle, DC.',yield:5.8,ffo:7.24,cap:'$11B',payout:'92%'},
+  {sym:'ARE',name:'Alexandria Real Estate',type:'office',desc:'Life science and tech office clusters near leading research universities and hospitals.',yield:4.4,ffo:9.14,cap:'$18B',payout:'90%'},
+  {sym:'VICI',name:'VICI Properties',type:'diversified',desc:'Gaming REIT. Owns Caesars Palace, MGM Grand, Venice. Triple-net leases with operators.',yield:5.4,ffo:2.34,cap:'$30B',payout:'88%'},
+  {sym:'WPC',name:'W. P. Carey Inc.',type:'diversified',desc:'Net lease REIT with European exposure. Office, industrial, retail across US and Europe.',yield:6.2,ffo:5.14,cap:'$14B',payout:'92%'},
+];
+
+const PROXY='/api/yahoo?url=';
+const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+let currentCat='all';
+
+function setCat(c,btn){currentCat=c;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
+
+function render(){
+  let data=currentCat==='all'?reits:reits.filter(r=>r.type===currentCat);
+  document.getElementById('reitGrid').innerHTML=data.map(r=>`
+    <div class="reit-card" onclick="window.location='index.html?q=${r.sym}'">
+      <div class="rc-top">
+        <div class="rc-sym">${r.sym}</div>
+        <span class="rc-type">${r.type.charAt(0).toUpperCase()+r.type.slice(1)}</span>
+      </div>
+      <div class="rc-name">${r.name}</div>
+      <div class="rc-desc">${r.desc}</div>
+      <div class="rc-price" id="rp-${r.sym}">Loading...</div>
+      <div class="rc-chg" id="rc-${r.sym}">—</div>
+      <div class="rc-stats">
+        <div class="rc-stat"><div class="rcs-label">Yield</div><div class="rcs-val high-yield">${r.yield}%</div></div>
+        <div class="rc-stat"><div class="rcs-label">FFO/Share</div><div class="rcs-val">$${r.ffo}</div></div>
+        <div class="rc-stat"><div class="rcs-label">Market Cap</div><div class="rcs-val">${r.cap}</div></div>
+      </div>
+    </div>`).join('');
+
+  data.forEach(async r=>{
+    try{
+      const res=await fetch(PROXY+encodeURIComponent(YAHOO+r.sym+'?interval=1d&range=5d'));
+      const d=await res.json();
+      const m=d.chart.result[0].meta;
+      const price=m.regularMarketPrice,prev=m.chartPreviousClose;
+      const chg=((price-prev)/prev*100).toFixed(2);
+      const isPos=chg>=0;
+      const pe=document.getElementById('rp-'+r.sym);
+      const ce=document.getElementById('rc-'+r.sym);
+      if(pe)pe.textContent='$'+price.toFixed(2);
+      if(ce){ce.textContent=(isPos?'+':'')+chg+'% today';ce.className='rc-chg '+(isPos?'pos':'neg');}
+    }catch(e){
+      const pe=document.getElementById('rp-'+r.sym);
+      if(pe)pe.textContent='—';
+    }
+  });
+}
+render();
+</script>
+</body>
+</html>
