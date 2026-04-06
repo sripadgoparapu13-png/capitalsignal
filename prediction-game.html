@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Prediction Game — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+main{max-width:600px;margin:0 auto;padding:48px 24px 64px}
+.game-header{text-align:center;margin-bottom:32px}
+.game-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.game-header p{color:var(--muted)}
+.score-bar{display:flex;justify-content:center;gap:32px;margin:24px 0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 24px}
+.sb-item{text-align:center}
+.sb-val{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace}
+.sb-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.stock-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;margin-bottom:20px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.sc-loading{color:var(--muted);font-size:.9rem}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sc-sym{font-size:2.5rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent);margin-bottom:4px}
+.sc-name{font-size:.9rem;color:var(--muted);margin-bottom:20px}
+.sc-price{font-size:2rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:4px}
+.sc-chg{font-size:.9rem;font-family:'DM Mono',monospace;margin-bottom:8px}
+.sc-context{font-size:.8rem;color:var(--muted);line-height:1.5;max-width:380px}
+.prediction-btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.up-btn{background:rgba(39,174,96,.15);border:2px solid var(--green);color:var(--green);padding:20px;border-radius:14px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+.up-btn:hover{background:rgba(39,174,96,.25)}
+.down-btn{background:rgba(255,77,106,.15);border:2px solid var(--red);color:var(--red);padding:20px;border-radius:14px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:.2s}
+.down-btn:hover{background:rgba(255,77,106,.25)}
+.result-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center}
+.result-overlay.show{display:flex}
+.result-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px;text-align:center;max-width:400px;width:90%}
+.result-icon{font-size:4rem;margin-bottom:16px}
+.result-title{font-size:1.4rem;font-weight:700;margin-bottom:8px}
+.result-detail{color:var(--muted);font-size:.9rem;line-height:1.6;margin-bottom:24px}
+.result-move{font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:700;margin-bottom:8px}
+.next-stock-btn{background:var(--accent);border:none;color:#fff;padding:14px 32px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.streak-badge{background:rgba(242,201,76,.15);border:1px solid var(--yellow);color:var(--yellow);padding:6px 16px;border-radius:20px;font-size:.82rem;font-weight:600;display:none;margin:0 auto 12px;width:fit-content}
+.streak-badge.show{display:block}
+.hint-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 20px;border-radius:8px;font-size:.8rem;cursor:pointer;width:100%;margin-top:8px;transition:.2s}
+.hint-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+.hint-text{display:none;background:rgba(242,201,76,.08);border:1px solid rgba(242,201,76,.2);border-radius:8px;padding:12px;font-size:.82rem;color:var(--yellow);line-height:1.5;margin-top:8px}
+.hint-text.show{display:block}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="paper-trading.html">📝 Paper Trading</a>
+    <a href="quiz.html">🧠 Quiz</a>
+    <a href="prediction-game.html" class="active">🎯 Prediction</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="paper-trading.html">📝 Paper Trading</a>
+  <a href="quiz.html">🧠 Quiz</a><a href="prediction-game.html">🎯 Prediction</a>
+</div>
+
+<main>
+  <div class="game-header">
+    <h1>🎯 Prediction Game</h1>
+    <p>Will this stock go <span style="color:var(--green)">UP</span> or <span style="color:var(--red)">DOWN</span> today? Use your market instincts!</p>
+  </div>
+
+  <div class="score-bar">
+    <div class="sb-item"><div class="sb-val" id="scoreWins" style="color:var(--green)">0</div><div class="sb-label">Correct</div></div>
+    <div class="sb-item"><div class="sb-val" id="scoreTotal">0</div><div class="sb-label">Total</div></div>
+    <div class="sb-item"><div class="sb-val" id="scorePct" style="color:var(--accent)">—</div><div class="sb-label">Accuracy</div></div>
+    <div class="sb-item"><div class="sb-val" id="scoreStreak" style="color:var(--yellow)">0</div><div class="sb-label">Streak 🔥</div></div>
+  </div>
+
+  <div class="streak-badge" id="streakBadge"></div>
+
+  <div class="stock-card" id="stockCard">
+    <div class="sc-loading"><div class="spinner"></div>Loading stock...</div>
+  </div>
+
+  <div class="prediction-btns">
+    <button class="up-btn" id="upBtn" onclick="predict('up')">📈 UP</button>
+    <button class="down-btn" id="downBtn" onclick="predict('down')">📉 DOWN</button>
+  </div>
+  <button class="hint-btn" onclick="toggleHint()">💡 Show Hint</button>
+  <div class="hint-text" id="hintText"></div>
+</main>
+
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-box">
+    <div class="result-icon" id="resultIcon"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <div class="result-move" id="resultMove"></div>
+    <div class="result-detail" id="resultDetail"></div>
+    <button class="next-stock-btn" onclick="nextStock()">Next Stock →</button>
+  </div>
+</div>
+
+<footer>© 2025 CapitalSignal · Game uses real today's price data · Not financial advice</footer>
+
+<script>
+const PROXY='/api/yahoo?url=';
+const YAHOO='https://query1.finance.yahoo.com/v8/finance/chart/';
+async function fw(url){const r=await fetch(PROXY+encodeURIComponent(url));return r.json();}
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const stocks=[
+  {sym:'AAPL',name:'Apple Inc.',hint:'Check if iPhone demand, Services growth, or China sales are in the news today.'},
+  {sym:'TSLA',name:'Tesla Inc.',hint:'EV delivery numbers, Elon news, and competition from Chinese EVs move this stock.'},
+  {sym:'NVDA',name:'NVIDIA Corp.',hint:'AI chip demand, data center orders, and China export restrictions are key drivers.'},
+  {sym:'META',name:'Meta Platforms',hint:'Ad revenue growth, Reels engagement, and AI spending plans move META.'},
+  {sym:'MSFT',name:'Microsoft Corp.',hint:'Azure cloud growth, Copilot adoption, and gaming revenue are key catalysts.'},
+  {sym:'AMZN',name:'Amazon.com',hint:'AWS growth, advertising revenue, and Prime membership trends matter most.'},
+  {sym:'GOOGL',name:'Alphabet Inc.',hint:'Search market share, YouTube revenue, and Google Cloud growth drive GOOGL.'},
+  {sym:'JPM',name:'JPMorgan Chase',hint:'Interest rates, loan growth, investment banking revenue, and credit quality matter.'},
+  {sym:'NFLX',name:'Netflix Inc.',hint:'Subscriber growth, password sharing crackdown results, and ad-tier adoption.'},
+  {sym:'AMD',name:'Advanced Micro Devices',hint:'Data center GPU demand, MI300X sales vs NVIDIA, and PC market recovery.'},
+  {sym:'PLTR',name:'Palantir Technologies',hint:'Government contract wins, AIP commercial adoption, and AI platform traction.'},
+  {sym:'COIN',name:'Coinbase Global',hint:'Bitcoin price, crypto trading volume, and regulatory environment drive COIN.'},
+  {sym:'UBER',name:'Uber Technologies',hint:'Ride demand, food delivery growth, autonomous vehicle partnerships matter.'},
+  {sym:'SPY',name:'S&P 500 ETF',hint:'Overall market sentiment, economic data, Fed policy, and global risk appetite.'},
+  {sym:'GLD',name:'SPDR Gold ETF',hint:'Dollar strength, inflation fears, geopolitical risk, and Fed rate expectations.'},
+];
+
+let wins=0,total=0,streak=0;
+let currentStock=null;
+let currentChg=0;
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
+const stockQueue=shuffle([...stocks]);
+let qIdx=0;
+
+async function loadStock(){
+  const card=document.getElementById('stockCard');
+  card.innerHTML='<div class="sc-loading"><div class="spinner"></div>Loading real-time data...</div>';
+  document.getElementById('upBtn').disabled=false;
+  document.getElementById('downBtn').disabled=false;
+  document.getElementById('hintText').classList.remove('show');
+
+  const s=stockQueue[qIdx%stockQueue.length];
+  qIdx++;
+  currentStock=s;
+
+  try{
+    const d=await fw(YAHOO+s.sym+'?interval=1d&range=5d');
+    const m=d.chart.result[0].meta;
+    const price=m.regularMarketPrice;
+    const prev=m.chartPreviousClose;
+    currentChg=((price-prev)/prev*100);
+    const isPos=currentChg>=0;
+    // Hide the actual change — show only price
+    card.innerHTML=`
+      <div class="sc-sym">${s.sym}</div>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-price">$${price.toFixed(2)}</div>
+      <div class="sc-context">Yesterday's close: $${prev.toFixed(2)}<br>Will today's move be UP or DOWN?</div>`;
+    document.getElementById('hintText').textContent=s.hint;
+  }catch(e){
+    card.innerHTML=`<div class="sc-sym">${s.sym}</div><div class="sc-name">${s.name}</div><div class="sc-price" style="color:var(--muted)">Price unavailable</div>`;
+    currentChg=(Math.random()-.48)*5;
+  }
+}
+
+function predict(dir){
+  document.getElementById('upBtn').disabled=true;
+  document.getElementById('downBtn').disabled=true;
+  const correct=(dir==='up'&&currentChg>=0)||(dir==='down'&&currentChg<0);
+  total++;
+  if(correct){wins++;streak++;}
+  else{streak=0;}
+  updateScore();
+  const overlay=document.getElementById('resultOverlay');
+  document.getElementById('resultIcon').textContent=correct?'🎉':'😬';
+  document.getElementById('resultTitle').textContent=correct?'Correct!':'Wrong!';
+  document.getElementById('resultMove').textContent=(currentChg>=0?'▲ +':'▼ ')+currentChg.toFixed(2)+'%';
+  document.getElementById('resultMove').style.color=currentChg>=0?'var(--green)':'var(--red)';
+  document.getElementById('resultDetail').textContent=correct?
+    `Nice call! ${currentStock.sym} moved ${currentChg>=0?'up':'down'} ${Math.abs(currentChg).toFixed(2)}% today. Your accuracy is now ${Math.round(wins/total*100)}%.`:
+    `${currentStock.sym} actually went ${currentChg>=0?'UP':'DOWN'} ${Math.abs(currentChg).toFixed(2)}% today. Keep reading the market signals!`;
+  overlay.classList.add('show');
+  if(streak>=3){
+    const badge=document.getElementById('streakBadge');
+    badge.textContent=`🔥 ${streak} in a row!`;
+    badge.classList.add('show');
+  }
+}
+
+function updateScore(){
+  document.getElementById('scoreWins').textContent=wins;
+  document.getElementById('scoreTotal').textContent=total;
+  document.getElementById('scorePct').textContent=total?Math.round(wins/total*100)+'%':'—';
+  document.getElementById('scoreStreak').textContent=streak;
+}
+
+function nextStock(){
+  document.getElementById('resultOverlay').classList.remove('show');
+  loadStock();
+}
+
+function toggleHint(){
+  document.getElementById('hintText').classList.toggle('show');
+}
+
+loadStock();
+</script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Changelog — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+.page-header{padding:48px 24px 40px;max-width:800px;margin:0 auto}
+.page-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.page-header p{color:var(--muted)}
+main{max-width:800px;margin:0 auto;padding:0 24px 64px}
+.stats-banner{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:40px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-val{font-size:1.5rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent)}
+.stat-label{font-size:.72rem;color:var(--muted);margin-top:4px}
+.release{margin-bottom:40px}
+.release-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.release-version{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;color:var(--accent);background:rgba(47,128,237,.1);border:1px solid rgba(47,128,237,.3);padding:4px 12px;border-radius:6px}
+.release-date{font-size:.82rem;color:var(--muted)}
+.release-tag{font-size:.7rem;padding:3px 10px;border-radius:12px;font-weight:700}
+.tag-major{background:rgba(255,77,106,.15);color:var(--red)}
+.tag-minor{background:rgba(47,128,237,.12);color:var(--accent)}
+.tag-patch{background:rgba(39,174,96,.12);color:var(--green)}
+.changes{display:flex;flex-direction:column;gap:8px}
+.change-item{display:flex;gap:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:.85rem;line-height:1.4}
+.change-icon{flex-shrink:0;font-size:1rem}
+.change-text strong{color:var(--text)}
+.change-text{color:var(--muted)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+@media(max-width:500px){.stats-banner{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="changelog.html" style="color:var(--accent)">Changelog</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="about.html">👤 About</a><a href="changelog.html">📋 Changelog</a>
+</div>
+
+<div class="page-header">
+  <h1>📋 Changelog</h1>
+  <p>Every feature, fix, and improvement — built by Sripad, age 16, from zero coding experience</p>
+</div>
+
+<main>
+  <div class="stats-banner">
+    <div class="stat-box"><div class="stat-val">36+</div><div class="stat-label">Pages Built</div></div>
+    <div class="stat-box"><div class="stat-val">120+</div><div class="stat-label">Features</div></div>
+    <div class="stat-box"><div class="stat-val">0</div><div class="stat-label">Prior Experience</div></div>
+    <div class="stat-box"><div class="stat-val">∞</div><div class="stat-label">More Coming</div></div>
+  </div>
+
+  <div class="release">
+    <div class="release-header">
+      <span class="release-version">v5.0</span>
+      <span class="release-date">April 2025</span>
+      <span class="release-tag tag-major">Major Release</span>
+    </div>
+    <div class="changes">
+      <div class="change-item"><span class="change-icon">🎮</span><div class="change-text"><strong>Paper Trading</strong> — Practice with $100K virtual money, real prices, full portfolio tracking</div></div>
+      <div class="change-item"><span class="change-icon">🧠</span><div class="change-text"><strong>Investing Quiz</strong> — 30 questions across Beginner/Intermediate/Expert levels</div></div>
+      <div class="change-item"><span class="change-icon">🎯</span><div class="change-text"><strong>Prediction Game</strong> — Guess if stocks go up or down using real daily data</div></div>
+      <div class="change-item"><span class="change-icon">🤖</span><div class="change-text"><strong>AI Market Briefing</strong> — Claude-powered daily analysis across 6 market topics</div></div>
+      <div class="change-item"><span class="change-icon">📊</span><div class="change-text"><strong>Strategy Backtester</strong> — Test SMA, RSI, Momentum, DCA strategies on historical data</div></div>
+      <div class="change-item"><span class="change-icon">🔗</span><div class="change-text"><strong>Correlation Matrix</strong> — See how stocks move together, 5 preset groups</div></div>
+      <div class="change-item"><span class="change-icon">🌡️</span><div class="change-text"><strong>Market Mood Banner</strong> — Live Fear/Greed, VIX, S&P 500, BTC on homepage</div></div>
+      <div class="change-item"><span class="change-icon">⭐</span><div class="change-text"><strong>Stock of the Day</strong> — Daily featured pick with thesis and live price</div></div>
+      <div class="change-item"><span class="change-icon">📈📉</span><div class="change-text"><strong>Top Movers Widget</strong> — Live gainers and losers on homepage</div></div>
+    </div>
+  </div>
+
+  <div class="release">
+    <div class="release-header">
+      <span class="release-version">v4.0</span>
+      <span class="release-date">April 2025</span>
+      <span class="release-tag tag-major">Major Release</span>
+    </div>
+    <div class="changes">
+      <div class="change-item"><span class="change-icon">🗂️</span><div class="change-text"><strong>ETF Explorer</strong> — Browse 36 ETFs across 7 categories with live prices</div></div>
+      <div class="change-item"><span class="change-icon">🏢</span><div class="change-text"><strong>REIT Tracker</strong> — 18 REITs with yield, FFO, live prices, filtered by property type</div></div>
+      <div class="change-item"><span class="change-icon">🎯</span><div class="change-text"><strong>Unusual Options Activity</strong> — Sweeps, blocks, golden tickets with premium sizes</div></div>
+      <div class="change-item"><span class="change-icon">🌑</span><div class="change-text"><strong>Dark Pool Tracker</strong> — Institutional off-exchange volume signals</div></div>
+      <div class="change-item"><span class="change-icon">📊</span><div class="change-text"><strong>52-Week Scanner</strong> — New highs and lows with range visualization</div></div>
+      <div class="change-item"><span class="change-icon">💰</span><div class="change-text"><strong>Dividend Calendar</strong> — Upcoming ex-dividend dates with yields and growth rates</div></div>
+      <div class="change-item"><span class="change-icon">📈</span><div class="change-text"><strong>Futures Dashboard</strong> — Equity, currency, energy, metals, and agricultural futures</div></div>
+      <div class="change-item"><span class="change-icon">💵</span><div class="change-text"><strong>DRIP Calculator</strong> — Dividend reinvestment simulator with compound growth chart</div></div>
+      <div class="change-item"><span class="change-icon">✂️</span><div class="change-text"><strong>Split Calculator</strong> — Stock split impact on shares, cost basis, and value</div></div>
+    </div>
+  </div>
+
+  <div class="release">
+    <div class="release-header">
+      <span class="release-version">v3.0</span>
+      <span class="release-date">April 2025</span>
+      <span class="release-tag tag-major">Major Release</span>
+    </div>
+    <div class="changes">
+      <div class="change-item"><span class="change-icon">🏦</span><div class="change-text"><strong>Hedge Fund Tracker</strong> — Buffett, Ackman, Burry, Bridgewater, Tiger 13F holdings</div></div>
+      <div class="change-item"><span class="change-icon">🔄</span><div class="change-text"><strong>Sector Rotation</strong> — Economic cycle clock, live ETF prices, performance by timeframe</div></div>
+      <div class="change-item"><span class="change-icon">🏛️</span><div class="change-text"><strong>Macro Dashboard</strong> — CPI, GDP, jobs, Fed, yield curve, Fear & Greed in one place</div></div>
+      <div class="change-item"><span class="change-icon">🛢️</span><div class="change-text"><strong>Commodities</strong> — Live gold, oil, silver, copper, wheat, coffee and more</div></div>
+      <div class="change-item"><span class="change-icon">📈</span><div class="change-text"><strong>Bonds & Yields</strong> — Treasury yield curve, global rates, credit spreads</div></div>
+      <div class="change-item"><span class="change-icon">🌍</span><div class="change-text"><strong>Global Indices</strong> — Nikkei, FTSE, DAX, Hang Seng, Nifty and 25+ more</div></div>
+      <div class="change-item"><span class="change-icon">🧮</span><div class="change-text"><strong>DCF Calculator</strong> — Intrinsic value with sensitivity analysis and margin of safety</div></div>
+      <div class="change-item"><span class="change-icon">💰</span><div class="change-text"><strong>Options Calculator</strong> — P&L, Greeks, break-even, scenario table</div></div>
+      <div class="change-item"><span class="change-icon">📉</span><div class="change-text"><strong>Short Interest Tracker</strong> — 25 stocks with squeeze scores and risk levels</div></div>
+    </div>
+  </div>
+
+  <div class="release">
+    <div class="release-header">
+      <span class="release-version">v2.0</span>
+      <span class="release-date">March 2025</span>
+      <span class="release-tag tag-minor">Feature Update</span>
+    </div>
+    <div class="changes">
+      <div class="change-item"><span class="change-icon">🕯️</span><div class="change-text"><strong>Candlestick Charts</strong> — Professional OHLC charts with line/candle toggle</div></div>
+      <div class="change-item"><span class="change-icon">🚀</span><div class="change-text"><strong>IPO Calendar</strong> — Upcoming IPOs with hype scores and recent performance</div></div>
+      <div class="change-item"><span class="change-icon">⬆️</span><div class="change-text"><strong>Analyst Upgrades/Downgrades</strong> — 20 recent calls from top banks</div></div>
+      <div class="change-item"><span class="change-icon">📋</span><div class="change-text"><strong>SEC Filings</strong> — 10-K, 10-Q, 8-K, 13F, Form 4, S-1 tracker</div></div>
+      <div class="change-item"><span class="change-icon">💱</span><div class="change-text"><strong>Forex Page</strong> — Live currency rates and converter for 18 currencies</div></div>
+      <div class="change-item"><span class="change-icon">₿</span><div class="change-text"><strong>Crypto Page</strong> — Top 20 coins with 7-day sparklines via CoinGecko</div></div>
+    </div>
+  </div>
+
+  <div class="release">
+    <div class="release-header">
+      <span class="release-version">v1.0</span>
+      <span class="release-date">February 2025</span>
+      <span class="release-tag tag-minor">Launch</span>
+    </div>
+    <div class="changes">
+      <div class="change-item"><span class="change-icon">🚀</span><div class="change-text"><strong>Initial Launch</strong> — Live stock search with real-time prices via Yahoo Finance</div></div>
+      <div class="change-item"><span class="change-icon">🤖</span><div class="change-text"><strong>AI Analysis</strong> — Pre-written analysis for 27 stocks with signal scores</div></div>
+      <div class="change-item"><span class="change-icon">📊</span><div class="change-text"><strong>Price Charts</strong> — Interactive charts with 1M/3M/6M/1Y/5Y ranges</div></div>
+      <div class="change-item"><span class="change-icon">👁️</span><div class="change-text"><strong>Watchlist</strong> — Save and track your favorite stocks</div></div>
+      <div class="change-item"><span class="change-icon">💼</span><div class="change-text"><strong>Portfolio Tracker</strong> — Track holdings with live P&L</div></div>
+      <div class="change-item"><span class="change-icon">🔔</span><div class="change-text"><strong>Price Alerts</strong> — Get notified when stocks hit your target</div></div>
+      <div class="change-item"><span class="change-icon">🌙</span><div class="change-text"><strong>Dark/Light Mode</strong> — Theme toggle saved across sessions</div></div>
+    </div>
+  </div>
+</main>
+
+<footer>© 2025 CapitalSignal · Built by Sripad, age 16 · Started with zero coding experience</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+</script>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Investing Quiz — CapitalSignal</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
+.light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--surface2)}
+.nav-right{display:flex;align-items:center;gap:8px}
+.theme-toggle{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.9rem}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:8px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;display:block}
+.mobile-menu{display:none;flex-direction:column;background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;gap:4px}
+.mobile-menu a{color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:8px;font-size:.9rem}
+.mobile-menu.open{display:flex}
+@media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
+main{max-width:700px;margin:0 auto;padding:48px 24px 64px}
+.quiz-header{text-align:center;margin-bottom:40px}
+.quiz-header h1{font-size:2rem;font-weight:600;margin-bottom:8px}
+.quiz-header p{color:var(--muted)}
+.difficulty-row{display:flex;gap:8px;justify-content:center;margin:20px 0}
+.diff-btn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:8px 20px;border-radius:8px;cursor:pointer;font-size:.85rem;transition:.2s}
+.diff-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(47,128,237,.08)}
+.progress-bar{height:4px;background:var(--surface2);border-radius:2px;margin-bottom:32px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease}
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:16px;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.q-number{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;font-family:'DM Mono',monospace}
+.q-text{font-size:1.1rem;font-weight:500;line-height:1.5;margin-bottom:24px}
+.q-category{display:inline-block;font-size:.7rem;padding:3px 10px;border-radius:20px;background:rgba(47,128,237,.1);color:var(--accent);margin-bottom:12px}
+.options{display:grid;gap:10px}
+.option-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:14px 18px;border-radius:10px;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.9rem;transition:.2s;line-height:1.4}
+.option-btn:hover:not(:disabled){border-color:var(--accent);background:rgba(47,128,237,.08)}
+.option-btn.correct{border-color:var(--green)!important;background:rgba(39,174,96,.12)!important;color:var(--green)!important}
+.option-btn.wrong{border-color:var(--red)!important;background:rgba(255,77,106,.1)!important;color:var(--red)!important}
+.explanation{background:var(--surface2);border-radius:10px;padding:16px;font-size:.85rem;color:var(--muted);line-height:1.6;display:none;margin-top:12px}
+.explanation.show{display:block}
+.explanation strong{color:var(--text)}
+.next-btn{width:100%;background:var(--accent);border:none;color:#fff;padding:14px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:none;margin-top:12px;transition:.2s}
+.next-btn.show{display:block}
+.next-btn:hover{background:#1a6bc7}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;display:none}
+.score-card.show{display:block}
+.score-big{font-size:4rem;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:8px}
+.score-label{font-size:1rem;color:var(--muted);margin-bottom:24px}
+.score-grade{font-size:1.4rem;font-weight:600;margin-bottom:8px}
+.score-msg{font-size:.9rem;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.restart-btn{background:var(--accent);border:none;color:#fff;padding:14px 32px;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.stats-row{display:flex;gap:16px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.stat-item{text-align:center}
+.stat-val{font-size:1.4rem;font-weight:700;font-family:'DM Mono',monospace}
+.stat-lbl{font-size:.72rem;color:var(--muted)}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--muted);font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="nav-logo" href="index.html">CapitalSignal</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="paper-trading.html">📝 Paper Trading</a>
+    <a href="quiz.html" class="active">🧠 Quiz</a>
+    <a href="prediction-game.html">🎯 Prediction</a>
+    <a href="about.html">About</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <button class="hamburger" onclick="toggleMenu()" id="hamburger"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">🏠 Home</a><a href="paper-trading.html">📝 Paper Trading</a>
+  <a href="quiz.html">🧠 Quiz</a><a href="prediction-game.html">🎯 Prediction</a>
+</div>
+
+<main>
+  <div class="quiz-header">
+    <h1>🧠 Investing Knowledge Quiz</h1>
+    <p>Test how much you know about stocks, markets, and investing</p>
+    <div class="difficulty-row">
+      <button class="diff-btn active" onclick="setDiff('beginner',this)">🟢 Beginner</button>
+      <button class="diff-btn" onclick="setDiff('intermediate',this)">🟡 Intermediate</button>
+      <button class="diff-btn" onclick="setDiff('expert',this)">🔴 Expert</button>
+    </div>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div id="questionNum" style="font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:16px;font-family:'DM Mono',monospace"></div>
+
+  <div id="questionArea"></div>
+  <div class="score-card" id="scoreCard"></div>
+</main>
+
+<footer>© 2025 CapitalSignal · Learn as you invest</footer>
+
+<script>
+function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
+if(localStorage.getItem('theme')==='light'){document.body.classList.add('light');document.querySelector('.theme-toggle').textContent='☀️';}
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');document.getElementById('hamburger').classList.toggle('open');}
+
+const allQuestions={
+  beginner:[
+    {q:'What does "stock" mean?',cat:'Basics',options:['A loan from a bank','Ownership share in a company','A type of bond','A government certificate'],answer:1,explanation:'A stock represents ownership in a company. When you buy stock, you become a part-owner (shareholder) and benefit when the company grows.'},
+    {q:'What is a dividend?',cat:'Basics',options:['A fee you pay to buy stocks','A cash payment from company profits to shareholders','The daily change in stock price','A type of stock index'],answer:1,explanation:'Dividends are cash payments companies make to shareholders from their profits. Companies like Coca-Cola and Johnson & Johnson have paid dividends for over 50 consecutive years.'},
+    {q:'What does P/E ratio stand for?',cat:'Valuation',options:['Profit/Earnings','Price/Earnings','Portfolio/Equity','Performance/Estimate'],answer:1,explanation:'P/E (Price-to-Earnings) ratio tells you how much investors are paying per dollar of earnings. A P/E of 20 means investors pay $20 for every $1 of annual earnings. Lower P/E = cheaper stock.'},
+    {q:'What is the S&P 500?',cat:'Markets',options:['A savings account','Top 500 banks in America','Index of 500 largest US companies','A type of bond fund'],answer:2,explanation:'The S&P 500 tracks the 500 largest publicly traded US companies. It\'s the most widely followed stock market benchmark. Warren Buffett recommends most people just invest in an S&P 500 index fund.'},
+    {q:'What does "bull market" mean?',cat:'Markets',options:['A falling market','A sideways market','A rising market','A volatile market'],answer:2,explanation:'A bull market is when stock prices are rising over an extended period (typically 20%+ from recent lows). The opposite is a "bear market." Bulls charge upward, bears swipe downward.'},
+    {q:'What is market capitalization?',cat:'Basics',options:['The total value of all trades in a day','Total number of shares × share price','A company\'s annual revenue','A company\'s total assets'],answer:1,explanation:'Market cap = Share Price × Shares Outstanding. It tells you the total market value of a company. Apple\'s ~$3T market cap makes it one of the most valuable companies ever.'},
+    {q:'What does ETF stand for?',cat:'Investing',options:['Electronic Trading Fund','Exchange-Traded Fund','Equity Transfer Form','Extended Term Finance'],answer:1,explanation:'An ETF (Exchange-Traded Fund) is a basket of stocks that trades on an exchange like a single stock. SPY tracks the S&P 500. ETFs offer instant diversification with low fees.'},
+    {q:'What is diversification?',cat:'Investing',options:['Buying only one stock','Spreading investments to reduce risk','Selling all your stocks','Investing in foreign currencies only'],answer:1,explanation:'Diversification means spreading your money across different investments so one bad stock doesn\'t ruin your portfolio. "Don\'t put all your eggs in one basket" — the golden rule of investing.'},
+    {q:'What is compound interest?',cat:'Concepts',options:['Interest only on the original amount','Interest charged by brokers','Earning interest on your interest','A tax on investments'],answer:2,explanation:'Compound interest is earning returns on your returns. $10,000 at 10% annual return becomes $10,000 → $11,000 → $12,100 → ... Einstein called it the eighth wonder of the world.'},
+    {q:'What is a broker?',cat:'Basics',options:['A company that goes bankrupt','A middleman that executes your trades','A type of mutual fund','A government regulator'],answer:1,explanation:'A broker (like Robinhood, Fidelity, or Schwab) is the platform you use to buy and sell stocks. They execute your orders on the stock exchange.'},
+  ],
+  intermediate:[
+    {q:'What does "short selling" mean?',cat:'Trading',options:['Buying small amounts of stock','Selling stock you don\'t own yet, hoping price falls','Selling stocks quickly for profit','Investing in small-cap companies'],answer:1,explanation:'Short selling involves borrowing shares and selling them, hoping to buy them back cheaper later. If you short Tesla at $200 and it falls to $150, you profit $50/share. But if it rises, losses are unlimited.'},
+    {q:'What is a stop-loss order?',cat:'Trading',options:['An order to buy when price rises','An automatic sell order when price falls to a set level','A way to lock in profits','A type of dividend payment'],answer:1,explanation:'A stop-loss automatically sells your stock if it falls to a price you set — limiting your downside. E.g., buy AAPL at $190, set stop-loss at $180. You can\'t lose more than $10/share.'},
+    {q:'What does EBITDA stand for?',cat:'Valuation',options:['Earnings Before Interest, Taxes, Depreciation, and Amortization','Equity Balance in Trading and Distribution Assets','Expected Base Income Tax Due Amount','Early Bird Investment Term Discount Agreement'],answer:0,explanation:'EBITDA measures a company\'s core profitability before non-cash charges and financing. It\'s used to compare companies\' operational performance regardless of debt levels or tax situations.'},
+    {q:'What is a bear market?',cat:'Markets',options:['A market rising 20%+','A market falling 20%+ from recent highs','A market with low volume','A market with high volatility'],answer:1,explanation:'A bear market is a decline of 20%+ from recent highs, sustained over time. We saw bear markets in 2000 (dot-com crash), 2008 (financial crisis), and 2022 (rate hikes). They average ~9-10 months.'},
+    {q:'What is a 52-week high?',cat:'Markets',options:['The highest price a stock has traded in the past year','A stock that has risen for 52 weeks','A stock that pays 52 dividends','The highest volume day in a year'],answer:0,explanation:'The 52-week high is the highest price a stock has reached in the past 12 months. Stocks breaking above their 52-week high on high volume are often considered bullish breakout signals.'},
+    {q:'What does the VIX measure?',cat:'Markets',options:['Volume of trades on the NYSE','Expected market volatility over 30 days','The value of all US stocks','Speed of order execution'],answer:1,explanation:'The VIX (CBOE Volatility Index) measures expected market volatility using S&P 500 options prices. VIX above 30 = fear/panic. VIX below 15 = complacency. Traders call it the "Fear Index."'},
+    {q:'What is a forward P/E ratio?',cat:'Valuation',options:['P/E based on last 12 months of earnings','P/E based on next 12 months of estimated earnings','A ratio used only for tech stocks','The highest P/E a stock has ever had'],answer:1,explanation:'Forward P/E uses next 12 months\' earnings estimates. If a stock trades at $100 and analysts expect $5 in earnings, forward P/E = 20. It\'s forward-looking, which makes it more useful but less certain.'},
+    {q:'What is free cash flow?',cat:'Fundamentals',options:['Cash a company gets for free from the government','Operating cash flow minus capital expenditures','Total revenue minus expenses','Cash held in company bank accounts'],answer:1,explanation:'Free cash flow (FCF) = Operating Cash Flow - Capital Expenditures. It\'s the cash a company generates after paying for its own operations and growth. FCF is what can be returned to shareholders.'},
+    {q:'What does "going long" mean?',cat:'Trading',options:['Holding a stock for a long time','Buying a stock expecting it to rise','Selling borrowed shares','Investing in long-duration bonds'],answer:1,explanation:'"Going long" simply means buying and owning a stock. You profit when the price rises. This is the standard way most investors operate — the opposite of short selling.'},
+    {q:'What is dollar-cost averaging?',cat:'Investing',options:['Buying stocks in US dollars only','Averaging your purchase prices by investing equal amounts regularly','Buying only when stocks are cheap','Selling a fixed dollar amount monthly'],answer:1,explanation:'DCA means investing a fixed amount regularly (e.g., $500/month) regardless of price. When prices are high, you buy fewer shares. When low, you buy more. Over time, this averages your cost and removes emotion.'},
+  ],
+  expert:[
+    {q:'What is the Sharpe Ratio?',cat:'Risk',options:['Return divided by standard deviation','A measure of a stock\'s beta','Price-to-book value ratio','A liquidity measure for bonds'],answer:0,explanation:'Sharpe Ratio = (Portfolio Return - Risk-Free Rate) / Standard Deviation. It measures risk-adjusted return. A Sharpe above 1.0 is considered good. It tells you how much return you\'re getting per unit of risk.'},
+    {q:'What is convexity in bond pricing?',cat:'Fixed Income',options:['The curvature in the bond price-yield relationship','The yield spread between bonds','A bond\'s credit rating measure','The time to maturity of a bond'],answer:0,explanation:'Convexity measures how a bond\'s duration changes as interest rates change. Positive convexity means the bond gains more in price from rate drops than it loses from rate rises — a favorable characteristic.'},
+    {q:'What is the efficient market hypothesis?',cat:'Theory',options:['Markets always go up over time','All available information is already reflected in prices','Only professional investors can beat the market','Markets are most active in the morning'],answer:1,explanation:'EMH says stock prices reflect all available information, making it impossible to consistently beat the market. Strong form = all info. Semi-strong = public info. Weak form = historical prices. Buffett has disproven it repeatedly.'},
+    {q:'What is Jensen\'s Alpha?',cat:'Risk',options:['A measure of portfolio volatility','Excess return above the CAPM expected return','The ratio of long to short positions','A dividend yield measure'],answer:1,explanation:'Jensen\'s Alpha measures how much a portfolio outperforms (positive) or underperforms (negative) its expected return based on CAPM. Alpha of +2% means the manager beat their benchmark by 2% on a risk-adjusted basis.'},
+    {q:'What is the difference between duration and convexity?',cat:'Fixed Income',options:['Duration measures credit risk, convexity measures interest rate risk','Duration measures linear price sensitivity to rates, convexity measures the curvature','Duration is for stocks, convexity is for bonds','Duration is short-term, convexity is long-term'],answer:1,explanation:'Duration measures a bond\'s first-order sensitivity to interest rates (linear approximation). Convexity captures the second-order effect — the curvature. For large rate moves, you need both to accurately estimate price changes.'},
+    {q:'What does the Capital Asset Pricing Model (CAPM) calculate?',cat:'Theory',options:['A company\'s fair value','Expected return based on beta and market risk premium','The maximum position size for a stock','A company\'s cost of capital only'],answer:1,explanation:'CAPM: Expected Return = Risk-Free Rate + Beta × (Market Return - Risk-Free Rate). It says higher-beta stocks should have higher expected returns. Used to determine if a stock is fairly priced relative to its risk.'},
+    {q:'What is a repo agreement?',cat:'Fixed Income',options:['A corporate buyback program','Short-term borrowing using securities as collateral','A type of convertible bond','A derivative used to hedge currency risk'],answer:1,explanation:'Repurchase agreements (repos) involve selling securities with an agreement to buy them back later at a slightly higher price. The difference is the "repo rate." Used by banks for short-term liquidity. Critical to money markets.'},
+    {q:'What is the put-call parity?',cat:'Options',options:['The relationship between put and call prices for the same underlying','The ratio of puts to calls in the market','The maximum profit from an options strategy','The price difference between American and European options'],answer:0,explanation:'Put-call parity: C - P = S - K×e^(-rT). It means for European options on the same stock with same strike/expiry, the relationship between put and call prices is mathematically fixed. Violations create arbitrage opportunities.'},
+    {q:'What is the Merton model used for?',cat:'Credit',options:['Valuing stock options','Modeling credit risk by treating equity as a call option on assets','Pricing mortgage-backed securities','Calculating dividend discount model'],answer:1,explanation:'The Merton model treats a company\'s equity as a call option on its assets, with debt as the strike price. It\'s foundational in structural credit risk models and helps estimate probability of default and credit spreads.'},
+    {q:'What is a volatility smile?',cat:'Options',options:['A pattern where implied volatility increases for deep in/out-of-the-money options','When a trader profits from all volatility outcomes','The daily variation in the VIX index','A strategy combining straddles and strangles'],answer:0,explanation:'A volatility smile shows implied volatility plotted against strike prices. In practice, deep ITM and OTM options have higher IV than ATM options — violating Black-Scholes assumptions. Caused by crash risk, fat tails, and demand for protection.'},
+  ]
+};
+
+let difficulty='beginner';
+let questions=[];
+let currentQ=0;
+let score=0;
+let answered=false;
+
+function setDiff(d,btn){
+  difficulty=d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  startQuiz();
+}
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
+
+function startQuiz(){
+  questions=shuffle(allQuestions[difficulty]).slice(0,10);
+  currentQ=0;score=0;answered=false;
+  document.getElementById('scoreCard').classList.remove('show');
+  showQuestion();
+}
+
+function showQuestion(){
+  const q=questions[currentQ];
+  const pct=((currentQ)/questions.length*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('questionNum').textContent=`Question ${currentQ+1} of ${questions.length}`;
+  const opts=shuffle(q.options.map((o,i)=>({text:o,idx:i})));
+  document.getElementById('questionArea').innerHTML=`
+    <div class="question-card">
+      <span class="q-category">${q.cat}</span>
+      <div class="q-number">Q${currentQ+1}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">
+        ${opts.map(o=>`<button class="option-btn" onclick="answer(this,${o.idx},${q.answer})">${o.text}</button>`).join('')}
+      </div>
+      <div class="explanation" id="explanation"><strong>💡 Explanation:</strong> ${q.explanation}</div>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">${currentQ===questions.length-1?'See Results →':'Next Question →'}</button>`;
+  answered=false;
+}
+
+function answer(btn,chosen,correct){
+  if(answered)return;
+  answered=true;
+  const allBtns=document.querySelectorAll('.option-btn');
+  allBtns.forEach(b=>b.disabled=true);
+  if(chosen===correct){btn.classList.add('correct');score++;}
+  else{btn.classList.add('wrong');allBtns.forEach(b=>{if(parseInt(b.getAttribute('onclick').match(/answer\(this,(\d+)/)?.[1])===correct)b.classList.add('correct');});}
+  document.getElementById('explanation').classList.add('show');
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQuestion(){
+  currentQ++;
+  if(currentQ>=questions.length){showScore();}
+  else{showQuestion();}
+}
+
+function showScore(){
+  document.getElementById('questionArea').innerHTML='';
+  document.getElementById('nextBtn')?.classList.remove('show');
+  document.getElementById('progressFill').style.width='100%';
+  const pct=Math.round(score/questions.length*100);
+  const grade=pct>=90?'🏆 Expert':pct>=70?'🎓 Advanced':pct>=50?'📚 Learning':'🌱 Beginner';
+  const msg=pct>=90?'Outstanding! You have professional-level investing knowledge.':pct>=70?'Great job! You clearly understand how markets work.':pct>=50?'Good effort! Keep learning and you\'ll be an expert soon.':'Keep going! Every investor started somewhere. Try again!';
+  document.getElementById('scoreCard').innerHTML=`
+    <div class="score-big" style="color:${pct>=70?'var(--green)':pct>=50?'var(--yellow)':'var(--red)'}">${pct}%</div>
+    <div class="score-label">${score} out of ${questions.length} correct</div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-val" style="color:var(--green)">${score}</div><div class="stat-lbl">Correct</div></div>
+      <div class="stat-item"><div class="stat-val" style="color:var(--red)">${questions.length-score}</div><div class="stat-lbl">Wrong</div></div>
+      <div class="stat-item"><div class="stat-val" style="color:var(--accent)">${difficulty.charAt(0).toUpperCase()+difficulty.slice(1)}</div><div class="stat-lbl">Difficulty</div></div>
+    </div>
+    <div class="score-grade">${grade}</div>
+    <div class="score-msg">${msg}</div>
+    <button class="restart-btn" onclick="startQuiz()">Try Again</button>`;
+  document.getElementById('scoreCard').classList.add('show');
+}
+startQuiz();
+</script>
+</body>
+</html>
