@@ -303,7 +303,7 @@ canvas#sparkline { width:100%; height:100%; }
 
 /* FOOTER */
 footer { background:var(--surface); border-top:1px solid var(--border); padding:40px 24px; margin-top:64px; }
-.footer-inner { max-width:900px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr; gap:32px; }
+.footer-inner { max-width:900px; margin:0 auto; display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:32px; }
 .footer-brand .logo { font-weight:600; color:var(--accent); font-size:1.1rem; margin-bottom:8px; }
 .footer-brand p { font-size:.82rem; color:var(--muted); line-height:1.6; }
 .footer-col h4 { font-size:.8rem; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px; }
@@ -482,22 +482,22 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     </div>
   </div>
 
-  <!-- TOP MOVERS -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+  <!-- TOP MOVERS - hidden until data loads -->
+  <div id="moversSection" style="display:none;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
       <div style="font-size:.72rem;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;font-weight:600">🚀 Top Gainers Today</div>
-      <div id="topGainers"><div style="color:var(--muted);font-size:.82rem">Loading...</div></div>
+      <div id="topGainers"></div>
     </div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px">
       <div style="font-size:.72rem;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;font-weight:600">📉 Top Losers Today</div>
-      <div id="topLosers"><div style="color:var(--muted);font-size:.82rem">Loading...</div></div>
+      <div id="topLosers"></div>
     </div>
   </div>
 
   <div class="hero">
-    <div class="hero-badge">✦ AI-Powered Investing · Beta</div>
+    <div class="hero-badge">✦ Free · No Signup · Real Data</div>
     <h1>The signal<br><span class="accent">through</span><br><span class="dim">the noise.</span></h1>
-    <p>Cut through the noise. CapitalSignal gives you instant AI-powered analysis on any stock — built for the next generation of investors.</p>
+    <p>Search any stock to instantly get live prices, candlestick charts, AI analysis, analyst ratings, insider trades, and more — completely free.</p>
     <div class="search-wrap">
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search any ticker — AAPL, TSLA, NVDA..." onkeydown="handleSearchKey(event)" oninput="showSuggestions()" autocomplete="off">
@@ -535,6 +535,11 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
         <div class="price-change" id="r-change">—</div>
         <button onclick="toggleWatchlist(currentSym)" id="wl-btn" style="margin-top:10px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.78rem;transition:.2s;">+ Watchlist</button>
       </div>
+    </div>
+    <div style="background:var(--surface2);padding:8px 20px;display:flex;gap:20px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);border-bottom:1px solid var(--border)">
+      <span>📡 Data: Yahoo Finance · Updates every 60s</span>
+      <span>📰 News: GNews API · Real-time</span>
+      <span>⚠️ Not financial advice — do your own research</span>
     </div>
     <div class="metrics-grid" id="r-metrics"></div>
     <div class="chart-section">
@@ -637,15 +642,50 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   <div class="features-inner">
     <h2>What CapitalSignal Offers</h2>
     <p>Built for the next generation of investors. Free, fast, and intelligent.</p>
-    <div class="features-grid">
-      <div class="feature-card"><div class="feature-icon">📈</div><div class="feature-title">Real-Time Prices</div><div class="feature-desc">Live stock prices updating every 60 seconds.</div><span class="feature-badge">Live</span></div>
-      <div class="feature-card"><div class="feature-icon">🤖</div><div class="feature-title">AI Analysis</div><div class="feature-desc">Plain-English breakdown of every stock.</div><span class="feature-badge">Live</span></div>
-      <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Charts (1M–5Y)</div><div class="feature-desc">Interactive charts with multiple time ranges.</div><span class="feature-badge">Live</span></div>
-      <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-title">Stock Screener</div><div class="feature-desc">Filter stocks by sector, scores, and more.</div><span class="feature-badge">Live</span></div>
-      <div class="feature-card"><div class="feature-icon">💼</div><div class="feature-title">Portfolio Tracker</div><div class="feature-desc">Track your holdings with live P&L.</div><span class="feature-badge">Live</span></div>
-      <div class="feature-card"><div class="feature-icon">🔔</div><div class="feature-title">Price Alerts</div><div class="feature-desc">Get notified when stocks hit your target.</div><span class="feature-badge">Live</span></div>
-      <div class="feature-card"><div class="feature-icon">📰</div><div class="feature-title">Financial News</div><div class="feature-desc">Reuters, Bloomberg, CNBC, WSJ headlines.</div><span class="feature-badge">Live</span></div>
-      <div class="feature-card"><div class="feature-icon">⚖️</div><div class="feature-title">Stock Compare</div><div class="feature-desc">Side-by-side analysis of any two stocks.</div><span class="feature-badge">Live</span></div>
+    <div class="features-inner">
+      <h2>Everything you need to research a stock</h2>
+      <p style="margin-bottom:48px">No subscription. No ads. No signup. Just data.</p>
+
+      <div style="margin-bottom:32px">
+        <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600">🔍 Discover</div>
+        <div class="features-grid">
+          <div class="feature-card"><div class="feature-icon">📈</div><div class="feature-title">Live Prices</div><div class="feature-desc">Real-time prices refreshing every 60 seconds via Yahoo Finance.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">🗺️</div><div class="feature-title">Market Heatmap</div><div class="feature-desc">Visual overview of which sectors are up and down today.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">📰</div><div class="feature-title">Financial News</div><div class="feature-desc">Real-time headlines from major financial publishers.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">🔍</div><div class="feature-title">Stock Screener</div><div class="feature-desc">Filter stocks by sector, value, growth, and momentum scores.</div><span class="feature-badge">Live</span></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:32px">
+        <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600">🧠 Analyze</div>
+        <div class="features-grid">
+          <div class="feature-card"><div class="feature-icon">🤖</div><div class="feature-title">AI Analysis</div><div class="feature-desc">Plain-English breakdown of any stock's strengths and risks.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">📊</div><div class="feature-title">Candlestick Charts</div><div class="feature-desc">Professional OHLC charts with 1M to 5Y ranges.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">⭐</div><div class="feature-title">Analyst Ratings</div><div class="feature-desc">Wall Street consensus, price targets, and upside potential.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">🧮</div><div class="feature-title">DCF Calculator</div><div class="feature-desc">Estimate intrinsic value with margin of safety analysis.</div><span class="feature-badge">Live</span></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:48px">
+        <div style="font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px;font-weight:600">💼 Track</div>
+        <div class="features-grid">
+          <div class="feature-card"><div class="feature-icon">💼</div><div class="feature-title">Portfolio Tracker</div><div class="feature-desc">Add holdings and track live P&L with real prices.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">👁️</div><div class="feature-title">Watchlist</div><div class="feature-desc">Save stocks and monitor them in one place.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">🔔</div><div class="feature-title">Price Alerts</div><div class="feature-desc">Set above/below targets and get notified instantly.</div><span class="feature-badge">Live</span></div>
+          <div class="feature-card"><div class="feature-icon">📝</div><div class="feature-title">Paper Trading</div><div class="feature-desc">Practice with $100K virtual money and real prices.</div><span class="feature-badge">Live</span></div>
+        </div>
+      </div>
+
+      <!-- FOUNDER STORY -->
+      <div style="background:linear-gradient(135deg,rgba(47,128,237,.08),rgba(86,204,242,.03));border:1px solid rgba(47,128,237,.2);border-radius:16px;padding:32px;display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+        <div style="font-size:3rem;flex-shrink:0">👨‍💻</div>
+        <div>
+          <div style="font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-weight:600">Why I built this</div>
+          <div style="font-size:1rem;font-weight:600;margin-bottom:8px">I'm Sripad — I'm 16 and I built CapitalSignal from scratch.</div>
+          <div style="font-size:.88rem;color:var(--muted);line-height:1.7;margin-bottom:16px">I got interested in investing but couldn't find a free tool that gave real analysis — analyst ratings, insider trades, AI summaries, and professional charts all in one place. So I built it myself. I had zero coding experience when I started. Every feature on this site exists because I personally wanted it.</div>
+          <a href="about.html" style="display:inline-block;background:rgba(47,128,237,.15);border:1px solid rgba(47,128,237,.3);color:var(--accent);padding:8px 18px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600">Read the full story →</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -654,25 +694,35 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
   <div class="footer-inner">
     <div class="footer-brand">
       <div class="logo">CapitalSignal</div>
-      <p>AI-powered stock analysis for everyone. Built for the next generation of investors.</p>
+      <p>Free stock analysis for everyone. Live prices, AI insights, 40+ pages of financial tools. No ads, no signup required.</p>
+      <p style="margin-top:8px;font-size:.75rem;opacity:.6">Data: Yahoo Finance · CoinGecko · GNews · Not financial advice</p>
     </div>
     <div class="footer-col">
-      <h4>Platform</h4>
-      <a href="markets.html">Markets</a>
-      <a href="news.html">News</a>
-      <a href="compare.html">Compare</a>
+      <h4>Markets</h4>
+      <a href="markets.html">Overview</a>
+      <a href="heatmap.html">Heat Map</a>
+      <a href="futures.html">Futures</a>
       <a href="crypto.html">Crypto</a>
-      <a href="earnings.html">Earnings</a>
+      <a href="commodities.html">Commodities</a>
+    </div>
+    <div class="footer-col">
+      <h4>Tools</h4>
+      <a href="dcf.html">DCF Calculator</a>
+      <a href="options.html">Options Calc</a>
+      <a href="backtester.html">Backtester</a>
+      <a href="paper-trading.html">Paper Trading</a>
+      <a href="quiz.html">Investing Quiz</a>
     </div>
     <div class="footer-col">
       <h4>Company</h4>
-      <a href="about.html">About</a>
+      <a href="about.html">About Sripad</a>
+      <a href="changelog.html">Changelog</a>
       <a href="about.html#contact">Contact</a>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 CapitalSignal. Built for the next generation of investors.</span>
-    <span>Currently in beta — live data coming soon.</span>
+    <span>© 2025 CapitalSignal · Built by Sripad, age 16 · Dallas, Texas</span>
+    <span>Free forever · No ads · No signup</span>
   </div>
 </footer>
 
@@ -1372,6 +1422,9 @@ async function loadTopMovers() {
   </div>`;
   document.getElementById('topGainers').innerHTML = gainers.map(d => mkRow(d, true)).join('') || '<div style="color:var(--muted);font-size:.82rem">No data</div>';
   document.getElementById('topLosers').innerHTML = losers.map(d => mkRow(d, false)).join('') || '<div style="color:var(--muted);font-size:.82rem">No data</div>';
+  if (gainers.length || losers.length) {
+    document.getElementById('moversSection').style.display = 'grid';
+  }
 }
 
 // INIT
