@@ -6,7 +6,7 @@
 <title>About — CapitalSignal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60}
+:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--text:#e8e8f0;--muted:#6b6b80;--accent:#2F80ED;--red:#ff4d6a;--green:#27ae60;--yellow:#f2c94c}
 .light{--bg:#f5f5f7;--surface:#fff;--surface2:#f0f0f5;--border:#dddde8;--text:#1a1a2e;--muted:#888899}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
@@ -14,11 +14,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .nav-logo{font-weight:600;font-size:1.1rem;color:var(--accent);text-decoration:none}
 .nav-links{display:flex;align-items:center;gap:4px}
 .nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;padding:6px 12px;border-radius:6px;transition:.2s}
-.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-links a:hover,.nav-links a.active{color:var(--text);background:var(--surface2)}
 .nav-dropdown{position:relative}
 .nav-drop-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.2s}
 .nav-drop-btn:hover{color:var(--text);background:var(--surface2)}
-.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
+.nav-drop-menu{display:none;position:absolute;top:100%;left:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200}
 .nav-dropdown:hover .nav-drop-menu{display:flex;flex-direction:column}
 .nav-drop-menu a{color:var(--muted);text-decoration:none;font-size:.82rem;padding:8px 12px;border-radius:6px;transition:.2s;display:block}
 .nav-drop-menu a:hover{color:var(--text);background:var(--surface2)}
@@ -34,66 +34,96 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .mobile-menu.open{display:flex}
 @media(max-width:768px){.nav-links{display:none}.hamburger{display:flex}}
 
-.hero{padding:80px 24px 64px;max-width:800px;margin:0 auto;text-align:center;animation:fadeUp .8s ease both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-.avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#56CCF2);display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 24px}
-.hero h1{font-size:2.2rem;font-weight:600;margin-bottom:16px;letter-spacing:-1px}
-.hero h1 span{color:var(--accent)}
-.hero .tagline{font-size:1.1rem;color:var(--muted);line-height:1.7;max-width:600px;margin:0 auto}
-.badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:24px}
-.badge{background:var(--surface2);border:1px solid var(--border);padding:6px 14px;border-radius:20px;font-size:.78rem;color:var(--muted)}
-.badge.live{background:rgba(39,174,96,.1);border-color:rgba(39,174,96,.3);color:var(--green)}
+.hero-section{padding:72px 24px 56px;max-width:820px;margin:0 auto;text-align:center;animation:fadeUp .7s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.founder-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#56CCF2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto 20px}
+.hero-section h1{font-size:2.4rem;font-weight:600;letter-spacing:-1.5px;line-height:1.2;margin-bottom:16px}
+.hero-section h1 span{color:var(--accent)}
+.hero-tagline{font-size:1.05rem;color:var(--muted);line-height:1.8;max-width:580px;margin:0 auto 24px}
+.badge-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.badge{background:var(--surface2);border:1px solid var(--border);padding:5px 14px;border-radius:20px;font-size:.78rem;color:var(--muted)}
+.badge.green{background:rgba(39,174,96,.1);border-color:rgba(39,174,96,.3);color:var(--green)}
+.badge.blue{background:rgba(47,128,237,.1);border-color:rgba(47,128,237,.3);color:var(--accent)}
 
-main{max-width:800px;margin:0 auto;padding:0 24px 80px}
+main{max-width:820px;margin:0 auto;padding:0 24px 80px}
+
+.stats-banner{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:56px}
+@media(max-width:600px){.stats-banner{grid-template-columns:1fr 1fr}}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+.stat-num{font-size:1.8rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent);margin-bottom:4px}
+.stat-lbl{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 
 .section{margin-bottom:56px}
-.section h2{font-size:1.3rem;font-weight:600;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.section-label{font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:600}
+.section h2{font-size:1.4rem;font-weight:600;margin-bottom:16px;letter-spacing:-.5px}
+.section p{color:var(--muted);line-height:1.8;font-size:.95rem;margin-bottom:14px}
+.section p:last-child{margin:0}
+.section p strong{color:var(--text)}
 
-.story-text{color:var(--muted);line-height:1.8;font-size:.95rem}
-.story-text p{margin-bottom:16px}
-.story-text p:last-child{margin:0}
+.stance-block{background:linear-gradient(135deg,rgba(47,128,237,.08),rgba(47,128,237,.02));border:1px solid rgba(47,128,237,.25);border-left:3px solid var(--accent);border-radius:0 14px 14px 0;padding:28px 32px;margin-bottom:52px}
+.stance-block h2{font-size:1.4rem;font-weight:600;margin-bottom:12px;letter-spacing:-.5px}
+.stance-block p{color:var(--muted);line-height:1.8;font-size:.95rem;margin-bottom:12px}
+.stance-block p:last-child{margin:0}
+.stance-block p strong{color:var(--text)}
 
-.mission-card{background:linear-gradient(135deg,rgba(47,128,237,.1),rgba(86,204,242,.05));border:1px solid rgba(47,128,237,.2);border-radius:16px;padding:32px;text-align:center}
-.mission-card h3{font-size:1.1rem;color:var(--accent);margin-bottom:12px}
-.mission-card p{color:var(--muted);line-height:1.7}
+.for-who-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:16px}
+.fw-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.fw-icon{font-size:1.4rem;margin-bottom:8px}
+.fw-title{font-size:.9rem;font-weight:600;margin-bottom:4px}
+.fw-desc{font-size:.78rem;color:var(--muted);line-height:1.5}
 
-.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.how-grid{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.how-row{display:flex;gap:20px;padding:20px 24px;border-bottom:1px solid var(--border);align-items:flex-start;background:var(--surface)}
+.how-row:last-child{border:none}
+.how-row:hover{background:var(--surface2)}
+.how-num{width:32px;height:32px;border-radius:50%;background:rgba(47,128,237,.15);color:var(--accent);font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.how-content h4{font-size:.92rem;font-weight:600;margin-bottom:4px}
+.how-content p{font-size:.82rem;color:var(--muted);line-height:1.5;margin-bottom:6px}
+.how-source{display:inline-block;font-size:.7rem;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;color:var(--muted)}
+
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .tech-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
-.tech-icon{font-size:1.4rem;margin-bottom:8px}
-.tech-name{font-size:.88rem;font-weight:600;margin-bottom:4px}
-.tech-desc{font-size:.78rem;color:var(--muted)}
+.tech-icon{font-size:1.3rem;margin-bottom:8px}
+.tech-name{font-size:.85rem;font-weight:600;margin-bottom:4px}
+.tech-desc{font-size:.75rem;color:var(--muted);line-height:1.4}
 
-.roadmap{display:flex;flex-direction:column;gap:0}
+.roadmap{display:flex;flex-direction:column}
 .rm-item{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--border)}
 .rm-item:last-child{border:none}
-.rm-dot{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;margin-top:2px}
+.rm-dot{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.78rem;margin-top:2px;font-weight:700}
 .rm-dot.done{background:rgba(39,174,96,.15);color:var(--green)}
-.rm-dot.in-progress{background:rgba(47,128,237,.15);color:var(--accent)}
-.rm-dot.upcoming{background:var(--surface2);color:var(--muted)}
+.rm-dot.now{background:rgba(47,128,237,.15);color:var(--accent)}
+.rm-dot.next{background:var(--surface2);color:var(--muted)}
 .rm-content h4{font-size:.9rem;font-weight:600;margin-bottom:4px}
-.rm-content p{font-size:.82rem;color:var(--muted);line-height:1.5}
+.rm-content p{font-size:.8rem;color:var(--muted);line-height:1.5}
 
-.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
-.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
-.stat-box .num{font-size:1.8rem;font-weight:600;font-family:'DM Mono',monospace;color:var(--accent);margin-bottom:4px}
-.stat-box .lbl{font-size:.78rem;color:var(--muted)}
+.vision-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:600px){.vision-grid{grid-template-columns:1fr}}
+.vision-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.vc-label{font-size:.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600}
+.vc-title{font-size:.9rem;font-weight:600;margin-bottom:4px}
+.vc-desc{font-size:.78rem;color:var(--muted);line-height:1.5}
+
+.closing-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 32px;text-align:center;margin-bottom:48px}
+.closing-block h2{font-size:2rem;font-weight:600;letter-spacing:-1px;margin-bottom:12px;line-height:1.2}
+.closing-block h2 span{color:var(--accent)}
+.closing-block p{color:var(--muted);line-height:1.7;max-width:480px;margin:0 auto 28px;font-size:.95rem}
+.cta-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.cta-btn{display:inline-block;background:var(--accent);color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem;transition:.2s}
+.cta-btn:hover{background:#1a6bc7}
+.cta-btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+.cta-btn.ghost:hover{background:var(--surface2)}
 
 .contact-form{display:flex;flex-direction:column;gap:12px}
 .contact-form input,.contact-form textarea{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:.2s}
 .contact-form input:focus,.contact-form textarea:focus{border-color:var(--accent)}
 .contact-form textarea{min-height:120px;resize:vertical}
-.contact-form button{background:var(--accent);border:none;color:#fff;padding:14px;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:500;transition:.2s}
+.contact-form button{background:var(--accent);border:none;color:#fff;padding:13px;border-radius:10px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.92rem;font-weight:500;transition:.2s}
 .contact-form button:hover{background:#1a6bc7}
-.success-msg{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:10px;padding:16px;color:var(--green);text-align:center;display:none}
+.success-msg{background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:10px;padding:14px;color:var(--green);text-align:center;display:none;font-size:.88rem;margin-bottom:12px}
 .success-msg.show{display:block}
 
-footer{background:var(--surface);border-top:1px solid var(--border);padding:40px 24px}
-.footer-inner{max-width:800px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
-.footer-brand .logo{font-weight:600;color:var(--accent)}
-.footer-links{display:flex;gap:16px}
-.footer-links a{color:var(--muted);text-decoration:none;font-size:.82rem}
-.footer-links a:hover{color:var(--text)}
-.footer-copy{color:var(--muted);font-size:.78rem;max-width:800px;margin:16px auto 0;padding:16px 24px 0;border-top:1px solid var(--border);text-align:center}
+footer{background:var(--surface);border-top:1px solid var(--border);padding:28px 24px;text-align:center;color:var(--muted);font-size:.8rem}
 </style>
 </head>
 <body>
@@ -106,7 +136,14 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:40px
       <div class="nav-drop-menu">
         <a href="markets.html">📊 Markets Overview</a>
         <a href="heatmap.html">🗺️ Heat Map</a>
+        <a href="futures.html">📈 Futures</a>
+        <a href="etf-explorer.html">🗂️ ETF Explorer</a>
+        <a href="reit-tracker.html">🏢 REITs</a>
         <a href="crypto.html">₿ Crypto</a>
+        <a href="commodities.html">🛢️ Commodities</a>
+        <a href="bonds.html">📈 Bonds</a>
+        <a href="global-indices.html">🌍 Global Indices</a>
+        <a href="macro.html">🏛️ Macro Dashboard</a>
         <a href="economic-calendar.html">🏦 Economic Calendar</a>
       </div>
     </div>
@@ -115,19 +152,24 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:40px
       <div class="nav-drop-menu">
         <a href="compare.html">⚖️ Compare Stocks</a>
         <a href="earnings.html">📅 Earnings</a>
-        <a href="index.html#screener">🔍 Screener</a>
-        <a href="index.html#portfolio">💼 Portfolio</a>
+        <a href="dcf.html">🧮 DCF Calculator</a>
+        <a href="options.html">💰 Options Calculator</a>
+        <a href="backtester.html">📊 Backtester</a>
+        <a href="correlation.html">🔗 Correlation Matrix</a>
+        <a href="drip.html">💵 DRIP Calculator</a>
+        <a href="split-calculator.html">✂️ Split Calculator</a>
       </div>
     </div>
     <div class="nav-dropdown">
-      <button class="nav-drop-btn">Data ▾</button>
+      <button class="nav-drop-btn">Play ▾</button>
       <div class="nav-drop-menu">
-        <a href="news.html">📰 News</a>
-        <a href="index.html#watchlist">👁️ Watchlist</a>
-        <a href="index.html#alerts">🔔 Price Alerts</a>
+        <a href="paper-trading.html">📝 Paper Trading</a>
+        <a href="quiz.html">🧠 Investing Quiz</a>
+        <a href="prediction-game.html">🎯 Prediction Game</a>
       </div>
     </div>
     <a href="about.html" class="active">About</a>
+    <a href="changelog.html" style="font-size:.78rem;color:var(--muted);padding:6px 8px">v5.0</a>
   </div>
   <div class="nav-right">
     <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
@@ -135,114 +177,188 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:40px
   </div>
 </nav>
 <div class="mobile-menu" id="mobileMenu">
-  <a href="index.html">🏠 Home</a><a href="markets.html">📊 Markets</a><a href="heatmap.html">🗺️ Heat Map</a>
-  <a href="crypto.html">₿ Crypto</a><a href="economic-calendar.html">🏦 Economy</a>
-  <a href="compare.html">⚖️ Compare</a><a href="earnings.html">📅 Earnings</a>
-  <a href="news.html">📰 News</a><a href="about.html">👤 About</a>
+  <a href="index.html">🏠 Home</a>
+  <a href="markets.html">📊 Markets</a>
+  <a href="paper-trading.html">📝 Paper Trading</a>
+  <a href="quiz.html">🧠 Quiz</a>
+  <a href="about.html">👤 About</a>
+  <a href="changelog.html">📋 Changelog</a>
 </div>
 
-<div class="hero">
-  <div class="avatar">👨‍💻</div>
-  <h1>Hi, I'm <span>Sripad</span>.</h1>
-  <p class="tagline">I'm a 16-year-old sophomore who built CapitalSignal from scratch with zero prior coding experience — because I wanted to understand the stock market and couldn't find a tool that was simple, smart, and free.</p>
+<div class="hero-section">
+  <div class="founder-avatar">👨‍💻</div>
+  <h1>Hi, I'm <span>Sripad</span>.<br>I'm 16. I built this.</h1>
+  <p class="hero-tagline">Most investing tools are unnecessarily complicated, insanely expensive, or just plain useless for beginners. I got frustrated — so I built something better. From scratch. With no coding experience.</p>
   <div class="badge-row">
-    <span class="badge">Age 16</span>
+    <span class="badge">Age 16 · Dallas, Texas</span>
     <span class="badge">Self-Taught Developer</span>
-    <span class="badge live">🟢 Live Since 2024</span>
-    <span class="badge">Dallas, Texas</span>
+    <span class="badge green">🟢 Live · Free Forever</span>
+    <span class="badge blue">40+ Pages Built</span>
   </div>
 </div>
 
 <main>
-  <div class="stats-row">
-    <div class="stat-box"><div class="num">9</div><div class="lbl">Pages Built</div></div>
-    <div class="stat-box"><div class="num">27+</div><div class="lbl">Stocks Analyzed</div></div>
-    <div class="stat-box"><div class="num">0</div><div class="lbl">Prior Experience</div></div>
+  <div class="stats-banner">
+    <div class="stat-box"><div class="stat-num">40+</div><div class="stat-lbl">Pages Built</div></div>
+    <div class="stat-box"><div class="stat-num">120+</div><div class="stat-lbl">Features</div></div>
+    <div class="stat-box"><div class="stat-num">0</div><div class="stat-lbl">Prior Experience</div></div>
+    <div class="stat-box"><div class="stat-num">$0</div><div class="stat-lbl">Cost to Users</div></div>
   </div>
 
+  <!-- OPINIONATED STANCE -->
+  <div class="stance-block">
+    <h2>Most investing tools are built wrong.</h2>
+    <p>Bloomberg costs $24,000 a year. Morningstar hides everything behind a paywall. Most free tools are so watered-down they're useless. <strong>None of them were built for someone who just wants to understand a stock in plain English — fast.</strong></p>
+    <p>CapitalSignal is the tool I wanted and couldn't find. Live prices, AI analysis, candlestick charts, analyst ratings, options flow, insider trades, DCF calculators, paper trading — all free, no signup, no ads. The same quality of analysis that institutional investors pay thousands for, available to everyone.</p>
+  </div>
+
+  <!-- WHO IT'S FOR -->
   <div class="section">
-    <h2>My Story</h2>
-    <div class="story-text">
-      <p>I'm Sripad, a 16-year-old sophomore from Dallas, Texas. I built CapitalSignal because I got interested in investing but couldn't find a free tool that gave me the kind of deep analysis that professional investors use — analyst ratings, insider trading activity, dividend history, signal scores, and real AI insights all in one place.</p>
-      <p>So I decided to build it myself. With no prior coding experience, I started from zero — learning HTML, CSS, and JavaScript, figuring out how APIs work, deploying to Vercel, and debugging things that broke in unexpected ways. Every feature on this site is something I built because I personally wanted it.</p>
-      <p>CapitalSignal started as a simple stock search tool. Then I added charts. Then news. Then analyst ratings. Then a whole market heatmap. It's grown into something I'm genuinely proud of — and I'm just getting started.</p>
+    <div class="section-label">Who it's for</div>
+    <h2>Built for beginners, students, and anyone tired of complicated investing tools.</h2>
+    <p>You don't need an MBA. You don't need to pay for Bloomberg. You just need somewhere to look up a stock and actually understand what you're looking at.</p>
+    <div class="for-who-grid">
+      <div class="fw-card"><div class="fw-icon">🎓</div><div class="fw-title">Students</div><div class="fw-desc">Learning about markets for the first time. Want real data without the jargon.</div></div>
+      <div class="fw-card"><div class="fw-icon">👶</div><div class="fw-title">New Investors</div><div class="fw-desc">Just started investing. Want to understand a stock before putting real money in.</div></div>
+      <div class="fw-card"><div class="fw-icon">💼</div><div class="fw-title">Casual Investors</div><div class="fw-desc">Invest occasionally. Want fast, professional analysis without the subscription fee.</div></div>
+      <div class="fw-card"><div class="fw-icon">🤓</div><div class="fw-title">Finance Enthusiasts</div><div class="fw-desc">Love markets. Want a free tool that actually has depth — not just a price ticker.</div></div>
     </div>
   </div>
 
+  <!-- HOW IT WORKS -->
   <div class="section">
-    <div class="mission-card">
-      <h3>🎯 The Mission</h3>
-      <p>Institutional investors have Bloomberg terminals, Wall Street analysts, and proprietary data. Everyone else gets noise. CapitalSignal exists to give the next generation of investors access to the same quality of analysis — completely free.</p>
+    <div class="section-label">Transparency</div>
+    <h2>How it works — no black boxes.</h2>
+    <p>Here's exactly where every piece of data comes from. No mystery, no vague "AI-powered" claims.</p>
+    <div class="how-grid">
+      <div class="how-row">
+        <div class="how-num">1</div>
+        <div class="how-content">
+          <h4>Live stock prices & fundamentals</h4>
+          <p>Real-time prices, OHLC chart data, market cap, P/E ratios, and key metrics — fetched directly from Yahoo Finance. Refreshes every 60 seconds.</p>
+          <span class="how-source">Yahoo Finance API</span>
+        </div>
+      </div>
+      <div class="how-row">
+        <div class="how-num">2</div>
+        <div class="how-content">
+          <h4>Financial news headlines</h4>
+          <p>Real-time headlines aggregated from Reuters, Bloomberg, CNBC, MarketWatch, and other major financial publishers.</p>
+          <span class="how-source">GNews API</span>
+        </div>
+      </div>
+      <div class="how-row">
+        <div class="how-num">3</div>
+        <div class="how-content">
+          <h4>Crypto prices & market data</h4>
+          <p>All cryptocurrency prices, market caps, and sparkline charts via CoinGecko's free public API.</p>
+          <span class="how-source">CoinGecko API</span>
+        </div>
+      </div>
+      <div class="how-row">
+        <div class="how-num">4</div>
+        <div class="how-content">
+          <h4>AI analysis & market briefings</h4>
+          <p>Stock analysis summaries written by me for 27 major stocks, based on public research. The AI Briefing page uses Claude by Anthropic for live market commentary. <strong>All analysis is informational only — never financial advice.</strong></p>
+          <span class="how-source">Claude AI · Anthropic</span>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- THE STORY -->
   <div class="section">
-    <h2>Tech Stack</h2>
+    <div class="section-label">The story</div>
+    <h2>I started from zero.</h2>
+    <p>In early 2025, I didn't know what HTML was. I'd never written a line of code, never deployed a website, never called an API.</p>
+    <p>But I was obsessed with stocks — and I couldn't find a free tool that gave me everything in one place. Professional platforms cost thousands. Free ones were too basic. So I decided to build exactly what I wanted.</p>
+    <p>I taught myself HTML, CSS, JavaScript, and how APIs work by Googling everything and breaking things constantly. Every feature on CapitalSignal exists because I personally wanted it and had no idea how hard it would be to build.</p>
+    <p><strong>Six months later: 40+ pages, 120+ features, zero prior experience, and a platform I use every day.</strong></p>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="section">
+    <div class="section-label">Under the hood</div>
+    <h2>Tech stack</h2>
     <div class="tech-grid">
-      <div class="tech-card"><div class="tech-icon">🌐</div><div class="tech-name">HTML / CSS / JS</div><div class="tech-desc">Pure vanilla frontend — no frameworks, just clean code.</div></div>
-      <div class="tech-card"><div class="tech-icon">▲</div><div class="tech-name">Vercel</div><div class="tech-desc">Serverless deployment with automatic CI/CD from GitHub.</div></div>
-      <div class="tech-card"><div class="tech-icon">📊</div><div class="tech-name">Yahoo Finance API</div><div class="tech-desc">Live stock prices, charts, and fundamental data.</div></div>
-      <div class="tech-card"><div class="tech-icon">📰</div><div class="tech-name">GNews API</div><div class="tech-desc">Real-time financial news from major publishers.</div></div>
-      <div class="tech-card"><div class="tech-icon">₿</div><div class="tech-name">CoinGecko API</div><div class="tech-desc">Crypto prices, market caps, and sparklines.</div></div>
-      <div class="tech-card"><div class="tech-icon">🐱</div><div class="tech-name">GitHub</div><div class="tech-desc">Version control and source code management.</div></div>
+      <div class="tech-card"><div class="tech-icon">🌐</div><div class="tech-name">HTML / CSS / JS</div><div class="tech-desc">Pure vanilla — no frameworks. Fast, lightweight, fully custom.</div></div>
+      <div class="tech-card"><div class="tech-icon">▲</div><div class="tech-name">Vercel</div><div class="tech-desc">Serverless hosting with automatic deploys from GitHub on every commit.</div></div>
+      <div class="tech-card"><div class="tech-icon">📊</div><div class="tech-name">Yahoo Finance</div><div class="tech-desc">Live prices, charts, fundamentals, and historical OHLC data.</div></div>
+      <div class="tech-card"><div class="tech-icon">📰</div><div class="tech-name">GNews API</div><div class="tech-desc">Real-time financial news from top publishers worldwide.</div></div>
+      <div class="tech-card"><div class="tech-icon">₿</div><div class="tech-name">CoinGecko</div><div class="tech-desc">Cryptocurrency prices, market caps, and 7-day sparklines.</div></div>
+      <div class="tech-card"><div class="tech-icon">🤖</div><div class="tech-name">Claude · Anthropic</div><div class="tech-desc">AI-powered market briefings and analysis via the Anthropic API.</div></div>
     </div>
   </div>
 
+  <!-- ROADMAP -->
   <div class="section">
-    <h2>Roadmap</h2>
+    <div class="section-label">Progress</div>
+    <h2>What's been built — and what's next.</h2>
     <div class="roadmap">
-      <div class="rm-item">
-        <div class="rm-dot done">✓</div>
-        <div class="rm-content"><h4>Phase 1 — Launch</h4><p>Basic stock search, live prices, price charts, AI analysis text, and deployment to Vercel.</p></div>
+      <div class="rm-item"><div class="rm-dot done">✓</div><div class="rm-content"><h4>Phases 1–3 — Core Platform</h4><p>Live prices, charts, AI analysis, screener, portfolio tracker, watchlist, price alerts, news, market heatmap, crypto, earnings, and economic calendar.</p></div></div>
+      <div class="rm-item"><div class="rm-dot done">✓</div><div class="rm-content"><h4>Phase 4 — 40-Page Expansion</h4><p>ETF Explorer, REIT Tracker, Futures, Commodities, Bonds, Global Indices, Macro Dashboard, Hedge Funds, Sector Rotation, Unusual Options, Dark Pool, 52-Week Scanner, Dividend Calendar, DCF, Options Calc, DRIP, Backtester, Correlation Matrix, and more.</p></div></div>
+      <div class="rm-item"><div class="rm-dot done">✓</div><div class="rm-content"><h4>Phase 5 — Games & Learning</h4><p>Paper Trading ($100K virtual), Investing Quiz (30 questions, 3 levels), Stock Prediction Game, and AI Market Briefing powered by Claude.</p></div></div>
+      <div class="rm-item"><div class="rm-dot now">→</div><div class="rm-content"><h4>Phase 6 — Real AI for Any Stock (In Progress)</h4><p>Claude AI analysis for any ticker — not just the 27 pre-written ones. Requires Anthropic API billing.</p></div></div>
+      <div class="rm-item"><div class="rm-dot next">○</div><div class="rm-content"><h4>Phase 7 — Custom Domain</h4><p>capitalsignal.com. Makes the platform feel more permanent and professional.</p></div></div>
+      <div class="rm-item"><div class="rm-dot next">○</div><div class="rm-content"><h4>Phase 8 — User Accounts</h4><p>Cloud-saved watchlists, portfolios, and personalized email alerts.</p></div></div>
+    </div>
+  </div>
+
+  <!-- FUTURE VISION -->
+  <div class="section">
+    <div class="section-label">Where this is going</div>
+    <h2>This is just the beginning.</h2>
+    <p>CapitalSignal isn't a school project I'll abandon. It's a product I plan to keep building. Here's what's coming.</p>
+    <div class="vision-grid">
+      <div class="vision-card">
+        <div class="vc-label">AI</div>
+        <div class="vc-title">Real-time AI for any stock</div>
+        <div class="vc-desc">Ask any question about any ticker and get an instant Claude AI answer — not just pre-written summaries for 27 stocks.</div>
       </div>
-      <div class="rm-item">
-        <div class="rm-dot done">✓</div>
-        <div class="rm-content"><h4>Phase 2 — Platform</h4><p>Added news, screener, portfolio tracker, watchlist, price alerts, markets page, and mobile responsiveness.</p></div>
+      <div class="vision-card">
+        <div class="vc-label">Personalization</div>
+        <div class="vc-title">Your dashboard, your way</div>
+        <div class="vc-desc">Drag-and-drop widgets, saved layouts, and smart alerts based on your actual portfolio and watchlist.</div>
       </div>
-      <div class="rm-item">
-        <div class="rm-dot done">✓</div>
-        <div class="rm-content"><h4>Phase 3 — Intelligence</h4><p>Analyst ratings, insider trading, dividends, compare tool, earnings calendar, economic calendar, market heatmap, and crypto page.</p></div>
+      <div class="vision-card">
+        <div class="vc-label">Community</div>
+        <div class="vc-title">Public watchlists & leaderboards</div>
+        <div class="vc-desc">Share your watchlist with a link. See how your paper trading performance compares to other users.</div>
       </div>
-      <div class="rm-item">
-        <div class="rm-dot in-progress">→</div>
-        <div class="rm-content"><h4>Phase 4 — AI (In Progress)</h4><p>Real-time Claude AI analysis for any stock ticker, not just the 27 pre-programmed ones. Requires Anthropic API billing setup.</p></div>
-      </div>
-      <div class="rm-item">
-        <div class="rm-dot upcoming">○</div>
-        <div class="rm-content"><h4>Phase 5 — Custom Domain</h4><p>Moving from capitalsignal.vercel.app to capitalsignal.com (~$12/yr on Namecheap).</p></div>
-      </div>
-      <div class="rm-item">
-        <div class="rm-dot upcoming">○</div>
-        <div class="rm-content"><h4>Phase 6 — User Accounts</h4><p>Save watchlists and portfolios to the cloud. Personalized alerts via email or SMS.</p></div>
+      <div class="vision-card">
+        <div class="vc-label">Mobile</div>
+        <div class="vc-title">Native mobile app</div>
+        <div class="vc-desc">A proper iOS and Android app with push notifications, price alerts, and offline portfolio access.</div>
       </div>
     </div>
   </div>
 
+  <!-- CLOSING -->
+  <div class="closing-block">
+    <h2>Stock analysis in seconds.<br><span>Free forever.</span></h2>
+    <p>No Bloomberg subscription. No paywall. No ads. Just the clearest, simplest way to research a stock — built by a 16-year-old who wanted it to exist.</p>
+    <div class="cta-row">
+      <a href="index.html" class="cta-btn">Try CapitalSignal →</a>
+      <a href="changelog.html" class="cta-btn ghost">See what's been built</a>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
   <div class="section" id="contact">
-    <h2>Get in Touch</h2>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:20px">Have feedback, a feature request, or just want to say hi? I read every message.</p>
+    <div class="section-label">Get in touch</div>
+    <h2>I read every message.</h2>
+    <p style="margin-bottom:20px">Have feedback, a feature request, a bug report, or just want to say hi? I personally respond to everything sent here.</p>
     <div class="success-msg" id="successMsg">✓ Message sent! I'll get back to you soon.</div>
     <div class="contact-form">
       <input type="text" id="cf-name" placeholder="Your name">
       <input type="email" id="cf-email" placeholder="Your email">
-      <textarea id="cf-msg" placeholder="Your message..."></textarea>
+      <textarea id="cf-msg" placeholder="Your message — feedback, ideas, or anything else..."></textarea>
       <button onclick="sendMessage()">Send Message →</button>
     </div>
   </div>
 </main>
 
-<footer>
-  <div class="footer-inner">
-    <div class="footer-brand"><div class="logo">CapitalSignal</div></div>
-    <div class="footer-links">
-      <a href="index.html">Home</a>
-      <a href="markets.html">Markets</a>
-      <a href="news.html">News</a>
-      <a href="about.html">About</a>
-    </div>
-  </div>
-  <div class="footer-copy">© 2025 CapitalSignal · Built by Sripad, age 16 · Not financial advice · Data from Yahoo Finance, GNews, CoinGecko</div>
-</footer>
+<footer>© 2025 CapitalSignal · Built by Sripad, age 16 · Dallas, Texas · Free forever · Not financial advice</footer>
 
 <script>
 function toggleTheme(){document.body.classList.toggle('light');document.querySelector('.theme-toggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';}
@@ -252,7 +368,7 @@ function sendMessage(){
   const name=document.getElementById('cf-name').value.trim();
   const email=document.getElementById('cf-email').value.trim();
   const msg=document.getElementById('cf-msg').value.trim();
-  if(!name||!email||!msg)return;
+  if(!name||!email||!msg){alert('Please fill in all fields.');return;}
   document.getElementById('successMsg').classList.add('show');
   document.getElementById('cf-name').value='';
   document.getElementById('cf-email').value='';
