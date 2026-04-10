@@ -82,8 +82,28 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 .mobile-menu.open { display:flex; }
 @media(max-width:768px) { .nav-links{display:none} .hamburger{display:flex} }
 
+/* SKELETON LOADERS */
+@keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+.skeleton { background:linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%); background-size:400px 100%; animation:shimmer 1.4s infinite; border-radius:6px; }
+.skeleton-line { height:14px; margin-bottom:8px; }
+.skeleton-line.wide { width:80%; }
+.skeleton-line.medium { width:55%; }
+.skeleton-line.short { width:30%; }
+.skeleton-price { height:36px; width:140px; border-radius:8px; }
+.skeleton-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:28px; }
+
+/* SIGNAL BADGES */
+.signal-panel { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:20px 32px; border-bottom:1px solid var(--border); }
+.signal-item { display:flex; align-items:center; gap:8px; font-size:.82rem; }
+.signal-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.signal-dot.bull { background:#27ae60; }
+.signal-dot.bear { background:var(--red); }
+.signal-dot.neutral { background:var(--muted); }
+.signal-label { color:var(--muted); }
+.signal-value { font-weight:600; margin-left:auto; font-family:'DM Mono',monospace; font-size:.78rem; }
+
 /* HERO */
-.hero { text-align:center; padding:80px 24px 60px; animation:fadeUp .8s ease both; }
+.hero { text-align:center; padding:64px 24px 48px; animation:fadeUp .8s ease both; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(47,128,237,.1); border:1px solid rgba(47,128,237,.3); color:var(--accent); font-size:.75rem; font-family:'DM Mono',monospace; padding:5px 14px; border-radius:20px; margin-bottom:24px; }
 .hero h1 { font-size:clamp(2.5rem,6vw,4rem); font-weight:600; line-height:1.1; letter-spacing:-2px; margin-bottom:16px; }
@@ -496,8 +516,8 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
 
   <div class="hero">
     <div class="hero-badge">✦ Free · No Signup · Real Data</div>
-    <h1>The signal<br><span class="accent">through</span><br><span class="dim">the noise.</span></h1>
-    <p>Search any stock to instantly get live prices, candlestick charts, AI analysis, analyst ratings, insider trades, and more — completely free.</p>
+    <h1>Stock analysis<br><span class="accent">in seconds.</span></h1>
+    <p>Type any ticker and instantly get live prices, AI analysis, candlestick charts, analyst ratings, and insider activity — all in one place, completely free.</p>
     <div class="search-wrap">
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search any ticker — AAPL, TSLA, NVDA..." onkeydown="handleSearchKey(event)" oninput="showSuggestions()" autocomplete="off">
@@ -521,7 +541,28 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
     </div>
   </div>
 
-  <div class="loading" id="loading"><div class="spinner"></div><p style="color:var(--muted);font-size:.85rem">Fetching live data...</p></div>
+  <!-- SKELETON LOADER - shows while fetching -->
+  <div id="skeletonLoader" style="display:none;margin-bottom:24px">
+    <div class="skeleton-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+        <div style="flex:1">
+          <div class="skeleton skeleton-line short" style="margin-bottom:12px"></div>
+          <div class="skeleton skeleton-line wide" style="height:22px;margin-bottom:8px"></div>
+          <div class="skeleton skeleton-line medium"></div>
+        </div>
+        <div style="text-align:right">
+          <div class="skeleton skeleton-price" style="margin-bottom:8px;margin-left:auto"></div>
+          <div class="skeleton skeleton-line short" style="margin-left:auto"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);margin-bottom:20px">
+        ${[1,2,3,4,5,6,7,8].map(()=>`<div style="background:var(--surface);padding:18px 20px"><div class="skeleton skeleton-line short" style="margin-bottom:6px"></div><div class="skeleton skeleton-line medium"></div></div>`).join('')}
+      </div>
+      <div style="height:160px;background:var(--surface2);border-radius:8px" class="skeleton"></div>
+    </div>
+  </div>
+
+  <div class="loading" id="loading" style="display:none"><div class="spinner"></div><p style="color:var(--muted);font-size:.85rem">Fetching live data...</p></div>
 
   <div class="result-card" id="resultCard">
     <div class="card-header">
@@ -541,6 +582,7 @@ footer { background:var(--surface); border-top:1px solid var(--border); padding:
       <span>📰 News: GNews API · Real-time</span>
       <span>⚠️ Not financial advice — do your own research</span>
     </div>
+    <div class="signal-panel" id="r-signals"></div>
     <div class="metrics-grid" id="r-metrics"></div>
     <div class="chart-section">
       <div class="chart-header">
@@ -824,10 +866,10 @@ async function analyzeStock() {
   const sym = raw.replace(/[^A-Z.]/g,'');
   if (!sym) return;
   currentSym = sym;
-  const loading = document.getElementById('loading');
+  const skeleton = document.getElementById('skeletonLoader');
   const card = document.getElementById('resultCard');
   card.classList.remove('visible');
-  loading.classList.add('active');
+  skeleton.style.display = 'block';
   if (autoRefreshTimer) clearInterval(autoRefreshTimer);
 
   try {
@@ -841,13 +883,13 @@ async function analyzeStock() {
     d.price = livePrice;
     d.change = parseFloat(liveChange.toFixed(2));
     d.changePct = parseFloat(liveChangePct);
-    loading.classList.remove('active');
+    skeleton.style.display = 'none';
     renderCard(sym, d);
     autoRefreshTimer = setInterval(() => autoRefresh(sym), 60000);
   } catch(e) {
     const d = stocks[sym] || generateFallback(sym);
     d.price = d.price || 0;
-    loading.classList.remove('active');
+    skeleton.style.display = 'none';
     renderCard(sym, d);
   }
 }
@@ -908,6 +950,19 @@ function renderCard(sym, d) {
   }, 100);
 
   document.getElementById('r-analysis').textContent = d.analysis;
+
+  // SIGNAL PANEL
+  const sp = document.getElementById('r-signals');
+  const s = d.scores;
+  const signals = [
+    {label:'Value', val: s.value >= 60 ? 'Attractive' : s.value >= 40 ? 'Fair' : 'Expensive', type: s.value >= 60 ? 'bull' : s.value >= 40 ? 'neutral' : 'bear', score: s.value},
+    {label:'Growth', val: s.growth >= 70 ? 'Strong' : s.growth >= 50 ? 'Moderate' : 'Weak', type: s.growth >= 70 ? 'bull' : s.growth >= 50 ? 'neutral' : 'bear', score: s.growth},
+    {label:'Momentum', val: s.momentum >= 70 ? 'Bullish' : s.momentum >= 50 ? 'Neutral' : 'Bearish', type: s.momentum >= 70 ? 'bull' : s.momentum >= 50 ? 'neutral' : 'bear', score: s.momentum},
+    {label:'Insider Activity', val: d.insider && d.insider.filter(i=>i.type==='buy').length > d.insider.filter(i=>i.type==='sell').length ? 'Buying' : 'Selling', type: d.insider && d.insider.filter(i=>i.type==='buy').length > d.insider.filter(i=>i.type==='sell').length ? 'bull' : 'bear', score: null},
+    {label:'Analyst Consensus', val: d.analyst ? (((d.analyst.strongBuy+d.analyst.buy)/(d.analyst.strongBuy+d.analyst.buy+d.analyst.hold+d.analyst.sell+d.analyst.strongSell))*100).toFixed(0)+'% Buy' : 'N/A', type: d.analyst && ((d.analyst.strongBuy+d.analyst.buy)/(d.analyst.strongBuy+d.analyst.buy+d.analyst.hold+d.analyst.sell+d.analyst.strongSell)) >= 0.6 ? 'bull' : 'neutral', score: null},
+    {label:'Dividend', val: d.dividends ? d.dividends.yield+'% yield' : 'No dividend', type: d.dividends ? 'bull' : 'neutral', score: null},
+  ];
+  sp.innerHTML = signals.map(s => `<div class="signal-item"><div class="signal-dot ${s.type}"></div><span class="signal-label">${s.label}</span><span class="signal-value" style="color:${s.type==='bull'?'var(--green)':s.type==='bear'?'var(--red)':'var(--muted)'}">${s.val}${s.score!==null?' ('+s.score+'/100)':''}</span></div>`).join('');
   renderAnalystRatings(sym, d.analyst);
   renderInsiderTrading(sym, d.insider);
   renderDividends(sym, d.dividends);
@@ -1180,8 +1235,13 @@ function updateWatchlistBtn(sym) {
 }
 async function renderWatchlist() {
   const grid = document.getElementById('watchlistGrid');
+  const section = document.getElementById('watchlist');
   document.getElementById('wl-count').textContent = watchlist.length ? `(${watchlist.length})` : '';
-  if (!watchlist.length) { grid.innerHTML = '<p class="wl-empty">No stocks added yet. Search a stock and click + Watchlist.</p>'; return; }
+  if (!watchlist.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
   grid.innerHTML = watchlist.map(s => `<div class="wl-card" id="wlc-${s}"><button class="wl-remove" onclick="event.stopPropagation();removeFromWatchlist('${s}')">×</button><div class="wl-sym">${s}</div><div class="wl-price" id="wlp-${s}">—</div><div class="wl-chg" id="wlc2-${s}">—</div></div>`).join('');
   watchlist.forEach(async sym => {
     try {
@@ -1232,7 +1292,12 @@ function addHolding() {
 }
 async function renderPortfolio() {
   const tbody = document.getElementById('portfolioBody');
-  if (!portfolio.length) { tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);font-size:.85rem;padding:16px 0;">No holdings yet.</td></tr>'; document.getElementById('portfolioSummary').style.display = 'none'; return; }
+  const section = document.getElementById('portfolio');
+  if (!portfolio.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = 'block';
   tbody.innerHTML = portfolio.map((h,i) => `<tr><td style="font-family:\'DM Mono\',monospace;color:var(--accent)">${h.sym}</td><td>${h.shares}</td><td>$${h.cost.toFixed(2)}</td><td id="pcp-${i}">—</td><td id="pcv-${i}">—</td><td id="pcg-${i}">—</td><td><button onclick="removeHolding(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer">×</button></td></tr>`).join('');
   let totalValue = 0, totalCost = 0;
   for (let i = 0; i < portfolio.length; i++) {
@@ -1440,6 +1505,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(updateTicker, 300000);
   setInterval(loadMarketMood, 60000);
   setInterval(loadTopMovers, 60000);
+  // Auto-load AAPL as demo
+  setTimeout(() => {
+    document.getElementById('searchInput').value = 'AAPL';
+    analyzeStock();
+  }, 800);
 });
 </script>
 </body>
